@@ -1,0 +1,7 @@
+Import('*')
+
+env = env.Copy(tools=['Boost', 'BoostTest'])
+
+runner = env.Program('testRunner', 'TestMain.cpp')
+test_alias = Alias('test', [runner], runner[0].path)
+AlwaysBuild(test_alias)
