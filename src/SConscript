@@ -1,21 +1,41 @@
 Import('*')
 
+env = env.Copy(tools=['Boost'])
+
 env.Command(['ShaderLexer.cpp', 'ShaderLexer.hpp',
              'ShaderLexerTokenTypes.hpp', 'ShaderLexerTokenTypes.txt',
-             'ShaderParser.cpp', 'ShaderParser.hpp'],
+             'ShaderParser.cpp', 'ShaderParser.hpp',
+             'ShaderValidator.cpp', 'ShaderValidator.hpp'],
             'Shader.g',
             'antlr -o $TARGET.dir $SOURCES')
 env.Append(LIBS=['antlr'])
 
+# Shared library.
+env.Library('common', Split("""
+    Definition.cpp
+    Program.cpp
+"""))
+env.Append(LIBPATH=['.'], LIBS=['common'])
+
+# Lexer test.
 testLexer = env.Program('testLexer', Split("""
     testLexer.cpp
     ShaderLexer.cpp
 """))
 
+# Parser test.
 testParser = env.Program('testParser', Split("""
     testParser.cpp
     ShaderLexer.cpp
     ShaderParser.cpp
 """))
 
-env.Install('#', [testLexer, testParser])
+# Validator test.
+testValidator = env.Program('testValidator', Split("""
+    testValidator.cpp
+    ShaderLexer.cpp
+    ShaderParser.cpp
+    ShaderValidator.cpp
+"""))
+
+env.Install('#', [testLexer, testParser, testValidator])

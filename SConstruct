@@ -1,6 +1,10 @@
 import os
 
-env = Environment(ENV=os.environ)
+TargetSignatures('content')
+
+env = Environment(ENV=os.environ,
+                  toolpath=[Dir('toolspec').abspath])
+
 if env.subst('$CC') == 'gcc':
     env.Append(CCFLAGS=['-Wall', '-g'],
                LINKFLAGS=['-g'])

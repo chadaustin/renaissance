@@ -1,3 +1,8 @@
+header {
+    #include "Definition.h"
+    #include "Program.h"
+}
+
 options {
     language = "Cpp";
     namespaceStd = "std::";
@@ -68,5 +73,23 @@ term:     (value)+
     |     LPAREN! expr RPAREN!
     ;
 value:    ID
-     |    LITERAL
-     ;
+    |     LITERAL
+    ;
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+
+class ShaderValidator extends TreeParser;
+
+program returns [ProgramPtr p] {
+    p.reset(new Program);
+    Definition def;
+}
+    : ( def=definition { p->definitions.push_back(def); } )*
+    ;
+
+definition returns [Definition d] {
+}
+    : #(IS (name:ID)) { d.name = name->getText(); }
+    ;
