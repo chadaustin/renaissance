@@ -53,7 +53,7 @@ options {
 program: (definition)* ;
 
 definition: leftSide IS^ expr NEWLINE! ;
-leftSide: ID args ;
+leftSide: ID^ args ;
 args: (ID)* ;
 
 expr: orExpr ;
