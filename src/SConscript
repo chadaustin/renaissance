@@ -7,6 +7,13 @@ env.Command(['ShaderLexer.cpp', 'ShaderLexer.hpp',
             'antlr -o $TARGET.dir $SOURCES')
 env.Append(LIBS=['antlr'])
 
+testLexer = env.Program('testLexer', Split("""
+    testLexer.cpp
+    ShaderLexer.cpp
+"""))
+
+env.Install('#', testLexer)
+
 parser = env.Program('parser', Split("""
     Main.cpp
     ShaderLexer.cpp

@@ -15,6 +15,7 @@ options {
 }
 
 ID: ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
+LITERAL: ('0'..'9')+ ;
 
 NEWLINE: '\n' | '\r' | '\r' '\n'  { newline(); } ;
 
@@ -36,6 +37,9 @@ MINUS:   '-'  ;
 TIMES:   '*'  ;
 OVER:    '/'  ;
 
+LPAREN:  '('  ;
+RPAREN:  ')'  ;
+
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -44,7 +48,9 @@ class ShaderParser extends Parser;
 
 program: (definition)* ;
 
-definition: ID IS expr NEWLINE ;
+definition: leftSide IS expr NEWLINE ;
+leftSide: ID args ;
+args: (ID)* ;
 
 expr: orExpr ;
 orExpr:   xorExpr (OR xorExpr)* ;
@@ -53,4 +59,10 @@ andExpr:  eqExpr (AND eqExpr)* ;
 eqExpr:   cmpExpr ( (EQ | NOTEQ) cmpExpr)* ;
 cmpExpr:  addExpr ( (LESS | GREATER | LTE | GTE) addExpr)* ;
 addExpr:  multExpr ( (PLUS | MINUS) multExpr)* ;
-multExpr: ID ( (TIMES | OVER) ID)* ;
+multExpr: term ( (TIMES | OVER) term)* ;
+term:     (value)+
+    |     LPAREN expr RPAREN
+    ;
+value:    ID
+     |    LITERAL
+     ;

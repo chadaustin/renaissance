@@ -1,6 +1,6 @@
+#include <iostream>
 #include <fstream>
 #include "ShaderLexer.hpp"
-#include "ShaderParser.hpp"
 
 
 int usage() {
@@ -22,8 +22,11 @@ int main(int argc, char** argv) {
 
     try {
         ShaderLexer l(shader);
-        ShaderParser p(l);
-        p.program();
+        antlr::RefToken t = l.nextToken();
+        while (t->getType() != antlr::Token::EOF_TYPE) {
+            std::cout << t->getText() << std::endl;
+            t = l.nextToken();
+        }
     }
     catch (const antlr::ANTLRException& e) {
         std::cout << "ANTLR Exception: " << e.toString() << std::endl;
@@ -31,4 +34,5 @@ int main(int argc, char** argv) {
     catch (const std::exception& e) {
         std::cout << "Exception: " << e.what() << std::endl;
     }
+
 }
