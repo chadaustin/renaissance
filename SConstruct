@@ -1,6 +1,6 @@
 import os
 
-TargetSignatures('content')
+#TargetSignatures('content')
 
 env = Environment(ENV=os.environ,
                   toolpath=[Dir('toolspec').abspath])

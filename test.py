@@ -17,25 +17,35 @@ gl_Position = gl_ModelViewProjection * gl_Vertex
 """,
                   
                   'validator': """\
-Program:
-  Name: gl_Position
+Function: gl_Position
+  Expression: (* gl_ModelViewProjection gl_Vertex)
 """ },
 
     
     'expr.rs':  { 'lexer':     """\
 foo = 1
-bar x y = sin x + baz 1 sin 2
+bar = 9 8
+baz = a b c
+bing x y = sin x + baz 2 sin 3
 """,
                   
                   'parser':    """\
  ( = foo 1 )
- ( = ( bar x y ) ( + sin x baz 1 sin 2 ) )
+ ( = bar ( 9 8 ) )
+ ( = baz ( a b c ) )
+ ( = ( bing x y ) ( + ( sin x ) ( baz 2 sin 3 ) ) )
 """,
                   
                   'validator': """\
-Program:
-  Name: foo
-  Name: bar
+Function: foo
+  Expression: 1
+Function: bar
+  Expression: (9 8)
+Function: baz
+  Expression: (a b c)
+Function: bing
+  Arguments: x y
+  Expression: (+ (sin x) (baz 2 sin 3))
 """ },
 
     
@@ -46,13 +56,15 @@ gl_Position = mult gl_ModelViewProjection gl_Vertex
                       
                       'parser': """\
  ( = ( mult matrix vector ) ( * matrix vector ) )
- ( = gl_Position mult gl_ModelViewProjection gl_Vertex )
+ ( = gl_Position ( mult gl_ModelViewProjection gl_Vertex ) )
 """,
 
                       'validator': """\
-Program:
-  Name: mult
-  Name: gl_Position
+Function: mult
+  Arguments: matrix vector
+  Expression: (* matrix vector)
+Function: gl_Position
+  Expression: (mult gl_ModelViewProjection gl_Vertex)
 """ } }
 
 
@@ -75,8 +87,10 @@ for script, outputs in tests.iteritems():
             result = 'passed'
         print '  %s: %s' % (name.ljust(10), result)
         if result == 'failed':
-            print "---- stdout:"
+            print "---- STDOUT:"
             print stdout,
-            print "---- expected:"
+            print "---- EXPECTED:"
             print output,
             print "----"
+    print
+

@@ -1,5 +1,4 @@
 header {
-    #include "Definition.h"
     #include "Program.h"
 }
 
@@ -64,17 +63,21 @@ args: (ID)* ;
 expr: orExpr ;
 orExpr:   xorExpr (OR^ xorExpr)* ;
 xorExpr:  andExpr (XOR^ andExpr)* ;
-andExpr:  eqExpr (AND^ eqExpr)* ;
-eqExpr:   cmpExpr ( (EQ^ | NOTEQ^) cmpExpr)* ;
-cmpExpr:  addExpr ( (LESS^ | GREATER^ | LTE^ | GTE^) addExpr)* ;
+andExpr:  eqExpr  (AND^ eqExpr)* ;
+eqExpr:   cmpExpr  ( (EQ^ | NOTEQ^) cmpExpr)* ;
+cmpExpr:  addExpr  ( (LESS^ | GREATER^ | LTE^ | GTE^) addExpr)* ;
 addExpr:  multExpr ( (PLUS^ | MINUS^) multExpr)* ;
-multExpr: term ( (TIMES^ | OVER^) term)* ;
-term:     (value)+
-    |     LPAREN! expr RPAREN!
+multExpr: app      ( (TIMES^ | OVER^) app)* ;
+app
+    : ID^ (value)*
+    | LITERAL^ (value)*
     ;
-value:    ID
-    |     LITERAL
+value
+    : ID 
+    | LITERAL
+    | LPAREN! expr RPAREN!
     ;
+
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -86,10 +89,57 @@ program returns [ProgramPtr p] {
     p.reset(new Program);
     Definition def;
 }
-    : ( def=definition { p->definitions.push_back(def); } )*
+    : ( def=definition {
+            p->definitions.push_back(def);
+        } )*
     ;
 
 definition returns [Definition d] {
+    ArgumentList arguments;
+    NodePtr e;
 }
-    : #(IS (name:ID)) { d.name = name->getText(); }
+    : #(IS #(name:ID arguments=args) e=expr) {
+            d.name = name->getText();
+            d.arguments = arguments;
+            d.expression = e;
+        }
+    ;
+
+args returns [ArgumentList arglist]
+    : ( arg:ID {
+            Argument a;
+            a.name = arg->getText();
+            arglist.push_back(a);
+        } )*
+    ;
+
+expr returns [NodePtr node] {
+    NodePtr lhs, rhs;
+    std::vector<NodePtr> v;
+}
+    : #(OR      lhs=expr rhs=expr) { node.reset(new BinaryNode("||", lhs, rhs)); }
+    | #(XOR     lhs=expr rhs=expr) { node.reset(new BinaryNode("^^", lhs, rhs)); }
+    | #(AND     lhs=expr rhs=expr) { node.reset(new BinaryNode("&&", lhs, rhs)); }
+    | #(EQ      lhs=expr rhs=expr) { node.reset(new BinaryNode("==", lhs, rhs)); }
+    | #(NOTEQ   lhs=expr rhs=expr) { node.reset(new BinaryNode("!=", lhs, rhs)); }
+    | #(LESS    lhs=expr rhs=expr) { node.reset(new BinaryNode("<",  lhs, rhs)); }
+    | #(GREATER lhs=expr rhs=expr) { node.reset(new BinaryNode(">",  lhs, rhs)); }
+    | #(LTE     lhs=expr rhs=expr) { node.reset(new BinaryNode("<=", lhs, rhs)); }
+    | #(GTE     lhs=expr rhs=expr) { node.reset(new BinaryNode(">=", lhs, rhs)); }
+    | #(PLUS    lhs=expr rhs=expr) { node.reset(new BinaryNode("+",  lhs, rhs)); }
+    | #(MINUS   lhs=expr rhs=expr) { node.reset(new BinaryNode("-",  lhs, rhs)); }
+    | #(TIMES   lhs=expr rhs=expr) { node.reset(new BinaryNode("*",  lhs, rhs)); }
+    | #(OVER    lhs=expr rhs=expr) { node.reset(new BinaryNode("/",  lhs, rhs)); }
+    | #(name:ID v=values) {
+            node.reset(new ApplicationNode(name->getText(), v));
+        }
+    | #(lit:LITERAL v=values) {
+            node.reset(new ApplicationNode(lit->getText(), v));
+        }
+    ;
+
+values returns [std::vector<NodePtr> values] {
+    NodePtr e;
+}
+    : ( e=expr { values.push_back(e); } )*
     ;
