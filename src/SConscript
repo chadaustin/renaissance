@@ -1,0 +1,16 @@
+Import('*')
+
+env.Command(['ShaderLexer.cpp', 'ShaderLexer.hpp',
+             'ShaderLexerTokenTypes.hpp', 'ShaderLexerTokenTypes.txt',
+             'ShaderParser.cpp', 'ShaderParser.hpp'],
+            'Shader.g',
+            'antlr -o $TARGET.dir $SOURCES')
+env.Append(LIBS=['antlr'])
+
+parser = env.Program('parser', Split("""
+    Main.cpp
+    ShaderLexer.cpp
+    ShaderParser.cpp
+"""))
+
+env.Install('#', parser)
