@@ -53,11 +53,16 @@ class ShaderParser extends Parser;
 
 options {
     buildAST = true;
+    k = 2;
 }
 
-program: (definition)* ;
+program
+    :
+    | NEWLINE! program
+    | definition (NEWLINE! program)?
+    ;
 
-definition: leftSide IS^ expr NEWLINE! ;
+definition: leftSide IS^ expr ;
 leftSide: ID^ args ;
 args: (ID)* ;
 
@@ -119,19 +124,19 @@ expr returns [NodePtr node] {
     NodePtr lhs, rhs;
     std::vector<NodePtr> v;
 }
-    : #(OR      lhs=expr rhs=expr) { node.reset(new BinaryNode("||", lhs, rhs)); }
-    | #(XOR     lhs=expr rhs=expr) { node.reset(new BinaryNode("^^", lhs, rhs)); }
-    | #(AND     lhs=expr rhs=expr) { node.reset(new BinaryNode("&&", lhs, rhs)); }
-    | #(EQ      lhs=expr rhs=expr) { node.reset(new BinaryNode("==", lhs, rhs)); }
-    | #(NOTEQ   lhs=expr rhs=expr) { node.reset(new BinaryNode("!=", lhs, rhs)); }
-    | #(LESS    lhs=expr rhs=expr) { node.reset(new BinaryNode("<",  lhs, rhs)); }
-    | #(GREATER lhs=expr rhs=expr) { node.reset(new BinaryNode(">",  lhs, rhs)); }
-    | #(LTE     lhs=expr rhs=expr) { node.reset(new BinaryNode("<=", lhs, rhs)); }
-    | #(GTE     lhs=expr rhs=expr) { node.reset(new BinaryNode(">=", lhs, rhs)); }
-    | #(PLUS    lhs=expr rhs=expr) { node.reset(new BinaryNode("+",  lhs, rhs)); }
-    | #(MINUS   lhs=expr rhs=expr) { node.reset(new BinaryNode("-",  lhs, rhs)); }
-    | #(TIMES   lhs=expr rhs=expr) { node.reset(new BinaryNode("*",  lhs, rhs)); }
-    | #(OVER    lhs=expr rhs=expr) { node.reset(new BinaryNode("/",  lhs, rhs)); }
+    : #(OR      lhs=expr rhs=expr) { node = makeBinaryNode("||", lhs, rhs); }
+    | #(XOR     lhs=expr rhs=expr) { node = makeBinaryNode("^^", lhs, rhs); }
+    | #(AND     lhs=expr rhs=expr) { node = makeBinaryNode("&&", lhs, rhs); }
+    | #(EQ      lhs=expr rhs=expr) { node = makeBinaryNode("==", lhs, rhs); }
+    | #(NOTEQ   lhs=expr rhs=expr) { node = makeBinaryNode("!=", lhs, rhs); }
+    | #(LESS    lhs=expr rhs=expr) { node = makeBinaryNode("<",  lhs, rhs); }
+    | #(GREATER lhs=expr rhs=expr) { node = makeBinaryNode(">",  lhs, rhs); }
+    | #(LTE     lhs=expr rhs=expr) { node = makeBinaryNode("<=", lhs, rhs); }
+    | #(GTE     lhs=expr rhs=expr) { node = makeBinaryNode(">=", lhs, rhs); }
+    | #(PLUS    lhs=expr rhs=expr) { node = makeBinaryNode("+",  lhs, rhs); }
+    | #(MINUS   lhs=expr rhs=expr) { node = makeBinaryNode("-",  lhs, rhs); }
+    | #(TIMES   lhs=expr rhs=expr) { node = makeBinaryNode("*",  lhs, rhs); }
+    | #(OVER    lhs=expr rhs=expr) { node = makeBinaryNode("/",  lhs, rhs); }
     | #(name:ID v=values) {
             node.reset(new ApplicationNode(name->getText(), v));
         }

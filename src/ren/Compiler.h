@@ -2,10 +2,13 @@
 #define REN_COMPILER_H
 
 
+#include "Program.h"
 #include "Types.h"
 
 
 namespace ren {
+
+    ProgramPtr analyze(const string& source);
 
     struct CompilerResult {
         string vertexShader;

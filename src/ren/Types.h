@@ -6,6 +6,8 @@
 
 namespace ren {
     using std::string;
+
+    typedef string Type;
 }
 
 

@@ -25,6 +25,7 @@ sources = Split("""
 headers = Split("""
     Compiler.h
     Definition.h
+    Node.h
     Program.h
     Types.h
 

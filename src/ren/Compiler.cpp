@@ -7,7 +7,7 @@
 
 namespace ren {
 
-    ProgramPtr validate(const string& source) {
+    static ProgramPtr parse(const string& source) {
         try {
             std::istringstream is(source);
 
@@ -22,7 +22,9 @@ namespace ren {
                 ShaderValidator validator;
                 return validator.program(ast);
             } else {
-                std::cerr << "Parser built no AST!" << std::endl;
+                // Parser didn't build an AST or throw an error.  Thus,
+                // the program is empty.
+                return ProgramPtr(new Program);
             }
         }
         catch (const antlr::ANTLRException& e) {
@@ -35,11 +37,19 @@ namespace ren {
         return ProgramPtr();
     }
 
+    ProgramPtr analyze(const string& source) {
+        ProgramPtr program = parse(source);
+        if (program) {
+            program->inferTypes();
+        }
+        return program;
+    }
+
 
     CompilerResult compile(const string& source) {
         static CompilerResult FAILURE;
 
-        ProgramPtr program = validate(source);
+        ProgramPtr program = analyze(source);
         if (!program) {
             return CompilerResult();
         }
@@ -57,9 +67,12 @@ namespace ren {
                 std::cout << "gl_Position must not take any arguments." << std::endl;
                 return FAILURE;
             }
-            vertexShader << "void main() {" << std::endl;
-            vertexShader << "  gl_Position = something;" << std::endl;
-            vertexShader << "}" << std::endl;
+            vertexShader << "void main()\n"
+                         << "{\n"
+                         << "  gl_Position = "
+                         << gl_Position->expression->evaluate()
+                         << ";\n"
+                         << "}\n";
         }
 
         DefinitionPtr gl_FragColor = program->getDefinition("gl_FragColor");
