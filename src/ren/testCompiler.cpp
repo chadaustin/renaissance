@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <boost/shared_ptr.hpp>
 #include "Compiler.h"
+using namespace ren;
 
 
 int usage() {

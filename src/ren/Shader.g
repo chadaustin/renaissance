@@ -1,9 +1,10 @@
-header {
+header "post_include_hpp" {
     #include "Program.h"
 }
 
 options {
     language = "Cpp";
+    namespace = "ren";
     namespaceStd = "std::";
     namespaceAntlr = "antlr::";
 }

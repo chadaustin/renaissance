@@ -1,6 +1,6 @@
 import os
 
-#TargetSignatures('content')
+TargetSignatures('content')
 
 env = Environment(ENV=os.environ,
                   toolpath=[Dir('toolspec').abspath])
@@ -10,5 +10,6 @@ if env.subst('$CC') == 'gcc':
                LINKFLAGS=['-g'])
 
 Export('env')
-for d in ['src', 'test']:
-    SConscript(dirs=d, build_dir='build/' + d, duplicate=0)
+BuildDir('build', '.', duplicate=0)
+SConscript(dirs=['build/src',
+                 'build/test'])

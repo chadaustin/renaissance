@@ -76,7 +76,7 @@ executables = {
 for script, outputs in tests.iteritems():
     print script
     for name, output in outputs.iteritems():
-        exe = executables[name]
+        exe = 'stage/bin/' + executables[name]
 
         stdin, stdout, stderr = os.popen3(exe + ' examples/' + script)
         stdout = stdout.read()

@@ -1,10 +1,13 @@
+#include <iostream>
 #include <fstream>
-#include "ShaderLexer.hpp"
-#include "ShaderParser.hpp"
+#include <ren/ShaderLexer.hpp>
+#include <ren/ShaderParser.hpp>
+#include <ren/ShaderValidator.hpp>
+using namespace ren;
 
 
 int usage() {
-    std::cerr << "Usage: testParser filename" << std::endl;
+    std::cerr << "Usage: testValidator filename" << std::endl;
     return -1;
 }
 
@@ -21,25 +24,20 @@ int main(int argc, char** argv) {
     }
 
     try {
-        antlr::ASTFactory factory;
+        antlr::ASTFactory parserFactory;
         ShaderLexer lexer(shader);
         ShaderParser parser(lexer);
-
-        parser.initializeASTFactory(factory);
-        parser.setASTFactory(&factory);
-
+        parser.initializeASTFactory(parserFactory);
+        parser.setASTFactory(&parserFactory);
         parser.program();
 
         if (antlr::RefAST ast = parser.getAST()) {
-            //std::cout << ast->toStringList() << std::endl
-            //          << "----" << std::endl;
+            ShaderValidator validator;
+            ProgramPtr program = validator.program(ast);
 
-            do {
-                std::cout << ast->toStringTree() << std::endl;
-                ast = ast->getNextSibling();
-            } while (ast);
+            program->print();
         } else {
-            std::cerr << "No AST built!" << std::endl;
+            std::cerr << "Parser built no AST!" << std::endl;
         }
     }
     catch (const antlr::ANTLRException& e) {

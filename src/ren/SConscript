@@ -1,0 +1,51 @@
+Import('*')
+
+env = env.Copy(tools=['Boost'])
+
+libenv = env.Copy()
+libenv.Append(CPPPATH=['.'])
+
+libenv.Command(['ShaderLexer.cpp', 'ShaderLexer.hpp',
+             'ShaderLexerTokenTypes.hpp', 'ShaderLexerTokenTypes.txt',
+             'ShaderParser.cpp', 'ShaderParser.hpp',
+             'ShaderValidator.cpp', 'ShaderValidator.hpp'],
+            'Shader.g',
+            'antlr -o $TARGET.dir $SOURCES')
+
+sources = Split("""
+    Compiler.cpp
+    Definition.cpp
+    Program.cpp
+
+    ShaderLexer.cpp
+    ShaderParser.cpp
+    ShaderValidator.cpp
+""")
+
+headers = Split("""
+    Compiler.h
+    Definition.h
+    Program.h
+    Types.h
+
+    ShaderLexer.hpp
+    ShaderLexerTokenTypes.hpp
+    ShaderParser.hpp
+    ShaderValidator.hpp
+""")
+
+# Shared library.
+libren = libenv.Library('ren', sources)
+
+# Install to stage.
+libenv.Install('#/stage/lib', libren)
+libenv.Install('#/stage/include/ren', headers)
+
+# Build test programs.
+testenv = env.Copy(tools=['Renaissance'])
+
+testenv.Install('#/stage/bin', [
+    testenv.Program('testLexer.cpp'),
+    testenv.Program('testParser.cpp'),
+    testenv.Program('testValidator.cpp'),
+    testenv.Program('testCompiler.cpp')])

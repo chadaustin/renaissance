@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
-#include "ShaderLexer.hpp"
+#include <ren/ShaderLexer.hpp>
+using namespace ren;
 
 
 int usage() {
