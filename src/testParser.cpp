@@ -21,12 +21,23 @@ int main(int argc, char** argv) {
     }
 
     try {
-        ShaderLexer l(shader);
-        ShaderParser p(l);
-        p.program();
+        antlr::ASTFactory factory;
+        ShaderLexer lexer(shader);
+        ShaderParser parser(lexer);
 
-        if (antlr::RefAST ast = p.getAST()) {
-            std::cout << ast->toString() << std::endl;
+        parser.initializeASTFactory(factory);
+        parser.setASTFactory(&factory);
+
+        parser.program();
+
+        if (antlr::RefAST ast = parser.getAST()) {
+            std::cout << ast->toStringList() << std::endl
+                      << "----" << std::endl;
+
+            do {
+                std::cout << ast->toStringTree() << std::endl;
+                ast = ast->getNextSibling();
+            } while (ast);
         } else {
             std::cerr << "No AST built!" << std::endl;
         }

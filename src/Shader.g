@@ -52,20 +52,20 @@ options {
 
 program: (definition)* ;
 
-definition: leftSide IS expr NEWLINE ;
+definition: leftSide IS^ expr NEWLINE! ;
 leftSide: ID args ;
 args: (ID)* ;
 
 expr: orExpr ;
-orExpr:   xorExpr (OR xorExpr)* ;
-xorExpr:  andExpr (XOR andExpr)* ;
-andExpr:  eqExpr (AND eqExpr)* ;
-eqExpr:   cmpExpr ( (EQ | NOTEQ) cmpExpr)* ;
-cmpExpr:  addExpr ( (LESS | GREATER | LTE | GTE) addExpr)* ;
-addExpr:  multExpr ( (PLUS | MINUS) multExpr)* ;
-multExpr: term ( (TIMES | OVER) term)* ;
+orExpr:   xorExpr (OR^ xorExpr)* ;
+xorExpr:  andExpr (XOR^ andExpr)* ;
+andExpr:  eqExpr (AND^ eqExpr)* ;
+eqExpr:   cmpExpr ( (EQ^ | NOTEQ^) cmpExpr)* ;
+cmpExpr:  addExpr ( (LESS^ | GREATER^ | LTE^ | GTE^) addExpr)* ;
+addExpr:  multExpr ( (PLUS^ | MINUS^) multExpr)* ;
+multExpr: term ( (TIMES^ | OVER^) term)* ;
 term:     (value)+
-    |     LPAREN expr RPAREN
+    |     LPAREN! expr RPAREN!
     ;
 value:    ID
      |    LITERAL
