@@ -1,0 +1,5 @@
+Implement raytracing shader:
+  http://www.opengl.org/discussion_boards/cgi_directory/ultimatebb.cgi?ubb=get_topic;f=3;t=012454
+
+Investigate shader debugging:
+  http://graphics.stanford.edu/projects/shadesmith/
