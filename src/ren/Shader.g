@@ -20,6 +20,12 @@ options {
     defaultErrorHandler = false;
 }
 
+// Don't let ID take these over.
+tokens {
+    UNIFORM   = "uniform";
+    ATTRIBUTE = "attribute";
+}
+
 ID: ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
 LITERAL: ('0'..'9')+ ( '.' ('0'..'9')* )?;
 
@@ -46,7 +52,6 @@ OVER:    '/'  ;
 LPAREN:  '('  ;
 RPAREN:  ')'  ;
 
-
 //////////////////////////////////////////////////////////////////////////////
 
 
@@ -61,8 +66,13 @@ options {
 program
     :
     | NEWLINE! program
-    | definition (NEWLINE! program)?
+    | statement (NEWLINE! program)?
     ;
+
+statement : uniform | attribute | definition ;
+
+uniform : UNIFORM^ ID ID ;
+attribute : ATTRIBUTE^ ID ID ;
 
 definition: leftSide IS^ expr ;
 leftSide: ID^ args ;

@@ -16,7 +16,7 @@ DiffuseContribution = 1.0 - SpecularContribution
 # Transform.
 
 gl_Position = ftransform
-ecPosition = (gl_ModielViewMatrix * gl_Vertex).xyz
+ecPosition = (gl_ModelViewMatrix * gl_Vertex).xyz
 tnorm = normalize (gl_NormalMatrix * gl_Normal)
 
 

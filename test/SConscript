@@ -12,8 +12,12 @@ sources = Split("""
     ErrorLine.cpp
     Expression.cpp
     Functions.cpp
+    Uniforms.cpp
 """)
 
+# Depend on the test programs so that typing "scons test" makes everything
+# for test.py up-to-date as well.
+testProgramsLocation = Dir('#/stage/bin')
+
 runner = env.Program('testRunner', sources)
-test_alias = Alias('test', [runner], runner[0].path)
-AlwaysBuild(test_alias)
+AlwaysBuild( Alias('test', [runner, testProgramsLocation], runner[0].path) )
