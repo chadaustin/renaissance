@@ -46,6 +46,10 @@ RPAREN:  ')'  ;
 
 class ShaderParser extends Parser;
 
+options {
+    buildAST = true;
+}
+
 program: (definition)* ;
 
 definition: leftSide IS expr NEWLINE ;

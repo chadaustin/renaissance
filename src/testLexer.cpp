@@ -4,7 +4,7 @@
 
 
 int usage() {
-    std::cerr << "Usage: parserTest filename" << std::endl;
+    std::cerr << "Usage: testLexer filename" << std::endl;
     return -1;
 }
 

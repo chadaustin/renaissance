@@ -4,7 +4,7 @@
 
 
 int usage() {
-    std::cerr << "Usage: parserTest filename" << std::endl;
+    std::cerr << "Usage: testParser filename" << std::endl;
     return -1;
 }
 
@@ -24,6 +24,12 @@ int main(int argc, char** argv) {
         ShaderLexer l(shader);
         ShaderParser p(l);
         p.program();
+
+        if (antlr::RefAST ast = p.getAST()) {
+            std::cout << ast->toString() << std::endl;
+        } else {
+            std::cerr << "No AST built!" << std::endl;
+        }
     }
     catch (const antlr::ANTLRException& e) {
         std::cout << "ANTLR Exception: " << e.toString() << std::endl;

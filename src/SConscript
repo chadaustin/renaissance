@@ -12,12 +12,10 @@ testLexer = env.Program('testLexer', Split("""
     ShaderLexer.cpp
 """))
 
-env.Install('#', testLexer)
-
-parser = env.Program('parser', Split("""
-    Main.cpp
+testParser = env.Program('testParser', Split("""
+    testParser.cpp
     ShaderLexer.cpp
     ShaderParser.cpp
 """))
 
-env.Install('#', parser)
+env.Install('#', [testLexer, testParser])
