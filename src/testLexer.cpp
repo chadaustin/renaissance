@@ -23,8 +23,20 @@ int main(int argc, char** argv) {
     try {
         ShaderLexer l(shader);
         antlr::RefToken t = l.nextToken();
+        bool first = true;
         while (t->getType() != antlr::Token::EOF_TYPE) {
-            std::cout << t->getText() << std::endl;
+            if (t->getType() == ShaderLexerTokenTypes::NEWLINE) {
+                endl(std::cout);
+                first = true;
+            } else {
+                if (!first) {
+                    std::cout << ' ';
+                }
+                std::cout << t->getText();
+
+                first = false;
+            }
+
             t = l.nextToken();
         }
     }

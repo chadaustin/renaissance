@@ -31,8 +31,8 @@ int main(int argc, char** argv) {
         parser.program();
 
         if (antlr::RefAST ast = parser.getAST()) {
-            std::cout << ast->toStringList() << std::endl
-                      << "----" << std::endl;
+            //std::cout << ast->toStringList() << std::endl
+            //          << "----" << std::endl;
 
             do {
                 std::cout << ast->toStringTree() << std::endl;
