@@ -10,4 +10,4 @@ if env.subst('$CC') == 'gcc':
                LINKFLAGS=['-g'])
 
 Export('env')
-SConscript(dirs=['src'])
+SConscript(dirs=['src'], build_dir='build', duplicate=0)
