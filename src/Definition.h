@@ -73,11 +73,12 @@ struct Definition {
     void print();
 
     string name;
-    //Type type;
+    string type;
     //Frequency frequency;
     ArgumentList arguments;
     NodePtr expression;
 };
+typedef boost::shared_ptr<Definition> DefinitionPtr;
 
 
 #endif

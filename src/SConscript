@@ -8,34 +8,22 @@ env.Command(['ShaderLexer.cpp', 'ShaderLexer.hpp',
              'ShaderValidator.cpp', 'ShaderValidator.hpp'],
             'Shader.g',
             'antlr -o $TARGET.dir $SOURCES')
-env.Append(LIBS=['antlr'])
 
 # Shared library.
 env.Library('common', Split("""
+    Compiler.cpp
     Definition.cpp
     Program.cpp
-"""))
-env.Append(CPPPATH=['.'], LIBPATH=['.'], LIBS=['common'])
 
-# Lexer test.
-testLexer = env.Program('testLexer', Split("""
-    testLexer.cpp
-    ShaderLexer.cpp
-"""))
-
-# Parser test.
-testParser = env.Program('testParser', Split("""
-    testParser.cpp
-    ShaderLexer.cpp
-    ShaderParser.cpp
-"""))
-
-# Validator test.
-testValidator = env.Program('testValidator', Split("""
-    testValidator.cpp
     ShaderLexer.cpp
     ShaderParser.cpp
     ShaderValidator.cpp
 """))
+env.Append(CPPPATH=['.'], LIBPATH=['.'], LIBS=['common'])
+env.Append(LIBS=['antlr'])
 
-env.Install('#', [testLexer, testParser, testValidator])
+env.Install('#', [
+    env.Program('testLexer.cpp'),
+    env.Program('testParser.cpp'),
+    env.Program('testValidator.cpp'),
+    env.Program('testCompiler.cpp')])

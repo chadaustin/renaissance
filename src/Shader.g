@@ -87,21 +87,22 @@ class ShaderValidator extends TreeParser;
 
 program returns [ProgramPtr p] {
     p.reset(new Program);
-    Definition def;
+    DefinitionPtr def;
 }
     : ( def=definition {
             p->definitions.push_back(def);
         } )*
     ;
 
-definition returns [Definition d] {
+definition returns [DefinitionPtr d] {
+    d.reset(new Definition);
     ArgumentList arguments;
     NodePtr e;
 }
     : #(IS #(name:ID arguments=args) e=expr) {
-            d.name = name->getText();
-            d.arguments = arguments;
-            d.expression = e;
+            d->name = name->getText();
+            d->arguments = arguments;
+            d->expression = e;
         }
     ;
 

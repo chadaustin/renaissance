@@ -4,6 +4,7 @@
 
 
 void Program::print() {
-    std::for_each(definitions.begin(), definitions.end(),
-                  std::mem_fun_ref(&Definition::print));
+    for (size_t i = 0; i < definitions.size(); ++i) {
+        definitions[i]->print();
+    }
 }

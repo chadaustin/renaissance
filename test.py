@@ -48,12 +48,12 @@ Function: bing
   Expression: (+ (sin x) (baz 2 sin 3))
 """ },
 
-    
+
     'function.rs':  { 'lexer': """\
 mult matrix vector = matrix * vector
 gl_Position = mult gl_ModelViewProjection gl_Vertex
 """,
-                      
+
                       'parser': """\
  ( = ( mult matrix vector ) ( * matrix vector ) )
  ( = gl_Position ( mult gl_ModelViewProjection gl_Vertex ) )

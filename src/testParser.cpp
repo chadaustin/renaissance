@@ -43,9 +43,9 @@ int main(int argc, char** argv) {
         }
     }
     catch (const antlr::ANTLRException& e) {
-        std::cout << "ANTLR Exception: " << e.toString() << std::endl;
+        std::cerr << "ANTLR Exception: " << e.toString() << std::endl;
     }
     catch (const std::exception& e) {
-        std::cout << "Exception: " << e.what() << std::endl;
+        std::cerr << "Exception: " << e.what() << std::endl;
     }
 }

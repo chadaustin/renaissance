@@ -10,7 +10,16 @@
 struct Program {
     void print();
 
-    std::vector<Definition> definitions;
+    DefinitionPtr getDefinition(const string& name) {
+        for (size_t i = 0; i < definitions.size(); ++i) {
+            if (definitions[i]->name == name) {
+                return definitions[i];
+            }
+        }
+        return DefinitionPtr();
+    }
+
+    std::vector<DefinitionPtr> definitions;
 };
 typedef boost::shared_ptr<Program> ProgramPtr;
 
