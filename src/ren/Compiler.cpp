@@ -7,7 +7,7 @@
 
 namespace ren {
 
-    static ProgramPtr parse(const string& source) {
+    ProgramPtr parse(const string& source, std::ostream& output) {
         try {
             std::istringstream is(source);
 
@@ -28,17 +28,17 @@ namespace ren {
             }
         }
         catch (const antlr::ANTLRException& e) {
-            std::cerr << "ANTLR Exception: " << e.toString() << std::endl;
+            output << "ANTLR Exception: " << e.toString() << std::endl;
         }
         catch (const std::exception& e) {
-            std::cerr << "Exception: " << e.what() << std::endl;
+            output << "Exception: " << e.what() << std::endl;
         }
 
         return ProgramPtr();
     }
 
-    ProgramPtr analyze(const string& source) {
-        ProgramPtr program = parse(source);
+    ProgramPtr analyze(const string& source, std::ostream& output) {
+        ProgramPtr program = parse(source, output);
         if (program) {
             program->inferTypes();
         }
@@ -46,10 +46,10 @@ namespace ren {
     }
 
 
-    CompilerResult compile(const string& source) {
+    CompilerResult compile(const string& source, std::ostream& output) {
         static CompilerResult FAILURE;
 
-        ProgramPtr program = analyze(source);
+        ProgramPtr program = analyze(source, output);
         if (!program) {
             return CompilerResult();
         }
@@ -60,12 +60,13 @@ namespace ren {
         DefinitionPtr gl_Position = program->getDefinition("gl_Position");
         if (gl_Position) {
             if (gl_Position->type != "vec4") {
-                std::cout << "gl_Position must have type vec4.  It has type: "
-                          << gl_Position->type << std::endl;
+                output << "gl_Position must have type vec4.  It has type: "
+                       << gl_Position->type << std::endl;
                 return FAILURE;
             }
             if (gl_Position->arguments.size() != 0) {
-                std::cout << "gl_Position must not take any arguments." << std::endl;
+                output << "gl_Position must not take any arguments."
+                       << std::endl;
                 return FAILURE;
             }
             vertexShader << "void main()\n"

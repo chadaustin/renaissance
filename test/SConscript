@@ -6,8 +6,10 @@ sources = Split("""
     TestMain.cpp
 
     BasicProgram.cpp
+    Comments.cpp
     ConstantProgram.cpp
     EmptyProgram.cpp
+    ErrorLine.cpp
     Expression.cpp
     Functions.cpp
 """)

@@ -17,14 +17,15 @@ class ShaderLexer extends Lexer;
 
 options {
     k = 2;
+    defaultErrorHandler = false;
 }
 
 ID: ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
 LITERAL: ('0'..'9')+ ( '.' ('0'..'9')* )?;
 
-NEWLINE: '\n' | '\r' | '\r' '\n'  { newline(); } ;
-
-WS: (' ' | '\t') { $setType(antlr::Token::SKIP); } ;
+NEWLINE: ('\n' | '\r' | '\r' '\n')    { newline(); } ;
+WS     : (' ' | '\t')                 { $setType(antlr::Token::SKIP); } ;
+COMMENT: ( '#' (~ ('\n' | '\r') )* )  { $setType(antlr::Token::SKIP); } ;
 
 IS: '=' ;
 
@@ -54,6 +55,7 @@ class ShaderParser extends Parser;
 options {
     buildAST = true;
     k = 2;
+    defaultErrorHandler = false;
 }
 
 program
@@ -90,6 +92,10 @@ value
 
 
 class ShaderValidator extends TreeParser;
+
+options {
+    defaultErrorHandler = false;
+}
 
 program returns [ProgramPtr p] {
     p.reset(new Program);
