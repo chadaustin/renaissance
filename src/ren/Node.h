@@ -22,6 +22,7 @@ namespace ren {
     struct BuiltIn {
         string name;
         Type type;
+        bool function;
     };
 
     static BuiltIn builtIns[] = {
@@ -33,8 +34,15 @@ namespace ren {
         { "gl_FogCoord",       "float"  },
         { "gl_MultiTexCoord",  "vec4[]" },
 
+        // ftransform is kind of a special attribute in that it's a function call...
+        { "ftransform",        "vec4", true },
+
         // Default varyings.
         
+        // Default uniforms.
+
+        // Built-in state.
+        { "gl_ModelViewProjectionMatrix", "mat4" },
     };
 
 
@@ -64,16 +72,41 @@ namespace ren {
             if (children.empty()) {
                 return typeOf(name);
             } else {
+                if (name == "*") {
+                    assert(children.size() == 2);
+                    if (children[0]->getType() == "mat4" &&
+                        children[1]->getType() == "vec4"
+                    ) {
+                        return "vec4";
+                    }                    
+                }
                 return "<unknown>";
             }
         }
 
+        static string paren(const string& str) {
+            return "(" + str + ")";
+        }
+
         string evaluate() const {
-            return name;
+            if (isFunction(name)) {
+                return name + "()";
+            } else {
+                if (name == "*") {
+                    assert(children.size() == 2);
+                    NodePtr lhs(children[0]);
+                    NodePtr rhs(children[1]);
+                    return paren(lhs->evaluate()) + " " + name + " " +
+                           paren(rhs->evaluate());
+                } else {
+                    return name;
+                }
+            }
         }
 
         static Type typeOf(const string& name) {
             if (isInteger(name)) return "int";
+            if (isFloat(name))   return "float";
             if (isBuiltIn(name)) return getBuiltInType(name);
             return "";
         }
@@ -87,9 +120,34 @@ namespace ren {
             return true;
         }
 
+        static bool isFloat(const string& name) {
+            bool has_period = false;
+            for (size_t i = 0; i < name.size(); ++i) {
+                if (name[i] == '.') {
+                    if (has_period) {
+                        return false;
+                    }
+                    has_period = true;
+                } else if (!isdigit(name[i])) {
+                    return false;
+                }
+            }
+            return has_period;
+            
+        }
+
         static bool isBuiltIn(const string& name) {
             for (size_t i = 0; i < ARRAY_SIZE(builtIns); ++i) {
                 if (builtIns[i].name == name) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        static bool isFunction(const string& name) {
+            for (size_t i = 0; i < ARRAY_SIZE(builtIns); ++i) {
+                if (builtIns[i].name == name && builtIns[i].function) {
                     return true;
                 }
             }

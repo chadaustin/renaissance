@@ -60,7 +60,8 @@ namespace ren {
         DefinitionPtr gl_Position = program->getDefinition("gl_Position");
         if (gl_Position) {
             if (gl_Position->type != "vec4") {
-                std::cout << "gl_Position must have type vec4." << std::endl;
+                std::cout << "gl_Position must have type vec4.  It has type: "
+                          << gl_Position->type << std::endl;
                 return FAILURE;
             }
             if (gl_Position->arguments.size() != 0) {

@@ -9,16 +9,16 @@ tests = {
 
     
     'basic.rs': { 'lexer':     """\
-gl_Position = gl_ModelViewProjection * gl_Vertex
+gl_Position = ftransform
 """,
                   
                   'parser':    """\
- ( = gl_Position ( * gl_ModelViewProjection gl_Vertex ) )
+ ( = gl_Position ftransform )
 """,
                   
                   'validator': """\
 Function: gl_Position
-  Expression: (* gl_ModelViewProjection gl_Vertex)
+  Expression: ftransform
 """ },
 
     
