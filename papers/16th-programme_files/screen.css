@@ -1,0 +1,297 @@
+/* Screen stylesheet for www.ppig.org
+
+   - This is the only stylsheet read by Netscape 4.*
+   - Uppercase used for HTML tags - lowercase for classes
+   - All the point font sizes are over-written by pixel sizes in nn.css
+
+   Created by Paola Kathuria - Last update: 17 December 2002
+*/
+
+/* sets text colour to red as a way of finding out when something hasn't
+   been defined a style
+*/
+
+BODY {color: #FF0000;}
+
+/* Main text style according to enclosing tag - use the class "copy" to
+   apply this default text style to other elements such as cells.
+
+   10pt/13px is for a sans-serif typeface.  Use 12pt/16px for a serif
+   typeface.
+*/
+
+DL,UL,OL,P,BLOCKQUOTE,.copy {
+  font-family: Arial,Helvetica,sans-serif;
+  font-size: 10pt;       /* over-written by 13px in nn.ccs */
+  color: #000000;
+}
+
+/* sets the small text sizes and the footer - Verdana is the preferred
+   typeface as it's the only typeface where 11px bold looks different
+   to non-bold text
+*/
+
+.smallest,.small,.footer {
+  font-family: Verdana,Arial,Helvetica,sans-serif;
+  color: #000000;
+}
+
+.small {font-size: 9pt;}            /* over-written by 12px in nn.css */
+.smallest,.footer {font-size: 9pt;} /* over-written by 11px in nn.css */
+
+/* sets light grey colour to pages and a general class for creating
+   non-transparent table borders
+*/
+
+BODY,.bg {background: #E2E2E2;}
+
+/* brown colour used for home page and the main navigation panel */
+
+.buttons {background: #C3AB98;}
+
+/* heading styles */
+
+H1,H2,H3,H4 {font-family: 'Trebuchet MS',Verdana,Arial,Helvetica,sans-serif;}
+
+H1 {color: #000000; font-size: 16pt;}
+H2 {color: #333333; font-size: 14pt;}
+H3 {color: #333333; font-size: 12pt;}
+H4 {color: #4C4C4C; font-size: 10pt;}
+
+H2.abou,H2.news,H2.work,H2.reso,H2.cont {
+  color: #000000;
+  font-weight: 500;
+}
+
+.aboubg,H2.abou {background: #ACCCDC}
+.newsbg,H2.news {background: #A6D8CE}
+.workbg,H2.work {background: #ACDCB4}
+.resobg,H2.reso {background: #DCDCAC}
+.contbg,H2.cont {background: #E2BEBB}
+
+/* generic heading colour to apply to other elements */
+
+.head {color: #333333;}
+
+
+/* sets the new link and visited link colours - don't set a general A:active
+   or A:hover colour as this will affect <A NAME=""> targets too! (at least
+   in Mozilla)
+*/
+
+A:link    {color: #0033FF}
+A:visited {color: #660066;}
+
+/* non-underlined (nul) versions of links */
+
+A.more,A.nul,A.pnul,A.abounul,A.newsnul,A.worknul,A.resonul,A.contnul {text-decoration: none;}
+
+/* section links mostly used in the main nav and breadcrumbs */
+
+A.abounul {color: #2F5A6F}
+A.newsnul {color: #245B52}
+A.worknul {color: #2A6535}
+A.resonul {color: #575733}
+A.contnul {color: #6D3531}
+
+/* non-underlined links look like normal links on hover (blue + underlined) */
+
+A.more:hover,A.nul:hover,A.pnul:hover,A.abounul:hover,A.newsnul:hover,A.worknul:hover,A.resonul:hover,A.contnul:hover  {
+  color: #0000FF;
+  text-decoration: underline;
+}
+
+/* non-underlined links become more link-like when activated */
+
+A.more:active,A.nul:active,A.pnul:active,A.abounul:active,A.newsnul:active,A.worknul:active,A.resonul:active,A.contnul:active  {
+  text-decoration: underline;
+  color: #9900CC;
+}
+
+/* headl[1-2] are used exclusively for styling the site name in the style:
+   Psychology  of  Programming
+   I N T E R E S T   G R O U P 
+   Not everyone will have the first choice typeface but it doesn't matter
+   if the second line is shorter/longer as a result
+*/
+
+.headl1,.headl2 {
+  font-family: 'Trebuchet MS',Verdana,Arial,Helvetica,sans-serif;
+  color: #000000
+}
+.headl1 {font-size: 17pt}
+.headl2 {
+  font-size: 10pt;
+  text-transform: uppercase;
+  letter-spacing: 11.3pt
+}
+
+/* breadcrumb styles */
+
+DIV.context {
+  font-family: Verdana,Arial,Helvetica,sans-serif;
+  font-size: 9pt;
+  color: #999999;
+}
+
+/* current page at the end of the breadcrumbs list */
+
+B.context {color: #666666}
+
+.black,PRE        {color: #000000}
+.white            {color: #FFFFFF}
+
+/* the bordered news panel on the home page and site.html */
+
+TD.panel {
+  border-color: #67B2D0;
+  background: #E3D8CE;
+  border-width: 2px;
+  border-style: groove;
+  -moz-border-radius: 5%;   /* mozilla-specific based on CSS3 proposal */
+}
+
+/* the bordered "See also" panel for links to sibling/child pages */
+
+TD.seealso {
+  border-color: #999999;
+  background: #E3D8CE;
+  border-width: 1px;
+  border-style: dotted;
+  -moz-border-radius: 5%;  /* mozilla-specific based on CSS3 proposal */
+}
+
+/* the bordered "Contents" panel listing H2 links on a page */
+
+TD.contents {
+  border-color: #999999;
+  background: #DADADA;
+  border-width: 1px;
+  border-style: dotted;
+  -moz-border-radius: 5%;  /* mozilla-specific based on CSS3 proposal */
+}
+
+/* styles the more... link text */
+
+.more {
+  font-style: italic;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+}
+
+/* a general style to keep things from separating - it is mostly used
+   to keep the off-site icon next to the link text
+*/
+
+.nowrap           {white-space: nowrap}
+
+/* Must be used in IMG tags when a cell only contains an image -
+   Mozilla adds a blank line of padding after images otherwise
+*/
+
+IMG.b {display: block;}
+
+IMG {line-height: normal;}
+
+/* page footer */
+
+.footer {color: #666666;}
+
+TT {
+  font-family: monospace;
+  color: #333333;
+  font-size: 90%;
+}
+
+SUP {
+  line-height: 1em;
+  vertical-align: super;
+  font-family: 'Arial Narrow',Arial,Helvetica,sans-serif;
+}
+
+/* actual section colours - not used by anything (yet) */
+
+.sabou {color: #76ABC1}
+.snews {color: #76C1B2}
+.swork {color: #76C17F}
+.sreso {color: #ABA776}
+.scont {color: #C17A76}
+
+IMG.top {vertical-align: text-top;}
+IMG.off {vertical-align: middle;}
+
+/* used on souvenirs pages - to format the first letter (fl) of each
+   paragraph - must be enclosed in <p class="lhn"> paragraphs
+*/
+
+.fl {
+  font-family: 'Trebuchet MS',Arial,Helvetica,sans-serif;
+  font-size: 300%;
+  color: #2A6535;
+}
+
+/* Workshop pages styles:
+   wlinks: links to workshop pages
+   wtitle: H2 style for workshop index
+   wdate:  date of workshop
+   wloc:  location of workshop
+   wtheme: theme of workshop
+
+   wdoc: page name (e.g., Programme)
+   wname: workshop name (e.g., 14th Annual Workshop)
+   wtopic: topic name for a workshop session
+   wchair: name of chair for workshop session
+
+   wpaper: paper title
+   wauthor: names of paper authors
+   worg: organisation of paper author
+*/
+
+.wlinks,.wdate,.wtheme,.wpaper {font-size: 9pt;}
+
+.wtheme {font-style: italic;}
+.wlinks {white-space: nowrap;}
+.wloc {font-style: normal;} /* placeholder as no specific style */
+.wname {font-weight: bold;}
+.wtitle {vertical-align: bottom;}
+.wdoc {font-style: italic;}
+
+.wpaper {font-weight: bold;}
+.wauthor,.refauthor {font-style: normal;} /* placeholder as no specific style */
+.worg,.reforg {font-style: italic;}
+
+/* bordered header at the top of workshop-specific pages */
+
+.whead {
+  border-width: 0px 0px 1px 0px;
+  border-color: #76C17F;
+  border-style: dashed;
+}
+
+/* list of papers in workshop programmes */
+
+OL.wlist {list-style-type: decimal;}
+
+.wtopic {
+  border-width: 0px 0px 1px 0px;
+  border-color: #76C17F;
+  border-style: dotted;
+}
+
+.wchair {
+  font-style: italic;
+  font-weight: normal;
+  font-size: smaller;
+  color: #505050;
+}
+
+/* an attempt at general styles for references - not used in
+   workshop programmes
+   reftitle: reference title (paper or book)
+   refauthor: authors
+   refsource: source (journal, conference proceedings, book)
+   reforg: authors' organisation
+*/
+
+.reftitle  {font-weight: bold;}
+.refsource {font-style: italic;}

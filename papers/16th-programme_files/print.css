@@ -1,0 +1,78 @@
+/* Screen stylesheet for www.ppig.org
+   - The main purpose:
+     + set point sizes for text styles
+     + set default serif typeface on white background
+     + set the hide style so that navigation, etc, isn't printed
+
+   - This is ignored by Netscape 4.*
+   - Uppercase used for HTML tags - lowercase for classes
+
+   Created by Paola Kathuria - Last update: 17 December 2002
+*/
+
+/* sets white background, black text and serif type face as a default */
+
+BODY {
+  background: #FFFFFF !important;
+  color: #000000;
+  font-family: 'Times New Roman',Times,serif;
+  font-size: 12pt !important;
+  line-height: 115%;
+}
+
+/* apply the hide class to elements which don't need to appear on printouts */
+
+.hide  {display: none}
+
+/* printed pages don't include the breadcrumbs */
+
+.context {display: none}
+
+/* don't underline any links */
+
+A {text-decoration: none}
+
+.small,PRE,.footer {font-size: 9pt}
+
+SUP,.smallest,.context {font-size: 8pt}
+
+/* For Mozilla, which doesn't float IMG/TABLE with just an align tag */
+
+.right {float: right}
+.left  {float: left}
+
+.headl1,.headl2 {font-family: 'Trebuchet MS',Verdana,Arial,Helvetica,sans-serif;}
+.headl1 {font-size: 17pt}
+.headl2 {font-size: 10pt; text-transform: uppercase; letter-spacing: 11.3pt}
+
+H1 {font-size: 17pt;}
+H2 {font-size: 14pt; background: #FFFFFF;} /* no background colours */
+H3 {font-size: 11pt;}
+
+/* I don't know whether screen.css still applies and so some styles
+   are repeated here
+*/
+
+.panel {
+  border-width: 2px;
+  border-color: #666666;
+  background: #E5E5E5;
+  border-style: solid;
+}
+
+.more {
+  font-style: italic;
+  font-weight: bold;
+}
+
+.nowrap {white-space: nowrap}
+
+IMG.b {display: block;}
+
+.smallest,.small,.footer,.context, {
+  font-family: Verdana,Arial,Helvetica,sans-serif !important;
+}
+
+H1,H2,H3,H4 {
+  font-family: 'Trebuchet MS',Verdana,Arial,Helvetica,sans-serif;
+}

@@ -1,0 +1,690 @@
+<html><head><!--     
+   - The last paragraph of Acknowledgments is gibberish. We either need     
+     to get a better version from the authors, or correct it from the hardcopy.     
+-->     
+<title>DISPLAY NAVIGATION BY AN EXPERT PROGRAMMER: A PRELIMINARY MODEL OF MEMORY</title></head>     
+     
+<body>
+
+<img border="0" align="middle" src="p3-altmann_files/ban1-chi.htm" height="50" width="250" alt="CHI '95 Proceedings"><a href="http://delivery.acm.org/10.1145/230000/top.html"><img border="0" align="middle" src="p3-altmann_files/ban1-top.htm" height="50" width="100" alt="Top"></a><a href="http://delivery.acm.org/10.1145/230000/indx.html"><img border="0" align="middle" src="p3-altmann_files/ban1-ind.htm" height="50" width="100" alt="Indexes"></a>
+<br>
+<img border="0" align="middle" src="p3-altmann_files/ban2-ven.htm" height="50" width="250" alt="Papers"><a href="http://delivery.acm.org/10.1145/230000/223905/toc.html"><img border="0" align="middle" src="p3-altmann_files/ban2-toc.htm" height="50" width="100" alt="TOC"></a><img border="0" align="middle" src="p3-altmann_files/ban2-nil.htm" height="50" width="100" alt="">
+<br>
+ 
+
+    
+<h1>Display Navigation By An Expert Programmer:     
+A Preliminary Model Of Memory </h1>     
+<em>Erik Altmann, Jill H. Larkin,  and Bonnie E. John </em>     
+<p><br>Computer Science     
+<br>Carnegie Mellon University     
+<br>412-268-5728     
+<br>altmann@cs.cmu.edu     
+</p><p><br>Psychology     
+<br>Carnegie Mellon University     
+<br>412-268-3785     
+<br>jhl@cs.cmu.edu     
+</p><p><br>Computer Science, Psychology, and HCI Institute     
+<br>Carnegie Mellon University     
+<br>412-268-7182     
+<br>bej@cs.cmu.edu     
+
+</p><p>
+<a href="http://delivery.acm.org/10.1145/ACMcopyright.html">© ACM</a>
+</p><p>
+
+<a name="pprintro"></a></p><h2><a name="pprintro">Abstract</a></h2><a name="pprintro">      
+Skilled programmers, working on natural tasks, navigate     
+large information displays with apparent ease.  We present a     
+computational cognitive model suggesting how this navigation may     
+be achieved.  We trace the model on two related episodes of     
+behavior.  In the first, the user acquires information from the     
+display.  In the second, she recalls something about the first     
+display and scrolls back to it.  The episodes are separated by     
+time and by intervening displays, suggesting that her navigation     
+is mediated by long-term memory, as well as working memory and the     
+display.  In the first episode, the model automatically learns to     
+recognize what it sees on the display.  In the second episode, a     
+chain of recollections, cued initially by the new display, leads     
+the model to imagine what it might have seen earlier.  The     
+knowledge from the first episode recognizes this image, leading     
+the model to scroll in search of the real thing.  This model is a     
+step in developing a psychology of skilled programmers working on     
+ their own tasks.     
+</a><h2><a name="pprintro">Keywords:</a></h2><a name="pprintro">  Psychology of programming, user models, expert     
+programmers, display navigation, program comprehension, memory,     
+learning, Soar.     
+</a><p><a name="pprintro">     
+
+</a></p><h2><a name="pprintro">Introduction</a></h2><a name="pprintro">     
+</a><p><a name="pprintro">Skilled programmers in natural task environments navigate large     
+volumes of information, including code and streams of output from     
+the programs they use.  As we discuss, this navigation ability     
+requires a programmer to encode (learn) knowledge specific to the     
+situation.  For example, a programmer would learn that some      
+important information once appeared on the computer screen but is     
+now hidden.     
+</a></p><p><a name="pprintro">We observed a skilled programmer stepping interactively through a     
+program trying to comprehend it in detail before changing it.     
+Here we examine two related episodes of behavior from this     
+session.  In the first, she attends to a feature on the display.     
+In the second, she is reminded of this feature.  Though it has     
+long since disappeared from view, she finds it readily, by     
+scrolling the buffer she is working in.     
+</a></p><p><a name="pprintro">Behavior of this kind raises the following questions:  What kinds     
+of memory for the display do programmers encode?  How does a     
+programmer gain access to such memories, and how do they lead to     
+navigation?  We discuss a cognitive computational model with     
+knowledge and mechanisms that could account for such behavior.     
+</a></p><p><a name="pprintro">This work is a step in developing a psychology of skilled     
+programmers working on their own tasks.  In particular, we address     
+the encoding of situation knowledge and its use in navigation.     
+Ultimately, a detailed understanding of such mechanisms could     
+speak to the design of environments and languages for efficient     
+expert use.     
+</a></p><h3><a name="pprintro">Task and Data</a></h3><a name="pprintro">     
+</a><p><a name="pprintro">The programming session we observed was part of an ongoing effort     
+to create a natural-language comprehension program using Soar, a     
+production-based cognitive-modeling architecture [12].  The task     
+the programmer set herself for this session was to comprehend and     
+modify a part of this program originally written by a colleague.     
+</a></p><p><a name="pprintro">The programmer displayed and edited code files, and ran her     
+program interpretively in a GNU Emacs process buffer.  During most     
+of the session she stepped through the program slowly, issuing     
+commands to display program state.  The interpreter output,     
+including long traces, appeared at the bottom of the process     
+buffer, with Emacs automatically scrolling the buffer when more     
+room was needed to display the output.     
+</a></p><p><a name="pprintro">We recorded a think-aloud protocol, and captured the display and     
+the user's gestures on video.  We instrumented Emacs to record a     
+timed keystroke protocol, the contents of the process buffer, and     
+code files examined and edited.     
+</a></p><h3><a name="pprintro">Global Observations</a></h3><a name="pprintro">     
+</a><p><a name="pprintro">To return to previously-displayed information, the programmer used     
+scrolling and string searching, with scrolling predominant.  We     
+define a scrolling sequence as consecutive, same-direction     
+scrolling commands.  The user issued 26 such sequences in the     
+81-minute session, or roughly one sequence every 3 minutes.  In     
+total she scrolled 2482 lines of text through her 60-line window,     
+or roughly 41 pages.  Figure 1 shows the distribution by sequence     
+length.  Most sequences (14) covered only one page, and the     
+longest sequence covered only 6 pages.  This pattern has the skew     
+one would expect, with no extremely long sequences biasing the     
+overall count.     
+     
+</a></p><p><a name="pprintro">  
+<img src="p3-altmann_files/ea_fg1.gif">  
+</a></p><p><a name="pprintro">  
+<strong>FIGURE 1. Scrolling sequences, by sequence length.</strong>      
+     
+</a></p><p><a name="pprintro">Scrolling relied heavily on long-term memory.  In two-thirds of     
+the sequences (17 out of 26), the target information had not been     
+on the display in the past minute.  There is little chance in     
+these cases that working memory or any visual scratchpads could     
+account for the user's memory of what she was looking for.     
+</a></p><p><a name="pprintro">String searching was used only three times.  One instance     
+succeeded, with roughly 2 pages between start position and target.     
+The two other instances failed, with the string not found.  Both     
+times the user then tried scrolling; both scrolling sequences also     
+failed, one after 3 pages and the other after 6 pages.  While the     
+very limited use of methods may seem surprising, it is consistent     
+with a finding that experienced users use small subsets of the     
+commands available to them in an editor, ignoring even important     
+cursor-movement commands [14].     
+</a></p><p><a name="pprintro">These data suggest that scrolling in particular and navigation in     
+general are common during real programming.  Understanding the     
+underlying mental processes could have practical importance for     
+the design of navigation support.     
+</a></p><h3><a name="pprintro">An Example of Navigation</a></h3><a name="pprintro">     
+</a><p><a name="pprintro">From our data we chose two related episodes, introduced in Figure     
+2. The display areas examined by the user are on the left, the     
+user's utterances are on the right, and the time course for the     
+utterances runs down the center.  The task-specific references in     
+the utterances will be defined later, as needed.     
+     
+</a></p><p><a href="http://delivery.acm.org/10.1145/230000/223905/ea_fg2.gif"><b>FIGURE 2.</b></a>     
+<strong>Sample navigation: Scrolling from memory.</strong>      
+     
+</p><p>In E1, the user is looking at a chunk, or production.  She     
+expresses a lack of knowledge about its tests, or conditions     
+(t18).  She examines them, then notes an operator test (t21).     
+Later, in E2, she recalls something about an operator test (t400).     
+This prompts her to scroll back to the screen from E1.     
+</p><p>The two episodes are 6 minutes apart, in which time the user     
+issued 2 other scrolling sequences and 28 commands to the Soar     
+interpreter.  The output from these commands added 3 new pages to     
+the bottom of the process buffer.  Thus there is enough     
+separation, in terms of time, tasks, and display changes, to     
+indicate that the user's knowledge of the E1 display is encoded in     
+her long-term memory.     
+</p><p>The goal of this paper, and of the model we describe next, is to     
+explain how this memory was encoded, what it represents, and how     
+it was activated.     
+     
+</p><h2>A COGNITIVE COMPUTATIONAL MODEL</h2>     
+<p>Our model has three components that combine to produce an     
+explanation of the behavior in the example above:  knowledge, an     
+encoding mechanism provided by an underlying cognitive     
+architecture, and mechanisms for memory retrieval.  Knowledge is     
+the primary ingredient in most performance models of human     
+behavior in HCI.  The encoding mechanism automatically encodes     
+information about the programming session into long-term memory,     
+accounting for the memory implied by our user's behavior.     
+Retrieval mechanisms on top of the architecture produce the     
+effortful retrieval process that accounts for her navigation.     
+</p><h3>Knowledge</h3>     
+<p>Our model has access to three distinct kinds of knowledge:     
+expert, external, and situation.  Expert knowledge is what we     
+would expect a skilled programmer to bring to a programming task.     
+This comprises knowledge about the particular program to be     
+modified, including specific data structures and functions;     
+knowledge about the implementation language, including its central     
+concepts and idioms; and knowledge of computer science     
+fundamentals, like data structures and algorithms.  Such knowledge     
+is typically found in expert systems and other symbolic AI     
+programs.  Expertise also includes knowledge of the programming     
+environment, including procedures for navigation.  This is the     
+kind of expertise represented in the operators, methods, and     
+selection rules of GOMS models [3].     
+</p><p>Our model has expert knowledge about objects and their relations.     
+Figure 3 shows the hierarchy.  Some of this knowledge is specific     
+to the user's program, and some of it is general to the language     
+the program is implemented in (Soar).  The model also has     
+expertise about scrollable buffers; specifically, that if     
+something was once on the screen but isn't now, scrolling through     
+previous pages will bring it back into view.     
+</p><p>  
+<img src="p3-altmann_files/ea_fg3.gif">  
+</p><p>  
+<strong> FIGURE 3. Objects and relations in the user's program.</strong>      
+</p><p>  
+External knowledge rests in the display, coordinating with     
+internal knowledge to extend a problem-solver's effective memory     
+[4, 5, 9, 10].  It has an immediately-available component, which     
+is visible.  It also has a hidden component, which can be made     
+accessible by navigation.  Computational models that address the     
+display as external knowledge often treat only the     
+immediately-available component(e.g., [1, 5, 8]).     
+</p><p>Situation knowledge describes a particular session with the     
+interpreter.  For example, our user's navigation behavior shows     
+that she knows she has seen something earlier in the session, and     
+also that she has some idea of what objects she tried to     
+comprehend earlier in the session.  Situation knowledge is an     
+important driver of navigation through her process buffer, because     
+navigation is often in pursuit of something she has seen before.     
+Since this information only arises in the course of a session, for     
+it to influence behavior it must be learned on the fly.  Although     
+HCI has investigated the acquisition of expert procedural     
+knowledge (e.g., [6, 15, 16, 18]), this encoding and retrieval of     
+situation knowledge has not yet appeared in many user modeling     
+efforts.     
+</p><h3>Encoding Situation Knowledge</h3>     
+<p>Our programmer seems to put little effort into encoding situation     
+knowledge.  It could be that she somehow keeps all such knowledge     
+in working memory for a long time while juggling other tasks, but     
+this is not cognitively plausible.  An alternative is to posit a     
+limited working memory, dictating that the programmer must     
+externalize situation knowledge onto paper or the display [4, 5,     
+17].  However, there is no evidence that our programmer     
+externalizes knowledge.  The remaining alternative is that some     
+process encodes situation knowledge into long-term memory (LTM)     
+automatically, without any effort that would surface in a verbal     
+protocol.     
+</p><p>To get this kind of automatic encoding in our model, we have     
+adopted Soar [12] as the underlying cognitive architecture.  This     
+gives us integrated learning and performance.  It also affords the     
+opportunity to connect to other relevant Soar models; such     
+connections have led to improved and integrated coverage of     
+complex user data [11].     
+</p><p>As it functions in our model, Soar proceeds by trying to     
+comprehend program objects, one at a time.  For brevity, we refer     
+to the object being comprehended as the goal.  Soar tries to     
+comprehend the goal by generating knowledge, either by retrieving     
+knowledge from its own LTM, or by consulting external memory, or     
+by some combination.  This generated knowledge accumulates in     
+working memory (WM), an ephemeral store created anew for each     
+goal.     
+</p><p>As a side-effect of generating new knowledge, Soar encodes a new     
+rule in LTM, to avoid having to generate this knowledge again.     
+This rule transforms existing knowledge (its conditions) into new     
+knowledge (its actions).  The situation rule can only activate     
+when the existing knowledge is present in WM.  Situation rules can     
+be sensitive to both display features and goals.  Display     
+conditions arise when the model looks to the display for new     
+knowledge.  Goal conditions arise because the object being     
+comprehended typically helps determine what new knowledge is     
+relevant.     
+</p><p>Situation rules depend on highly-specific WM contents.  To make     
+use of these rules requires mechanisms, on top of the     
+architecture, that try to activate rules by intelligently     
+generating WM contents.     
+</p><h3>Retrieving Situation Knowledge</h3>     
+<p>With Soar as the underlying architecture, the model automatically     
+learns rules that recognize specific situations.  But how can we     
+get the model to recall something later when the goal or the     
+display has changed?  Just as with people, recall is more     
+difficult than recognition, and our model must use a more complex     
+mechanism.     
+</p><p>The model has to search LTM intelligently, or it will never     
+activate anything.  We refer to this guided search as probing.  At     
+a high level, probing is similar to Rist's cue-based memory search     
+[17].  It also corresponds closely to the mechanistic aspects of     
+the Model Human Processor's long-term memory [3].     
+</p><p>Probing generates two kinds of cues:  semantic and image.  These     
+correspond to the two kinds of conditions in situation rules:     
+goals and display features.  Semantic cues are objects that the     
+model may have tried to comprehend during the programming session,     
+and so might know something about.  Image cues are objects that     
+the model may have seen on the display.  Probing generates these     
+cues by drawing upon expert knowledge about what cues may be     
+useful.     
+</p><p>In principle, probing can activate any of the model's knowledge,     
+both expert and situation.  The extent to which it does in     
+practice depends on its success at generating cues.  With respect     
+to Figure 3, the more objects and relations the model has access     
+to, the better it will be able to search its LTM.  Thus as a     
+general problem-solving mechanism, probing has the important     
+property that it can transform additional expertise into better     
+performance.     
+</p><p>The components of our model are knowledge (expert, external, and     
+situation), automatic encoding (to learn situation knowledge), and     
+probing (to activate knowledge).  They combine to produce the     
+behavior of our expert programmer, as we describe in the next     
+section.     
+     
+</p><h2>TRACING THE MODEL ON OUR EXAMPLE</h2>     
+<p>Below we discuss our model in detail as it emulates the behavior     
+in our navigation example.  The first three columns of Figure 4     
+replicate the display, time course, and utterances from Figure 2.     
+The right column is new, and shows a trace of the model's rules     
+that follow the programmer's behavior.  The dashed lines make     
+connections where display features and utterances are explicit     
+evidence for the model's knowledge.     
+</p><h3> Episode E1: Learning Situation Knowledge</h3>     
+<p>The programmer's high-level task for this session is to modify the     
+program so it will learn slightly different natural-language     
+comprehension rules than it currently learns.  Therefore, she     
+wants to understand what the program currently learns (the chunks     
+it builds) before she modifies the code.  Just before E1, she     
+printed out the chunk shown in the upper left of Figure 4, to try     
+to comprehend it.  During E1 she phrases a question about "it",     
+specifically about what "it's testing" (t17-18).  She pauses,     
+searching for tests on the display, then determines that the chunk     
+tests an "operator" (t21).     
+</p><p><i>Setting a goal.</i>  The model, reflecting what the user has attended     
+to at this point, has a chunk represented in WM.  From expert     
+knowledge about Soar, the model knows that chunks are important to     
+comprehend.  It also knows that chunks have tests, and that tests     
+have an important functional role within a chunk.  It therefore     
+sets a goal to understand chunk tests.     
+     
+</p><pre>        Expert rule (Soar knowledge):     
+         1.1 if WM says that a chunk exists, but     
+               says nothing about its tests,     
+             set a goal to comprehend chunk tests.     
+</pre>     
+     
+<p><i>Learning situation knowledge about the goal.</i>  The first thing the     
+model does when it sets a new goal is encode into LTM that it has     
+indeed set that goal during this session.  This is a mechanism     
+that supports probing.  If the model sets the same goal in the     
+future, the rule will fire as a hint to the model that it might     
+already know something about this goal, from a previous time.     
+     
+</p><pre>         Learned situation rule:     
+         1.2 if the goal is to comprehend tests,     
+             add to WM that this goal was set before.     
+</pre>     
+     
+<p><i>Attending to the display.</i>  Trying to comprehend chunk tests, the     
+model looks at the display.  Whether a chunk contains an operator     
+test is critical to understanding its high-level functionality.     
+Operator tests are therefore important to look for when trying to     
+comprehend a chunk's tests.     
+</p><p>For the model, the string ^operator, underlined on the upper left     
+of Figure 4, is the beacon [2, 17, 19] for the existence of an     
+operator test.  No matter what other details of a specific     
+operator appear in a chunk test, the chunk will contain the beacon     
+if and only if the chunk tests an operator.  This beacon knowledge     
+represents expertise about the language.     
+     
+</p><pre>         Expert rule (Soar knowledge):     
+         1.3 if the goal is to comprehend chunk tests,     
+               and we see an operator test,     
+             add to WM what that we see an operator test.     
+</pre>     
+     
+<p><i>Learning situation knowledge about the display.</i>  The operator test     
+is new knowledge about the chunk's tests.  The model captures this     
+knowledge by creating a new rule.  This rule will fire whenever     
+the goal is to comprehend a chunk and when working memory contains     
+an operator test.  The rule firing will remind the model that it     
+saw an operator test on the display.     
+     
+</p><pre>         Learned situation rule:     
+         1.4 if the goal is to comprehend chunk tests,     
+               and WM contains an operator test,     
+             add to WM that we saw it on the display.     
+</pre>     
+     
+<p><i>Implications of this Learning.</i>  The model learned two pieces of     
+situation knowledge during this episode.  The first (1.2) is a     
+rule that will recognize a particular goal and note in WM that it     
+has been set some time during this session.  The second (1.4) is a     
+rule that will recognize when WM contains an operator test, in the     
+context of a goal to comprehend chunk tests, and note in WM that     
+it has seen an operator test in a chunk before.     
+</p><p>What the model did not learn from this episode was anything beyond     
+the feature it attended to.  For example, the model encoded     
+neither the s-constructor16 test nor the s-constructor test,     
+despite their proximity to the operator test.  This     
+narrowly-focussed encoding will become important in the retrieval     
+episode, described next.     
+     
+</p><h3>Episode E2: Retrieving Situation Knowledge</h3>     
+<p>Just prior to E2, the programmer printed out a program object     
+(o29) that she now wishes to comprehend.  As E2 begins, she sees     
+new-operator o24.  She then attends to s-constructor16 (t382),     
+following the shared identifier o24.  Pausing, she says "eeuuu     
+rats" (t388) and articulates an insight about "those chunks"     
+(t397).  She thinks they may contain operator tests.  To confirm     
+this hypothesis, she scrolls back (t399-407) to the display from     
+E1, which showed a chunk and its tests.  She finds what she is     
+looking for, identifying a chunk test for s-constructor16.     
+</p><p><i>Probing with an operator.</i>  The trace begins after the model has     
+attended to everything immediately connected to the just-printed     
+object.  The model also followed the link from new-operator o24 to     
+o24 s-constructor16.  There is nothing else relevant to look at on     
+the display, so the model begins to probe.     
+</p><p>The model uses several kinds of expert knowledge to generate     
+probes.  One kind is related to the knowledge that guided rule 1.3     
+to attend to an operator test.  The model knows that operators are     
+both ubiquitous and one of the main functional units in the     
+language.  The probing mechanism guesses that any operator will     
+inform any context in which it appears.  If any operator appears     
+in WM, the probing mechanism converts it into a semantic cue.     
+Thus the probing mechanism draws on familiarity with what objects     
+are common and important in the language.  The first probe it     
+generates is s-constructor16.     
+     
+</p><pre>         Probe rule:     
+         2.1 if WM contains an operator (s-constructor16),     
+               and we lack more urgent thoughts,     
+             probe to see what we know about it.     
+</pre>     
+     
+<p><a href="http://delivery.acm.org/10.1145/230000/223905/ea_fg4.gif"><b>FIGURE 4.</b></a>     
+<strong>Learning and activating situation rules for scrolling.     
+Dashed lines make connections where display features and utterances     
+are explicit evidence for the model's knowledge.  Boldface indicates     
+learned rules.</strong>      
+     
+</p><p><i>Retrieval in response to a probe.</i>  While operators are central to     
+the Soar language, the s-constructor is central to this program.     
+It is an abstract functional class, representing the collection of     
+specific tokens like s-constructor16.  An expert rule fires     
+putting information about the abstract class into WM.     
+     
+</p><pre>         Expert rule (program knowledge):     
+         2.2 if probed with s-constructor16,     
+             add to WM that its class is s-constructor.     
+</pre>     
+     
+<p>In general, any number of rules like this can fire in parallel in     
+response to a probe.  Thus different pieces of information about     
+s-constructor16 could appear at this point in the trace.  For     
+example, had the model attended to the name of the operator in E1     
+(which was s-constructor16), it would have encoded situation     
+knowledge about s-constructor16 that might have fired at this     
+point.  However, the model learned only about the operator test     
+during E1, thus has no situation knowledge about s-constructor16.     
+This means it must try again to trigger its memory, by generating     
+another cue.     
+</p><p><i>Probing with a class.</i>  Expert knowledge of the language tells the     
+model that information about a class could be relevant to tokens     
+of that class.  Therefore the model uses s-constructor as a cue.     
+     
+</p><pre>         Probe rule:     
+         2.3 if WM contains a class (s-constructor),     
+               and we lack more urgent thoughts,     
+             probe to see what we know about it.     
+</pre>     
+     
+<p>This probe retrieves an association between s-constructor and     
+chunks.  All s-constructor operators build chunks; this is expert     
+knowledge about the program.     
+     
+</p><pre>         Expert rule (program knowledge):     
+         2.4 if probed with s-constructor,     
+             add to WM that it builds a chunk.     
+</pre>     
+     
+<p><i>Setting a goal.</i>  The model has recalled something about a chunk.     
+This creates a similar WM context as in E1, after the model had     
+attended to the chunk on the display.  The same knowledge that     
+applied there also applies here.     
+     
+</p><pre>         Expert rule (Soar knowledge):     
+         1.1 if WM says that a chunk exists, but     
+               says nothing about its tests,     
+             set a goal to comprehend chunk tests.     
+</pre>     
+     
+<p><i>Situation knowledge applied to probing.</i>  Now that a goal to     
+comprehend chunks is in WM, the situation rule learned in E1     
+fires.  It reminds the model that this goal has been set     
+previously in this session.     
+     
+</p><pre>         Activated situation rule:     
+         1.2 if the goal is to comprehend chunk tests,     
+             add to WM that this goal was set before.     
+</pre>     
+     
+<p>The probing mechanism knows that a previously-set goal is a good     
+candidate for a semantic cue.  This is the most general heuristic     
+that the probing mechanism has for generating cues.  It applies     
+automatically, in the sense that the model learns to recognize     
+every new goal, and every recognized goal becomes a probe.     
+Probing with the goal when it was previously set allows the model     
+to accumulate knowledge about it in increments, in a pattern of     
+progressive deepening [7, 13].     
+     
+</p><pre>         Probe rule:     
+         2.5 if the goal was set before, and     
+               we lack more urgent thoughts,     
+             probe with the goal (to comprehend chunk tests).     
+</pre>     
+     
+<p>In this case, probing with the current goal retrieves nothing.     
+The situation knowledge encoded in rule 1.4 requires both that an     
+operator test be in WM and that the goal be to comprehend chunk     
+tests.  This points to the crux of the problem with retrieving     
+situation knowledge.  The automatic encoding provided by the     
+underlying architecture produces knowledge that is so specific to     
+the situation that it cannot be evoked with just a partial match     
+to that situation.  In this case, both the chunk-tests goal and     
+the operator test must be present in WM for rule 1.4 to fire.     
+</p><p>The model can tell that the probe failed, because no additional     
+knowledge is retrieved.  However, it still has the information     
+that the current goal was selected earlier; the model must have     
+learned something then.  The question is how to evoke it.     
+</p><p>In E1, with the same goal as now, the model attended to an     
+operator test on the display (rule 1.3), because expert knowledge     
+about the language said this was a useful thing to do.  The     
+probing mechanism now uses the same knowledge here, to generate an     
+operator test as an image cue.  In this way the probing mechanism     
+is essentially imagining beacons.     
+     
+</p><pre>         Probe rule:     
+         2.6 if the goal was to comprehend chunk tests,     
+               and probing returned nothing,     
+               and we lack more urgent thoughts,     
+             imagine an operator test.     
+</pre>     
+     
+<p><i>Situation knowledge drives navigation.</i>  After the previous probe,     
+WM contains an operator test.  Rule 1.4 now fires, and the model     
+retrieves the fact that it saw an operator test on the display.     
+The protocol contains explicit evidence that the programmer is     
+thinking about an operator test (t400).     
+     
+</p><pre>         Activated situation rule:     
+         1.4 if the goal is to comprehend chunk tests,     
+               and WM contains an operator test,     
+             add to WM that we saw it on the display.     
+</pre>     
+     
+<p>Expert knowledge about the programming environment says that in a     
+process buffer, all user input and process output occurs at the     
+bottom.  To find a hidden feature, there is nowhere to look but     
+up, so the model scrolls up through previous pages.     
+     
+</p><pre>         Expert rule (programming environment):     
+         2.7 if we imagined something (operator test)     
+               and WM says we saw it on the display,     
+             scroll up to find it.     
+</pre>     
+     
+<p><i>Implications of this Retrieval.</i>  The programmer retrieves     
+information about a previous situation.  This raises a question:     
+Why does she need to navigate at all?  Couldn't she simply search     
+internally to evoke the right memory?     
+</p><p>The model suggests an explanation:  she didn't encode all the     
+details of the E1 display.  The model encoded only that it saw an     
+operator test.  Even though s-constructor16 was on the screen in     
+E1, and is on the screen during E2, and is even explicitly     
+referred to by the programmer during E2, there is no situation     
+knowledge that encodes s-constructor16 as a chunk test.  This is     
+consistent with the E1 protocol, in which the user says nothing     
+about s-constructor16 as she examines the chunk's tests.  Thus the     
+model suggests that her need to scroll to the E1 display arises     
+because she did not encode the information that would have     
+answered her hypothesis about chunk tests (t397-408).     
+</p><p>Similarly, the user refers to the class s-constructor during E2.     
+For the model, the presence of s-constructor in WM is again not     
+enough to retrieve any explicit memories from E1, because it was     
+not encoded in any situation knowledge.  With the chunk     
+redisplayed, however, the model can use its knowledge of the     
+language to follow the common symbol <o1> from the ^operator     
+beacon to its name (s-constructor16) and its knowledge of the     
+program to connect this to s-constructor.  Thus the model suggests     
+that she did not encode s-constructor, but that by looking once     
+again at the E1 display she can confirm that "those chunks ..     
+test for the s-constructor" (t397-408).     
+</o1></p><p>    
+<a name="pprmddle">    
+
+</a></p><h2><a name="pprmddle">DISCUSSION</a></h2><a name="pprmddle">     
+</a><p><a name="pprmddle">We have presented a model of how an experienced programmer may     
+manage the large amount of internal and external memory needed for     
+advanced programming.  The model demonstrates that what we have     
+termed situation knowledge mediates behavior that expertise,     
+external memory, and working memory cannot explain by themselves.     
+</a></p><p><a name="pprmddle">Specifically, the model provides hypotheses about how programmers     
+navigate to find hidden information.     
+</a></p><ul><a name="pprmddle">     
+<li>Situation knowledge, sensitive to both goal and display, is     
+encoded in LTM automatically as a byproduct of problem solving.     
+In our example, the model learns to recognize goals it set before     
+and display features to which it attended.     
+</li><li>Activating such memories requires recreating a WM context like     
+the one in which they were encoded.  When a memory was encoded in     
+a situation other than the current, this requires search to find     
+the right context.  This approach to memory management, with most     
+of the effort for retrieval occurring at retrieval time, has been     
+used in other models that learn and use recognition knowledge in     
+situated tasks [1, 6, 16, 18].     
+</li><li>Deliberate search of LTM (probing) is a fallback     
+problem-solving strategy.  Probing uses semantic cues to recreate     
+goal conditions and image cues to recreate display conditions.     
+Together these trigger memories of previous situations, which may     
+lead to navigation.     
+</li></a></ul><a name="pprmddle">     
+</a><p><a name="pprmddle">This work is a step in developing a psychology of natural     
+programming.  While our model is preliminary, our data are rich     
+and come from a skilled programmer working in her own environment     
+on her own difficult task.  They therefore have more ecological     
+validity than data from experiments where the environment is     
+restricted or unfamiliar, or where the task is set by the     
+experimenter and may be unnaturally easy.  Understanding the     
+cognition of programming, at the detailed level of a computational     
+model, could ultimately increase the effectiveness of programmers     
+through improved design of languages, programming environments,     
+and training.     
+     
+</a></p><h2><a name="pprmddle">Acknowledgments</a></h2><a name="pprmddle">     
+</a><p><a name="pprmddle">This work was supported in part by the Wright Laboratory,     
+Aeronautical Systems Center, Air Force Materiel Command, USAF, and     
+ARPA under grant number F33615-93-1-1330, in part by the Office of     
+Naval Research, Cognitive Science Program, Contract Number     
+N00014-89-J-1975N158, and in part by the Advanced Research     
+Projects Agency, DoD, monitored by the Office of Naval Research     
+under contract N00014-93-1-0934.  The views and conclusions     
+contained in this document are those of the authors and should not     
+be interpreted as representing the official policies or     
+endorsements, either expressed or implied, of Wright Laboratory,     
+the Advanced Research Projects Agency, the Office of Naval     
+Research, or the U S Government.  We would like to thank     
+Francesmary Modugno and Herber Simon for     
+helpful comments  on this  paper and the CHI reviewers for extensive     
+comments.     
+</a></p><p><a name="pprmddle">    
+</a><a name="pprrefs">     
+</a></p><p><a name="pprrefs">     
+
+</a></p><h2><a name="pprrefs">References</a></h2><a name="pprrefs">     
+</a><ol><li><a name="pprrefs">Bauer, M and John, B E. Modeling time-constrained learning in a     
+highly interactive task.  Human Factors in Computing Systems:     
+Proc.  CHI '95.  ACM, New York, 1995.     
+</a></li><li><a name="pprrefs">Brooks, R E. Towards a theory of the comprehension of computer     
+programs.  Internat.  J. Man-Machine Studies 18 (1983), 543-554.     
+</a></li><li><a name="pprrefs">Card, S K, Moran, T P, and Newell, A. The Psychology of     
+Human-Computer Interaction.  Erlbaum, Hillsdale NJ, 1983.     
+</a></li><li><a name="pprrefs">Davies, S P. Externalising information during coding     
+activities:  Effects of expertise, environment, and task.  Emp.     
+Studies of Programmers:  5th workshop.  Ablex, Norwood NJ, 1993.     
+42-61.     
+</a></li><li><a name="pprrefs">Green, T R G, Bellamy, R K E, Parker, J M. Parsing and gnisrap:     
+A model of device use.  Emp.  Studies of Programmers:  2nd     
+workshop.  Ablex, Norwood NJ, 1987.  132-146.     
+</a></li><li><a name="pprrefs">Howes, A. A model of the acquisition of menu knowledge by     
+exploration.  Human Factors in Computing Systems:  Proc.  CHI '94.     
+ACM, New York, 1994.  445-451.     
+</a></li><li><a name="pprrefs">Kant, E, and Newell A. Problem solving techniques for the     
+design of algorithms.  Information Processing &amp; Management 20, 1-2     
+(1984), 97-118.     
+</a></li><li><a name="pprrefs">Kitajima, M, and Polson, P G. A computational model of skilled     
+use of a graphical user interface.  Human Factors in Computing     
+Systems:  Proc.  CHI '92.  ACM, New York, 1992.  241-249.     
+</a></li><li><a name="pprrefs">Larkin, J H. Display-based problem solving.  In Complex     
+Information Processing:  The impact of Herbert A Simon, D Klahr     
+and K Kotovsky, Eds.  Erlbaum, Hillsdale NJ, 1989.  319-341.     
+</a></li><li><a name="pprrefs">Larkin, J H. and Simon, H A. Why a diagram is (sometimes)     
+worth ten thousand words.  Cognitive Science 11 (1987), 65-99.     
+</a></li><li><a name="pprrefs">Nelson, G, Lehman, J F, and John, B E. Integrating cognitive     
+capabilities in a real-time task.  Proc.  16th Annual Conf.     
+Cognitive Science Society.  1994.     
+</a></li><li><a name="pprrefs">Newell, A. Unified Theories of Cognition.  Harvard University     
+Press, Cambridge, 1990.     
+</a></li><li><a name="pprrefs">Newell, A and Simon, H A. Human Problem Solving.     
+Prentice-Hall, Englewood Cliffs NJ, 1972.     
+</a></li><li><a name="pprrefs">Payne, S J. Display-based action at the user interface.     
+Internat.  J. Man-Machine Studies 35 (1991), 275-289.     
+</a></li><li><a name="pprrefs">Polson, P G and Lewis, C H. Theory-based design for easily     
+learned interfaces.  Human-Computer Interaction 5 (1990), 191-220.     
+</a></li><li><a name="pprrefs">Rieman, J, Lewis, C, Young, R M, and Polson, P G. "Why is a     
+raven like a writing desk"?  Lessons in interface consistency and     
+analogical reasoning from two cognitive architectures.  Human     
+Factors in Computing Systems:  Proc.  CHI '94.  ACM, New York,     
+1994.  438-444.     
+</a></li><li><a name="pprrefs">Rist, R S. Program structure and design.  To appear in     
+Cognitive Science.     
+</a></li><li><a name="pprrefs">Vera, A H, Lewis, R L, and Lerch, F J. Situated     
+decision-making and recognition-based learning:  Applying symbolic     
+theories to interactive tasks.  Proc.  15th Annual Conf.     
+Cognitive Science Society.  Erlbaum, Hillsdale NJ, 1993.  84-95.     
+</a></li><li><a name="pprrefs">Wiedenbeck, S. The initial stage of comprehension.  Internat.     
+J. Man-Machine Studies 35 (1991), 517-540.     
+</a></li></ol><a name="pprrefs">     
+</a><p><a name="pprrefs">   
+</a></p></body></html>
