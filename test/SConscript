@@ -12,6 +12,7 @@ sources = Split("""
     ErrorLine.cpp
     Expression.cpp
     Functions.cpp
+    Swizzle.cpp
     Uniforms.cpp
 """)
 

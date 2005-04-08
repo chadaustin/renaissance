@@ -10,6 +10,7 @@ tests = {
     
     'basic.rs': { 'lexer':     """\
 gl_Position = ftransform
+
 """,
                   
                   'parser':    """\

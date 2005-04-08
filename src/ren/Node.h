@@ -80,6 +80,14 @@ namespace ren {
                         return "vec4";
                     }                    
                 }
+                if (name == "+") {
+                    assert(children.size() == 2);
+                    NodePtr lhs(children[0]);
+                    NodePtr rhs(children[1]);
+                    if (lhs->getType() == rhs->getType()) {
+                        return lhs->getType();
+                    }
+                }
                 return "<unknown>";
             }
         }

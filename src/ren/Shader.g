@@ -52,6 +52,8 @@ OVER:    '/'  ;
 LPAREN:  '('  ;
 RPAREN:  ')'  ;
 
+DOT:     '.'  ;
+
 //////////////////////////////////////////////////////////////////////////////
 
 
@@ -85,11 +87,21 @@ andExpr:  eqExpr  (AND^ eqExpr)* ;
 eqExpr:   cmpExpr  ( (EQ^ | NOTEQ^) cmpExpr)* ;
 cmpExpr:  addExpr  ( (LESS^ | GREATER^ | LTE^ | GTE^) addExpr)* ;
 addExpr:  multExpr ( (PLUS^ | MINUS^) multExpr)* ;
-multExpr: app      ( (TIMES^ | OVER^) app)* ;
-app
-    : ID^ (value)*
-    | LITERAL^ (value)*
+multExpr: signExpr ( (TIMES^ | OVER^) signExpr)* ;
+signExpr: (PLUS^ | MINUS^)? app ;
+app : (dottedvalue)+ ;
+
+/*
+    : ID^ (dottedvalue)*
+    | LITERAL^ (dottedvalue)*
+    | LPAREN! expr RPAREN! (dottedvalue)*
     ;
+*/
+
+dottedvalue
+    : value (DOT^ value)*
+    ;
+
 value
     : ID 
     | LITERAL
@@ -158,6 +170,9 @@ expr returns [NodePtr node] {
         }
     | #(lit:LITERAL v=values) {
             node.reset(new ApplicationNode(lit->getText(), v));
+        }
+    | #(DOT lhs=expr rhs=expr) {
+            node = makeBinaryNode(".", lhs, rhs);
         }
     ;
 
