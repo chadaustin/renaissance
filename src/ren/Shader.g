@@ -22,8 +22,9 @@ options {
 
 // Don't let ID take these over.
 tokens {
-    UNIFORM   = "uniform";
     ATTRIBUTE = "attribute";
+    CONSTANT  = "constant";
+    UNIFORM   = "uniform";
 }
 
 ID: ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
@@ -71,9 +72,11 @@ program
     | statement (NEWLINE! program)?
     ;
 
-statement : uniform | attribute | definition ;
+statement : input | definition ;
 
-uniform : UNIFORM^ ID ID ;
+input     : constant | uniform | attribute ;
+constant  : CONSTANT^  ID ID ;
+uniform   : UNIFORM^   ID ID ;
 attribute : ATTRIBUTE^ ID ID ;
 
 definition: leftSide IS^ expr ;
