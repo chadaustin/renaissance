@@ -50,11 +50,11 @@ static const string basicFS = "";
 
 
 TEST(BasicCompile) {
-    CompilerResult cr1 = compile(basicProgram1);
+    CompileResult cr1 = compile(basicProgram1);
     CHECK_EQUAL(cr1.vertexShader,   basicVS1);
     CHECK_EQUAL(cr1.fragmentShader, basicFS);
 
-    CompilerResult cr2 = compile(basicProgram2);
+    CompileResult cr2 = compile(basicProgram2);
     CHECK_EQUAL(cr2.vertexShader,   basicVS2);
     CHECK_EQUAL(cr2.fragmentShader, basicFS);
 }

@@ -115,6 +115,8 @@ namespace ren {
         static Type typeOf(const string& name) {
             if (isInteger(name)) return "int";
             if (isFloat(name))   return "float";
+            if (name == "true")  return "bool";
+            if (name == "false") return "bool";
             if (isBuiltIn(name)) return getBuiltInType(name);
             return "";
         }

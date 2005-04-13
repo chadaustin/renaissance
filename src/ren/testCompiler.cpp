@@ -39,13 +39,19 @@ int main(int argc, char** argv) {
     }
     contents[length] = 0;  // zero-terminate.
 
-    CompilerResult cr = compile(&contents[0]);
-    if (!cr.vertexShader.empty()) {
-        std::cout << "// Vertex shader." << std::endl;
-        std::cout << cr.vertexShader;
-    }
-    if (!cr.fragmentShader.empty()) {
-        std::cout << "// Fragment shader." << std::endl;
-        std::cout << cr.fragmentShader;
+    CompileResult cr = compile(&contents[0]);
+    if (cr.success) {
+        if (!cr.vertexShader.empty()) {
+            std::cout << "#### GLSL Vertex Shader:\n"
+                      << cr.vertexShader
+                      << std::endl;
+        }
+        if (!cr.fragmentShader.empty()) {
+            std::cout << "#### GLSL Fragment Shader:\n"
+                      << cr.fragmentShader
+                      << std::endl;
+        }
+    } else {
+        std::cout << "Compile failed." << std::endl;
     }
 }

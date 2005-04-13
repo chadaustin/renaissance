@@ -35,7 +35,7 @@ static const string FS = "";
 
 
 TEST(ExpressionCompile) {
-    CompilerResult cr = compile(source1);
+    CompileResult cr = compile(source1);
     CHECK_EQUAL(cr.vertexShader,   VS);
     CHECK_EQUAL(cr.fragmentShader, FS);
 }

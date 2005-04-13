@@ -1,16 +1,19 @@
-#include <ren/Compiler.h>
-#include "TestFramework.h"
-using namespace ren;
+#include "TestPrologue.h"
 
 
 static const string source =
     "uniform float FloatUniform\n"
-    "uniform vec3  Vec3Uniform\n"
-    "uniform mat4  Mat4Uniform\n";
+    "uniform vec4  Vec3Uniform\n"
+    "uniform mat3  Mat4Uniform\n"
+    "gl_Position = Vec3Uniform\n"
+    ;
 
 TEST(Uniforms) {
     ProgramPtr p = analyze(source);
     CHECK(p);
+
+    DefinitionPtr gl_Position = p->getDefinition("gl_Position");
+    CHECK(gl_Position);
 }
 
 

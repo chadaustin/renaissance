@@ -28,7 +28,7 @@ TEST(CommentsCompile) {
         "}\n";
     static string FS = "";
 
-    CompilerResult cr = compile(source);
+    CompileResult cr = compile(source);
     CHECK_EQUAL(cr.vertexShader,   VS);
     CHECK_EQUAL(cr.fragmentShader, FS);
 }

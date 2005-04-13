@@ -9,6 +9,16 @@
 
 namespace ren {
 
+    struct Uniform {
+        Uniform(Type type_, string name_)
+        : type(type_)
+        , name(name_) {
+        }
+
+        Type type;
+        string name;
+    };
+
     struct Program {
         void print();
 
@@ -27,6 +37,7 @@ namespace ren {
             return DefinitionPtr();
         }
 
+        std::vector<Uniform> uniforms;
         std::vector<DefinitionPtr> definitions;
     };
     typedef boost::shared_ptr<Program> ProgramPtr;

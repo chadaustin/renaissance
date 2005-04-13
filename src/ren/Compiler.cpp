@@ -7,38 +7,29 @@
 
 namespace ren {
 
-    ProgramPtr parse(const string& source, std::ostream& output) {
-        try {
-            std::istringstream is(source);
+    ProgramPtr parse(const string& source) {
+        std::istringstream is(source);
 
-            antlr::ASTFactory parserFactory;
-            ShaderLexer lexer(is);
-            ShaderParser parser(lexer);
-            parser.initializeASTFactory(parserFactory);
-            parser.setASTFactory(&parserFactory);
-            parser.program();
+        antlr::ASTFactory parserFactory;
+        ShaderLexer lexer(is);
+        ShaderParser parser(lexer);
+        parser.initializeASTFactory(parserFactory);
+        parser.setASTFactory(&parserFactory);
+        parser.program();
 
-            if (antlr::RefAST ast = parser.getAST()) {
-                ShaderValidator validator;
-                return validator.program(ast);
-            } else {
-                // Parser didn't build an AST or throw an error.  Thus,
-                // the program is empty.
-                return ProgramPtr(new Program);
-            }
-        }
-        catch (const antlr::ANTLRException& e) {
-            output << "ANTLR Exception: " << e.toString() << std::endl;
-        }
-        catch (const std::exception& e) {
-            output << "Exception: " << e.what() << std::endl;
+        if (antlr::RefAST ast = parser.getAST()) {
+            ShaderValidator validator;
+            return validator.program(ast);
+        } else {
+            // Parser didn't build an AST or throw an error.  Thus,
+            // the program is empty.
+            return ProgramPtr(new Program);
         }
 
-        return ProgramPtr();
     }
 
-    ProgramPtr analyze(const string& source, std::ostream& output) {
-        ProgramPtr program = parse(source, output);
+    ProgramPtr analyze(const string& source) {
+        ProgramPtr program = parse(source);
         if (program) {
             program->inferTypes();
         }
@@ -46,12 +37,23 @@ namespace ren {
     }
 
 
-    CompilerResult compile(const string& source, std::ostream& output) {
-        static CompilerResult FAILURE;
+    CompileResult compile(const string& source, std::ostream& output) {
+        static CompileResult FAILURE(false);
 
-        ProgramPtr program = analyze(source, output);
-        if (!program) {
-            return CompilerResult();
+        ProgramPtr program;
+        try {
+            program = analyze(source);
+            if (!program) {
+                return CompileResult(true);
+            }
+        }
+        catch (const antlr::ANTLRException& e) {
+            output << "ANTLR Exception: " << e.toString() << std::endl;
+            return FAILURE;
+        }
+        catch (const std::exception& e) {
+            output << "Exception: " << e.what() << std::endl;
+            return FAILURE;
         }
 
         std::ostringstream vertexShader;
@@ -79,15 +81,25 @@ namespace ren {
 
         DefinitionPtr gl_FragColor = program->getDefinition("gl_FragColor");
         if (gl_FragColor) {
-            fragmentShader << "void main() {" << std::endl;
-            fragmentShader << "  gl_FragColor = something;" << std::endl;
-            fragmentShader << "}" << std::endl;
+            if (gl_FragColor->type != "vec4") {
+                output << "gl_FragColor must have type vec4.  It has type: "
+                       << gl_FragColor->type << std::endl;
+                return FAILURE;
+            }
+            if (gl_FragColor->arguments.size() != 0) {
+                output << "gl_FragColor must not take any arguments."
+                       << std::endl;
+                return FAILURE;
+            }
+            fragmentShader << "void main()\n"
+                           << "{\n"
+                           << "  gl_FragColor = "
+                           << gl_FragColor->expression->evaluate()
+                           << ";\n"
+                           << "}\n";
         }
 
-        CompilerResult cr;
-        cr.vertexShader = vertexShader.str();
-        cr.fragmentShader = fragmentShader.str();
-        return cr;
+        return CompileResult(true, vertexShader.str(), fragmentShader.str());
     }
 
 }

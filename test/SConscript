@@ -6,14 +6,18 @@ sources = Split("""
     TestMain.cpp
 
     BasicProgram.cpp
+    CodeGeneration.cpp
     Comments.cpp
     ConstantProgram.cpp
     EmptyProgram.cpp
     ErrorLine.cpp
+    Errors.cpp
     Expression.cpp
     Functions.cpp
+    Literals.cpp
     Swizzle.cpp
     Uniforms.cpp
+    VectorConcatenation.cpp
 """)
 
 # Depend on the test programs so that typing "scons test" makes everything

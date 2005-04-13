@@ -9,19 +9,23 @@
 
 namespace ren {
 
-    ProgramPtr parse(const string& source,
-                     std::ostream& output = std::cerr);
+    ProgramPtr parse(const string& source);
+    ProgramPtr analyze(const string& source);
 
-    ProgramPtr analyze(const string& source,
-                       std::ostream& output = std::cerr);
+    struct CompileResult {
+        CompileResult(bool s, const string& vs = "", const string& fs = "")
+        : success(s)
+        , vertexShader(vs)
+        , fragmentShader(fs) {
+        }
 
-    struct CompilerResult {
+        bool success;
         string vertexShader;
         string fragmentShader;
     };
 
-    CompilerResult compile(const string& source,
-                           std::ostream& output = std::cerr);
+    CompileResult compile(const string& source,
+                          std::ostream& output = std::cerr);
 
 }
 

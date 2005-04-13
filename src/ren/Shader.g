@@ -34,6 +34,8 @@ NEWLINE: ('\n' | '\r' | '\r' '\n')    { newline(); } ;
 WS     : (' ' | '\t')                 { $setType(antlr::Token::SKIP); } ;
 COMMENT: ( '#' (~ ('\n' | '\r') )* )  { $setType(antlr::Token::SKIP); } ;
 
+CONCAT: "++";
+
 IS: '=' ;
 
 OR:      "||" ;
@@ -83,16 +85,18 @@ definition: leftSide IS^ expr ;
 leftSide: ID^ args ;
 args: (ID)* ;
 
-expr: orExpr ;
-orExpr:   xorExpr (OR^ xorExpr)* ;
-xorExpr:  andExpr (XOR^ andExpr)* ;
-andExpr:  eqExpr  (AND^ eqExpr)* ;
-eqExpr:   cmpExpr  ( (EQ^ | NOTEQ^) cmpExpr)* ;
-cmpExpr:  addExpr  ( (LESS^ | GREATER^ | LTE^ | GTE^) addExpr)* ;
-addExpr:  multExpr ( (PLUS^ | MINUS^) multExpr)* ;
-multExpr: signExpr ( (TIMES^ | OVER^) signExpr)* ;
-signExpr: (PLUS^ | MINUS^)? app ;
-app : (dottedvalue)+ ;
+expr: concatExpr ;
+
+concatExpr: orExpr (CONCAT^ orExpr)* ;
+orExpr:     xorExpr (OR^ xorExpr)* ;
+xorExpr:    andExpr (XOR^ andExpr)* ;
+andExpr:    eqExpr  (AND^ eqExpr)* ;
+eqExpr:     cmpExpr  ( (EQ^ | NOTEQ^) cmpExpr)* ;
+cmpExpr:    addExpr  ( (LESS^ | GREATER^ | LTE^ | GTE^) addExpr)* ;
+addExpr:    multExpr ( (PLUS^ | MINUS^) multExpr)* ;
+multExpr:   signExpr ( (TIMES^ | OVER^) signExpr)* ;
+signExpr:   (PLUS^ | MINUS^)? app ;
+app :       (dottedvalue)+ ;
 
 /*
     : ID^ (dottedvalue)*
@@ -126,9 +130,16 @@ program returns [ProgramPtr p] {
     p.reset(new Program);
     DefinitionPtr def;
 }
-    : ( def=definition {
-            p->definitions.push_back(def);
-        } )*
+    : (
+            #(UNIFORM type:ID name:ID) {
+                p->uniforms.push_back(Uniform(type->getText(),
+                                              name->getText()));
+            }
+        |
+            def=definition {
+                p->definitions.push_back(def);
+            }
+        )*
     ;
 
 definition returns [DefinitionPtr d] {
@@ -155,7 +166,8 @@ expr returns [NodePtr node] {
     NodePtr lhs, rhs;
     std::vector<NodePtr> v;
 }
-    : #(OR      lhs=expr rhs=expr) { node = makeBinaryNode("||", lhs, rhs); }
+    : #(CONCAT  lhs=expr rhs=expr) { node = makeBinaryNode("++", lhs, rhs); }
+    | #(OR      lhs=expr rhs=expr) { node = makeBinaryNode("||", lhs, rhs); }
     | #(XOR     lhs=expr rhs=expr) { node = makeBinaryNode("^^", lhs, rhs); }
     | #(AND     lhs=expr rhs=expr) { node = makeBinaryNode("&&", lhs, rhs); }
     | #(EQ      lhs=expr rhs=expr) { node = makeBinaryNode("==", lhs, rhs); }
