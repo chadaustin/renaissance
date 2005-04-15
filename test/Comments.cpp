@@ -16,7 +16,7 @@ TEST(Comments) {
 
     DefinitionPtr pos = p->getDefinition("gl_Position");
     CHECK(pos);
-    CHECK_EQUAL(pos->type, "vec4");
+    CHECK_EQUAL(pos->type, VEC4);
 }
 
 

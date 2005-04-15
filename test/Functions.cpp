@@ -13,5 +13,5 @@ TEST(Functions) {
 
     DefinitionPtr pos = p->getDefinition("pos");
     CHECK(pos);
-    CHECK_EQUAL(pos->type, "vec4");
+    CHECK_EQUAL(pos->type, VEC4);
 }

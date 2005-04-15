@@ -18,7 +18,7 @@ TEST(BasicFunction1) {
     DefinitionPtr gl_Vertex = p->getDefinition("gl_Vertex");
     CHECK(!gl_Vertex);
 
-    CHECK_EQUAL(gl_Position->type, "vec4");
+    CHECK_EQUAL(gl_Position->type, VEC4);
 }
 
 
@@ -30,7 +30,7 @@ TEST(BasicFunction2) {
     DefinitionPtr gl_Vertex = p->getDefinition("gl_Vertex");
     CHECK(!gl_Vertex);
 
-    CHECK_EQUAL(gl_Position->type, "vec4");
+    CHECK_EQUAL(gl_Position->type, VEC4);
 }
 
 

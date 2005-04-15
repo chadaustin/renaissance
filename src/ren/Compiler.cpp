@@ -57,18 +57,12 @@ namespace ren {
         }
 
         std::ostringstream vertexShader;
-        std::ostringstream fragmentShader;
 
-        DefinitionPtr gl_Position = program->getDefinition("gl_Position");
+        InstancePtr gl_Position = program->resolveDefinition("gl_Position");
         if (gl_Position) {
-            if (gl_Position->type != "vec4") {
+            if (gl_Position->type != VEC4) {
                 output << "gl_Position must have type vec4.  It has type: "
                        << gl_Position->type << std::endl;
-                return FAILURE;
-            }
-            if (gl_Position->arguments.size() != 0) {
-                output << "gl_Position must not take any arguments."
-                       << std::endl;
                 return FAILURE;
             }
             vertexShader << "void main()\n"
@@ -79,9 +73,11 @@ namespace ren {
                          << "}\n";
         }
 
+        std::ostringstream fragmentShader;
+
         DefinitionPtr gl_FragColor = program->getDefinition("gl_FragColor");
         if (gl_FragColor) {
-            if (gl_FragColor->type != "vec4") {
+            if (gl_FragColor->type != VEC4) {
                 output << "gl_FragColor must have type vec4.  It has type: "
                        << gl_FragColor->type << std::endl;
                 return FAILURE;

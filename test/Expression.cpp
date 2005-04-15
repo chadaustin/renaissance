@@ -15,13 +15,13 @@ TEST(Expression) {
     DefinitionPtr gl_Position = p1->getDefinition("gl_Position");
     CHECK(gl_Position);
 
-    CHECK_EQUAL(gl_Position->type, "vec4");
+    CHECK_EQUAL(gl_Position->type, VEC4);
 
     ProgramPtr p2 = analyze(source2);
     CHECK(p2);
     DefinitionPtr foo = p2->getDefinition("foo");
     CHECK(foo);
-    CHECK_EQUAL(foo->type, "int");
+    CHECK_EQUAL(foo->type, INT);
 }
 
 

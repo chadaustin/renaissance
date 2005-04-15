@@ -24,7 +24,7 @@ namespace ren {
         }
         
         string name;
-        string type;
+        Type type;
         //Frequency frequency;
         ArgumentList arguments;
         NodePtr expression;

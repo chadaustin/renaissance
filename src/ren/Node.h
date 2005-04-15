@@ -2,6 +2,7 @@
 #define REN_NODE_H
 
 
+#include <stdexcept>
 #include <vector>
 #include "Types.h"
 
@@ -27,22 +28,22 @@ namespace ren {
 
     static BuiltIn builtIns[] = {
         // Default attributes.
-        { "gl_Color",          "vec4"   },
-        { "gl_SecondaryColor", "vec4"   },
-        { "gl_Normal",         "vec3"   },
-        { "gl_Vertex",         "vec4"   },
-        { "gl_FogCoord",       "float"  },
-        { "gl_MultiTexCoord",  "vec4[]" },
+        { "gl_Color",          VEC4   },
+        { "gl_SecondaryColor", VEC4   },
+        { "gl_Normal",         VEC3   },
+        { "gl_Vertex",         VEC4   },
+        { "gl_FogCoord",       FLOAT  },
+        //{ "gl_MultiTexCoord",  "vec4[]" },
 
         // ftransform is kind of a special attribute in that it's a function call...
-        { "ftransform",        "vec4", true },
+        { "ftransform",        VEC4, true },
 
         // Default varyings.
         
         // Default uniforms.
 
         // Built-in state.
-        { "gl_ModelViewProjectionMatrix", "mat4" },
+        { "gl_ModelViewProjectionMatrix", MAT4 },
     };
 
 
@@ -74,10 +75,10 @@ namespace ren {
             } else {
                 if (name == "*") {
                     assert(children.size() == 2);
-                    if (children[0]->getType() == "mat4" &&
-                        children[1]->getType() == "vec4"
+                    if (children[0]->getType() == MAT4 &&
+                        children[1]->getType() == VEC4
                     ) {
-                        return "vec4";
+                        return VEC4;
                     }                    
                 }
                 if (name == "+") {
@@ -88,7 +89,13 @@ namespace ren {
                         return lhs->getType();
                     }
                 }
-                return "<unknown>";
+                if (name == "++") {
+                    return VEC2;
+                }
+                if (name == ".") {
+                    return VEC4;
+                }
+                throw std::runtime_error("Unknown type");
             }
         }
 
@@ -113,12 +120,12 @@ namespace ren {
         }
 
         static Type typeOf(const string& name) {
-            if (isInteger(name)) return "int";
-            if (isFloat(name))   return "float";
-            if (name == "true")  return "bool";
-            if (name == "false") return "bool";
+            if (isInteger(name)) return INT;
+            if (isFloat(name))   return FLOAT;
+            if (name == "true")  return BOOL;
+            if (name == "false") return BOOL;
             if (isBuiltIn(name)) return getBuiltInType(name);
-            return "";
+            return VEC4;
         }
 
         static bool isInteger(const string& name) {
@@ -170,8 +177,7 @@ namespace ren {
                     return builtIns[i].type;
                 }
             }
-            // assert?  throw?
-            return "<unknown>";
+            throw std::runtime_error("Unknown built-in type!");
         }
 
         string name;

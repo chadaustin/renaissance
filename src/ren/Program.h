@@ -2,12 +2,19 @@
 #define REN_PROGRAM_H
 
 
+#include <stdexcept>
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include "Definition.h"
 
 
 namespace ren {
+
+    struct Instance {
+        Type type;
+        NodePtr expression;
+    };
+    typedef boost::shared_ptr<Instance> InstancePtr;
 
     struct Uniform {
         Uniform(Type type_, string name_)
@@ -35,6 +42,21 @@ namespace ren {
                 }
             }
             return DefinitionPtr();
+        }
+
+        InstancePtr resolveDefinition(const string& name /*args*/) {
+            DefinitionPtr d = getDefinition(name);
+            if (!d) {
+                return InstancePtr();
+            }
+            if (d->arguments.size() != 0) {
+                throw std::runtime_error("... need a test for this error.");
+            }
+
+            InstancePtr instance(new Instance);
+            instance->type = d->type;
+            instance->expression = d->expression;
+            return instance;
         }
 
         std::vector<Uniform> uniforms;

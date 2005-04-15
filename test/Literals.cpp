@@ -21,10 +21,10 @@ static const string source =
 TEST(BasicFunction1) {
     ProgramPtr p = analyze(source);
     CHECK(p);
-    CHECK_TYPE("int1",   "int");
-    CHECK_TYPE("int2",   "int");
-    CHECK_TYPE("float1", "float");
-    CHECK_TYPE("float2", "float");
-    CHECK_TYPE("bool1",  "bool");
-    CHECK_TYPE("bool2",  "bool");
+    CHECK_TYPE("int1",   INT);
+    CHECK_TYPE("int2",   INT);
+    CHECK_TYPE("float1", FLOAT);
+    CHECK_TYPE("float2", FLOAT);
+    CHECK_TYPE("bool1",  BOOL);
+    CHECK_TYPE("bool2",  BOOL);
 }

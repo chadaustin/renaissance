@@ -15,13 +15,13 @@ TEST(ConstantFunction) {
 
     DefinitionPtr foo = p->getDefinition("foo");
     CHECK(foo);
-    CHECK_EQUAL(foo->type, "int");
+    CHECK_EQUAL(foo->type, INT);
 
     DefinitionPtr bar = p->getDefinition("bar");
     CHECK(bar);
-    CHECK_EQUAL(bar->type, "float");
+    CHECK_EQUAL(bar->type, FLOAT);
 
     DefinitionPtr baz = p->getDefinition("baz");
     CHECK(baz);
-    CHECK_EQUAL(baz->type, "float");
+    CHECK_EQUAL(baz->type, FLOAT);
 }
