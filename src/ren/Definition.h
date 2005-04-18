@@ -22,12 +22,12 @@ namespace ren {
         void inferType() {
             type = expression->getType();
         }
-        
+
         string name;
         Type type;
         //Frequency frequency;
         ArgumentList arguments;
-        NodePtr expression;
+        SyntaxNodePtr expression;
     };
     typedef boost::shared_ptr<Definition> DefinitionPtr;
 

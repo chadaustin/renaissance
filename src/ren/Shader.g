@@ -145,7 +145,7 @@ program returns [ProgramPtr p] {
 definition returns [DefinitionPtr d] {
     d.reset(new Definition);
     ArgumentList arguments;
-    NodePtr e;
+    SyntaxNodePtr e;
 }
     : #(IS #(name:ID arguments=args) e=expr) {
             d->name = name->getText();
@@ -162,9 +162,9 @@ args returns [ArgumentList arglist]
         } )*
     ;
 
-expr returns [NodePtr node] {
-    NodePtr lhs, rhs;
-    std::vector<NodePtr> v;
+expr returns [SyntaxNodePtr node] {
+    SyntaxNodePtr lhs, rhs;
+    SyntaxNodeList v;
 }
     : #(CONCAT  lhs=expr rhs=expr) { node = makeBinaryNode("++", lhs, rhs); }
     | #(OR      lhs=expr rhs=expr) { node = makeBinaryNode("||", lhs, rhs); }
@@ -181,18 +181,18 @@ expr returns [NodePtr node] {
     | #(TIMES   lhs=expr rhs=expr) { node = makeBinaryNode("*",  lhs, rhs); }
     | #(OVER    lhs=expr rhs=expr) { node = makeBinaryNode("/",  lhs, rhs); }
     | #(name:ID v=values) {
-            node.reset(new ApplicationNode(name->getText(), v));
+            node.reset(new SyntaxNode(name->getText(), v));
         }
     | #(lit:LITERAL v=values) {
-            node.reset(new ApplicationNode(lit->getText(), v));
+            node.reset(new SyntaxNode(lit->getText(), v));
         }
     | #(DOT lhs=expr rhs=expr) {
             node = makeBinaryNode(".", lhs, rhs);
         }
     ;
 
-values returns [std::vector<NodePtr> values] {
-    NodePtr e;
+values returns [SyntaxNodeList values] {
+    SyntaxNodePtr e;
 }
     : ( e=expr { values.push_back(e); } )*
     ;

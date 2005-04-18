@@ -25,4 +25,4 @@ sources = Split("""
 testProgramsLocation = Dir('#/stage/bin')
 
 runner = env.Program('testRunner', sources)
-AlwaysBuild( Alias('test', [runner, testProgramsLocation], runner[0].path) )
+AlwaysBuild( env.Alias('test', [runner, testProgramsLocation], runner[0].path) )

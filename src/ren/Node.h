@@ -4,21 +4,11 @@
 
 #include <stdexcept>
 #include <vector>
+#include <ctype.h>
 #include "Types.h"
 
 
 namespace ren {
-
-    class Node {
-    public:
-        virtual ~Node() { }
-        virtual string toString() const = 0;
-        virtual Type getType() const = 0;
-        virtual string evaluate() const = 0;
-    };
-    typedef boost::shared_ptr<Node> NodePtr;
-    typedef std::vector<NodePtr> NodeList;
-
 
     struct BuiltIn {
         string name;
@@ -39,7 +29,7 @@ namespace ren {
         { "ftransform",        VEC4, true },
 
         // Default varyings.
-        
+
         // Default uniforms.
 
         // Built-in state.
@@ -49,10 +39,13 @@ namespace ren {
 
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(*(array)))
 
-            
-    class ApplicationNode : public Node {
+    class SyntaxNode;
+    typedef boost::shared_ptr<SyntaxNode> SyntaxNodePtr;
+    typedef std::vector<SyntaxNodePtr> SyntaxNodeList;
+
+    class SyntaxNode {
     public:
-        ApplicationNode(const string& name_, const NodeList& children_)
+        SyntaxNode(const string& name_, const SyntaxNodeList& children_)
         : name(name_)
         , children(children_) {
         }
@@ -79,12 +72,12 @@ namespace ren {
                         children[1]->getType() == VEC4
                     ) {
                         return VEC4;
-                    }                    
+                    }
                 }
                 if (name == "+") {
                     assert(children.size() == 2);
-                    NodePtr lhs(children[0]);
-                    NodePtr rhs(children[1]);
+                    SyntaxNodePtr lhs(children[0]);
+                    SyntaxNodePtr rhs(children[1]);
                     if (lhs->getType() == rhs->getType()) {
                         return lhs->getType();
                     }
@@ -109,8 +102,8 @@ namespace ren {
             } else {
                 if (name == "*") {
                     assert(children.size() == 2);
-                    NodePtr lhs(children[0]);
-                    NodePtr rhs(children[1]);
+                    SyntaxNodePtr lhs(children[0]);
+                    SyntaxNodePtr rhs(children[1]);
                     return paren(lhs->evaluate()) + " " + name + " " +
                            paren(rhs->evaluate());
                 } else {
@@ -181,18 +174,18 @@ namespace ren {
         }
 
         string name;
-        NodeList children;
+        SyntaxNodeList children;
     };
 
 
-    inline NodePtr makeBinaryNode(const char* name, NodePtr lhs, NodePtr rhs) {
+    inline SyntaxNodePtr makeBinaryNode(const char* name, SyntaxNodePtr lhs, SyntaxNodePtr rhs) {
         assert(lhs);
         assert(rhs);
 
-        NodeList children(2);
+        SyntaxNodeList children(2);
         children[0] = lhs;
         children[1] = rhs;
-        return NodePtr(new ApplicationNode(name, children));
+        return SyntaxNodePtr(new SyntaxNode(name, children));
     }
 
 }

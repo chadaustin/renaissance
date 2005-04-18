@@ -12,7 +12,7 @@ namespace ren {
 
     struct Instance {
         Type type;
-        NodePtr expression;
+        SyntaxNodePtr expression;
     };
     typedef boost::shared_ptr<Instance> InstancePtr;
 
