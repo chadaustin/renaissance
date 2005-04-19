@@ -10,11 +10,11 @@
 
 namespace ren {
 
-    struct Instance {
+    struct DefinitionInstance {
         Type type;
         SyntaxNodePtr expression;
     };
-    typedef boost::shared_ptr<Instance> InstancePtr;
+    typedef boost::shared_ptr<DefinitionInstance> DefinitionInstancePtr;
 
     struct Uniform {
         Uniform(Type type_, string name_)
@@ -29,12 +29,6 @@ namespace ren {
     struct Program {
         void print();
 
-        void inferTypes() {
-            for (size_t i = 0; i < definitions.size(); ++i) {
-                definitions[i]->inferType();
-            }
-        }
-
         DefinitionPtr getDefinition(const string& name) {
             for (size_t i = 0; i < definitions.size(); ++i) {
                 if (definitions[i]->name == name) {
@@ -44,18 +38,18 @@ namespace ren {
             return DefinitionPtr();
         }
 
-        InstancePtr resolveDefinition(const string& name /*args*/) {
+        DefinitionInstancePtr resolveDefinition(const string& name /*args*/) {
             DefinitionPtr d = getDefinition(name);
             if (!d) {
-                return InstancePtr();
+                return DefinitionInstancePtr();
             }
             if (d->arguments.size() != 0) {
                 throw std::runtime_error("... need a test for this error.");
             }
 
-            InstancePtr instance(new Instance);
-            instance->type = d->type;
+            DefinitionInstancePtr instance(new DefinitionInstance);
             instance->expression = d->expression;
+            //instance->type = type;  Figure out the type.
             return instance;
         }
 

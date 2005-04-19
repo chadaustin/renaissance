@@ -10,20 +10,21 @@ static const string basicProgram2 =
     "gl_Position = gl_Vertex";
 
 
-TEST(BasicFunction1) {
-    ProgramPtr p = analyze(basicProgram1);
+TEST(ParseBasicProgram1) {
+    ProgramPtr p = parse(basicProgram1);
     CHECK(p);
     DefinitionPtr gl_Position = p->getDefinition("gl_Position");
     CHECK(gl_Position);
     DefinitionPtr gl_Vertex = p->getDefinition("gl_Vertex");
     CHECK(!gl_Vertex);
 
-    CHECK_EQUAL(gl_Position->type, VEC4);
+    CompilationContext cc(p);
+    CHECK_EQUAL(p->type, VEC4);
 }
 
 
-TEST(BasicFunction2) {
-    ProgramPtr p = analyze(basicProgram2);
+TEST(ParseBasicProgram2) {
+    ProgramPtr p = parse(basicProgram2);
     CHECK(p);
     DefinitionPtr gl_Position = p->getDefinition("gl_Position");
     CHECK(gl_Position);

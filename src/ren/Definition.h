@@ -19,14 +19,9 @@ namespace ren {
 
     struct Definition {
         void print();
-        void inferType() {
-            type = expression->getType();
-        }
 
         string name;
-        Type type;
-        //Frequency frequency;
-        ArgumentList arguments;
+        std::vector<string> arguments;
         SyntaxNodePtr expression;
     };
     typedef boost::shared_ptr<Definition> DefinitionPtr;

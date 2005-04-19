@@ -28,21 +28,13 @@ namespace ren {
 
     }
 
-    ProgramPtr analyze(const string& source) {
-        ProgramPtr program = parse(source);
-        if (program) {
-            program->inferTypes();
-        }
-        return program;
-    }
-
 
     CompileResult compile(const string& source, std::ostream& output) {
         static CompileResult FAILURE(false);
 
         ProgramPtr program;
         try {
-            program = analyze(source);
+            program = parse(source);
             if (!program) {
                 return CompileResult(true);
             }
