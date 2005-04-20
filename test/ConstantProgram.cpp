@@ -1,6 +1,4 @@
-#include <ren/Compiler.h>
-#include "TestFramework.h"
-using namespace ren;
+#include "TestPrologue.h"
 
 
 static const string constantProgram =
@@ -10,18 +8,14 @@ static const string constantProgram =
 
 
 TEST(ConstantFunction) {
-    ProgramPtr p = analyze(constantProgram);
+    ProgramPtr p = parse(constantProgram);
     CHECK(p);
+    CHECK(p->getDefinition("foo"));
+    CHECK(p->getDefinition("bar"));
+    CHECK(p->getDefinition("baz"));
 
-    DefinitionPtr foo = p->getDefinition("foo");
-    CHECK(foo);
-    CHECK_EQUAL(foo->type, INT);
-
-    DefinitionPtr bar = p->getDefinition("bar");
-    CHECK(bar);
-    CHECK_EQUAL(bar->type, FLOAT);
-
-    DefinitionPtr baz = p->getDefinition("baz");
-    CHECK(baz);
-    CHECK_EQUAL(baz->type, FLOAT);
+    CompilationContext cc(p);
+    CHECK_EQUAL(cc.instantiate("foo")->getType(), INT);
+    CHECK_EQUAL(cc.instantiate("bar")->getType(), FLOAT);
+    CHECK_EQUAL(cc.instantiate("baz")->getType(), FLOAT);
 }

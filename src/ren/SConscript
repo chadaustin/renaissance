@@ -16,6 +16,7 @@ sources = Split("""
     Compiler.cpp
     Definition.cpp
     Program.cpp
+    Types.cpp
 
     ShaderLexer.cpp
     ShaderParser.cpp
@@ -23,10 +24,14 @@ sources = Split("""
 """)
 
 headers = Split("""
+    CompilationContext.h
     Compiler.h
+    ConcreteNode.h
     Definition.h
-    Node.h
+    Errors.h
     Program.h
+    Scope.h
+    SyntaxNode.h
     Types.h
 
     ShaderLexer.hpp

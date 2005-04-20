@@ -9,7 +9,7 @@ static const string source =
     ;
 
 TEST(Uniforms) {
-    ProgramPtr p = analyze(source);
+    ProgramPtr p = parse(source);
     CHECK(p);
 
     DefinitionPtr gl_Position = p->getDefinition("gl_Position");

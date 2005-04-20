@@ -156,9 +156,7 @@ definition returns [DefinitionPtr d] {
 
 args returns [ArgumentList arglist]
     : ( arg:ID {
-            Argument a;
-            a.name = arg->getText();
-            arglist.push_back(a);
+            arglist.push_back(arg->getText());
         } )*
     ;
 

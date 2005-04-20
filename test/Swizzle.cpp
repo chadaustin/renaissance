@@ -6,7 +6,7 @@ using namespace ren;
 static const string source = "foo = gl_Vertex.xyz\n";
 
 TEST(Swizzle) {
-    ProgramPtr p = analyze(source);
+    ProgramPtr p = parse(source);
     CHECK(p);
 }
 

@@ -7,6 +7,6 @@ static const string source =
 
 
 TEST(VectorConcatenation) {
-    ProgramPtr p = analyze(source);
+    ProgramPtr p = parse(source);
     CHECK(p);
 }

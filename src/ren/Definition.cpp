@@ -9,7 +9,7 @@ namespace ren {
         if (!arguments.empty()) {
             std::cout << "  Arguments:";
             for (size_t i = 0; i < arguments.size(); ++i) {
-                std::cout << " " << arguments[i].name;
+                std::cout << " " << arguments[i];
             }
             std::cout << std::endl;
         }

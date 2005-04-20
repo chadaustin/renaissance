@@ -1,6 +1,4 @@
-#include <ren/Compiler.h>
-#include "TestFramework.h"
-using namespace ren;
+#include "TestPrologue.h"
 
 
 static const string source =
@@ -11,12 +9,14 @@ static const string source =
 
 
 TEST(Comments) {
-    ProgramPtr p = analyze(source);
+    ProgramPtr p = parse(source);
     CHECK(p);
 
     DefinitionPtr pos = p->getDefinition("gl_Position");
     CHECK(pos);
-    CHECK_EQUAL(pos->type, VEC4);
+
+    CompilationContext cc(p);
+    CHECK_EQUAL(cc.instantiate("gl_Position")->getType(), VEC4);
 }
 
 

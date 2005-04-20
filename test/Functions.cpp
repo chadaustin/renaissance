@@ -1,6 +1,4 @@
-#include <ren/Compiler.h>
-#include "TestFramework.h"
-using namespace ren;
+#include "TestPrologue.h"
 
 
 static const string functions =
@@ -8,10 +6,10 @@ static const string functions =
 
 
 TEST(Functions) {
-    ProgramPtr p = analyze(functions);
+    ProgramPtr p = parse(functions);
     CHECK(p);
+    CHECK(p->getDefinition("pos"));
 
-    DefinitionPtr pos = p->getDefinition("pos");
-    CHECK(pos);
-    CHECK_EQUAL(pos->type, VEC4);
+    CompilationContext cc(p);
+    CHECK_EQUAL(cc.instantiate("pos")->getType(), VEC4);
 }

@@ -1,6 +1,4 @@
-#include <ren/Compiler.h>
-#include "TestFramework.h"
-using namespace ren;
+#include "TestPrologue.h"
 
 
 static const string basicProgram1 =
@@ -19,7 +17,8 @@ TEST(ParseBasicProgram1) {
     CHECK(!gl_Vertex);
 
     CompilationContext cc(p);
-    CHECK_EQUAL(p->type, VEC4);
+    ConcreteNodePtr concretePosition = cc.instantiate("gl_Position");
+    CHECK_EQUAL(concretePosition->getType(), VEC4);
 }
 
 
@@ -31,7 +30,9 @@ TEST(ParseBasicProgram2) {
     DefinitionPtr gl_Vertex = p->getDefinition("gl_Vertex");
     CHECK(!gl_Vertex);
 
-    CHECK_EQUAL(gl_Position->type, VEC4);
+    CompilationContext cc(p);
+    ConcreteNodePtr pos = cc.instantiate("gl_Position");
+    CHECK_EQUAL(pos->getType(), VEC4);
 }
 
 

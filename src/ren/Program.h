@@ -6,15 +6,10 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include "Definition.h"
+#include "Types.h"
 
 
 namespace ren {
-
-    struct DefinitionInstance {
-        Type type;
-        SyntaxNodePtr expression;
-    };
-    typedef boost::shared_ptr<DefinitionInstance> DefinitionInstancePtr;
 
     struct Uniform {
         Uniform(Type type_, string name_)
@@ -26,10 +21,11 @@ namespace ren {
         string name;
     };
 
+
     struct Program {
         void print();
 
-        DefinitionPtr getDefinition(const string& name) {
+        DefinitionPtr getDefinition(const string& name) const {
             for (size_t i = 0; i < definitions.size(); ++i) {
                 if (definitions[i]->name == name) {
                     return definitions[i];
@@ -38,19 +34,8 @@ namespace ren {
             return DefinitionPtr();
         }
 
-        DefinitionInstancePtr resolveDefinition(const string& name /*args*/) {
-            DefinitionPtr d = getDefinition(name);
-            if (!d) {
-                return DefinitionInstancePtr();
-            }
-            if (d->arguments.size() != 0) {
-                throw std::runtime_error("... need a test for this error.");
-            }
-
-            DefinitionInstancePtr instance(new DefinitionInstance);
-            instance->expression = d->expression;
-            //instance->type = type;  Figure out the type.
-            return instance;
+        bool hasDefinition(const string& name) const {
+            return getDefinition(name);
         }
 
         std::vector<Uniform> uniforms;

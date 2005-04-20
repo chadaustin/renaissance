@@ -3,6 +3,7 @@
 
 
 #include <ren/Compiler.h>
+#include <ren/CompilationContext.h>
 #include "TestFramework.h"
 using namespace ren;
 

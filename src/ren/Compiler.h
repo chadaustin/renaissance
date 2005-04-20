@@ -10,7 +10,6 @@
 namespace ren {
 
     ProgramPtr parse(const string& source);
-    ProgramPtr analyze(const string& source);
 
     struct CompileResult {
         CompileResult(bool s, const string& vs = "", const string& fs = "")
