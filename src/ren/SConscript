@@ -5,14 +5,20 @@ env = env.Copy(tools=['Boost'])
 libenv = env.Copy()
 libenv.Append(CPPPATH=['.'])
 
-libenv.Command(['ShaderLexer.cpp', 'ShaderLexer.hpp',
-             'ShaderLexerTokenTypes.hpp', 'ShaderLexerTokenTypes.txt',
-             'ShaderParser.cpp', 'ShaderParser.hpp',
-             'ShaderValidator.cpp', 'ShaderValidator.hpp'],
-            'Shader.g',
-            'antlr -o $TARGET.dir $SOURCES')
+libenv.Command(
+    [ 'ShaderLexer.cpp',
+      'ShaderLexer.hpp',
+      'ShaderLexerTokenTypes.hpp',
+      'ShaderLexerTokenTypes.txt',
+      'ShaderParser.cpp',
+      'ShaderParser.hpp',
+      'ShaderValidator.cpp',
+      'ShaderValidator.hpp' ],
+    'Shader.g',
+    'antlr -o $TARGET.dir $SOURCES')
 
 sources = Split("""
+    CompilationContext.cpp
     Compiler.cpp
     Definition.cpp
     Program.cpp

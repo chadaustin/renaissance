@@ -32,9 +32,9 @@ bing x y = sin x + baz 2 sin 3
                   
                   'parser':    """\
  ( = foo 1 )
- ( = bar ( 9 8 ) )
- ( = baz ( a b c ) )
- ( = ( bing x y ) ( + ( sin x ) ( baz 2 sin 3 ) ) )
+ ( = bar ( @ 9 8 ) )
+ ( = baz ( @ a b c ) )
+ ( = ( bing x y ) ( + ( @ sin x ) ( @ baz 2 sin 3 ) ) )
 """,
                   
                   'validator': """\
@@ -57,7 +57,7 @@ gl_Position = mult gl_ModelViewProjection gl_Vertex
 
                       'parser': """\
  ( = ( mult matrix vector ) ( * matrix vector ) )
- ( = gl_Position ( mult gl_ModelViewProjection gl_Vertex ) )
+ ( = gl_Position ( @ mult gl_ModelViewProjection gl_Vertex ) )
 """,
 
                       'validator': """\

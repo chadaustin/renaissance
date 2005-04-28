@@ -5,9 +5,9 @@
 #include <boost/test/auto_unit_test.hpp>
 
 
-#define TEST BOOST_AUTO_UNIT_TEST
-#define CHECK BOOST_CHECK
-#define CHECK_EQUAL BOOST_CHECK_EQUAL
+#define TEST(name) BOOST_AUTO_UNIT_TEST(name)
+#define CHECK(x) BOOST_CHECK(x)
+#define CHECK_EQUAL(x, y) BOOST_CHECK_EQUAL(x, y)
 
 
 #endif

@@ -13,6 +13,8 @@ namespace ren {
 
     typedef std::vector<string> ArgumentList;
 
+    std::ostream& operator<<(std::ostream& os, const ArgumentList& list);
+
 
     struct Definition {
         void print();

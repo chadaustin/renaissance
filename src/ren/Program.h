@@ -25,9 +25,14 @@ namespace ren {
     struct Program {
         void print();
 
-        DefinitionPtr getDefinition(const string& name) const {
+        DefinitionPtr getDefinition(
+            const string& name,
+            size_t args = 0
+        ) const {
             for (size_t i = 0; i < definitions.size(); ++i) {
-                if (definitions[i]->name == name) {
+                if (definitions[i]->name == name &&
+                    definitions[i]->arguments.size() == args
+                ) {
                     return definitions[i];
                 }
             }

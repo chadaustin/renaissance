@@ -3,18 +3,20 @@
 
 
 #include <boost/shared_ptr.hpp>
+#include "Types.h"
 
 
 namespace ren {
 
-    class Scope;
-    typedef boost::shared_ptr<Scope> ScopePtr;
-
     class Scope {
-        // lookup symbols
+    public:
+        virtual ~Scope() { }
 
-        ScopePtr parent;
+        virtual ConcreteNodePtr lookup(
+            const string& name,
+            const TupleTypePtr& argTypes) = 0;
     };
+    REN_SHARED_PTR(Scope);
 
 }
 

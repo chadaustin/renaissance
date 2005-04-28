@@ -1,5 +1,8 @@
 def generate(env):
-    env.Append(CPPPATH=['/usr/local/include/boost-1_31'])
+    if env['PLATFORM'] == 'win32':
+        env.Append(CPPPATH=['#/third-party/vc7/Boost/include'])
+    else:
+        env.Append(CPPPATH=['/usr/local/include/boost-1_32'])
 
 def exists(env):
     return 1

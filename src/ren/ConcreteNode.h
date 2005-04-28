@@ -9,6 +9,39 @@
 
 namespace ren {
 
+
+#if 0
+    struct BuiltIn {
+        string name;
+        Type type;
+        bool function;
+    };
+
+    static BuiltIn builtIns[] = {
+        // Default attributes.
+        { "gl_Color",          VEC4   },
+        { "gl_SecondaryColor", VEC4   },
+        { "gl_Normal",         VEC3   },
+        { "gl_Vertex",         VEC4   },
+        { "gl_FogCoord",       FLOAT  },
+        //{ "gl_MultiTexCoord",  "vec4[]" },
+
+        // ftransform is kind of a special attribute in that it's a function call...
+        { "ftransform",        VEC4, true },
+
+        // Default varyings.
+
+        // Default uniforms.
+
+        // Built-in state.
+        { "gl_ModelViewProjectionMatrix", MAT4 },
+    };
+
+
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof(*(array)))
+#endif
+
+
     class ConcreteNode;
     typedef boost::shared_ptr<ConcreteNode> ConcreteNodePtr;
     typedef std::vector<ConcreteNodePtr> ConcreteNodeList;
@@ -28,52 +61,6 @@ namespace ren {
 
 
 #if 0
-        string evaluate() const {
-            if (isFunction(name)) {
-                return name + "()";
-            } else {
-                if (name == "*") {
-                    assert(children.size() == 2);
-                    SyntaxNodePtr lhs(children[0]);
-                    SyntaxNodePtr rhs(children[1]);
-                    return paren(lhs->evaluate()) + " " + name + " " +
-                           paren(rhs->evaluate());
-                } else {
-                    return name;
-                }
-            }
-        }
-
-        Type getType() const {
-            if (children.empty()) {
-                return typeOf(name);
-            } else {
-                if (name == "*") {
-                    assert(children.size() == 2);
-                    if (children[0]->getType() == MAT4 &&
-                        children[1]->getType() == VEC4
-                    ) {
-                        return VEC4;
-                    }
-                }
-                if (name == "+") {
-                    assert(children.size() == 2);
-                    SyntaxNodePtr lhs(children[0]);
-                    SyntaxNodePtr rhs(children[1]);
-                    if (lhs->getType() == rhs->getType()) {
-                        return lhs->getType();
-                    }
-                }
-                if (name == "++") {
-                    return VEC2;
-                }
-                if (name == ".") {
-                    return VEC4;
-                }
-                throw std::runtime_error("Unknown type");
-            }
-        }
-
         static Type typeOf(const string& name) {
             if (isInteger(name)) return INT;
             if (isFloat(name))   return FLOAT;
@@ -111,6 +98,65 @@ namespace ren {
         }
 #endif
 
+    };
+
+
+    class AbstractionNode : public ConcreteNode {
+    public:
+        typedef std::vector<ConcreteNodePtr> ReplacementList;
+
+        AbstractionNode(ReplacementList arguments, ConcreteNodePtr inside)
+        : _arguments(arguments)
+        , _inside(inside) {
+        }
+
+        Type getType() const {
+            std::vector<TypeObjectPtr> types;
+            for (size_t i = 0; i < _arguments.size(); ++i) {
+                types.push_back(_arguments[i]->getType().get());
+            }
+
+            Type ft(makeFunctionType(new TupleType(types),
+                                     _inside->getType()));
+            return ft;
+        }
+
+        const string evaluate() const {
+            return "";
+        }
+
+        const string apply(ConcreteNodeList arguments) const {
+            return "";
+        }
+
+    private:
+        ReplacementList _arguments;
+        ConcreteNodePtr _inside;
+    };
+
+
+    class ArgumentNode : public ConcreteNode {
+    public:
+        ArgumentNode(Type type)
+        : _type(type) {
+        }
+
+        Type getType() const {
+            return _type;
+        }
+
+        const string evaluate() const {
+            assert(false);
+            return "";
+        }
+
+        const string apply(ConcreteNodeList arguments) const {
+            assert(false);
+            return "";
+        }
+
+    private:
+        Type _type;
     };
 
 

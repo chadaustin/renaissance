@@ -1,3 +1,2 @@
-bar1 x = x
-bar x = bar1
-foo = (bar baz) value
+I x = x
+gl_Position = I ftransform

@@ -10,65 +10,64 @@
 
 namespace ren {
 
-    struct BuiltIn {
-        string name;
-        Type type;
-        bool function;
-    };
-
-    static BuiltIn builtIns[] = {
-        // Default attributes.
-        { "gl_Color",          VEC4   },
-        { "gl_SecondaryColor", VEC4   },
-        { "gl_Normal",         VEC3   },
-        { "gl_Vertex",         VEC4   },
-        { "gl_FogCoord",       FLOAT  },
-        //{ "gl_MultiTexCoord",  "vec4[]" },
-
-        // ftransform is kind of a special attribute in that it's a function call...
-        { "ftransform",        VEC4, true },
-
-        // Default varyings.
-
-        // Default uniforms.
-
-        // Built-in state.
-        { "gl_ModelViewProjectionMatrix", MAT4 },
-    };
-
-
-#define ARRAY_SIZE(array) (sizeof(array) / sizeof(*(array)))
-
     class SyntaxNode;
     typedef boost::shared_ptr<SyntaxNode> SyntaxNodePtr;
     typedef std::vector<SyntaxNodePtr> SyntaxNodeList;
 
+
     class SyntaxNode {
     public:
-        SyntaxNode(const string& name_, const SyntaxNodeList& children_)
-        : name(name_)
-        , children(children_) {
+        virtual ~SyntaxNode() { }
+        virtual string toString() const = 0;
+    };
+
+
+    class ApplySyntaxNode : public SyntaxNode {
+    public:
+        ApplySyntaxNode(const SyntaxNodeList& children)
+        : _children(children) {
+            assert(children.size() >= 2);
         }
 
         string toString() const {
-            if (children.empty()) {
-                return name;
-            } else {
-                string rv = "(" + name;
-                for (size_t i = 0; i < children.size(); ++i) {
-                    rv += " " + children[i]->toString();
+            string rv = "(";
+            for (size_t i = 0; i < _children.size(); ++i) {
+                if (i != 0) {
+                    rv += " ";
                 }
-                return rv + ")";
+                rv += _children[i]->toString();
             }
+            return rv + ")";
         }
 
-        static string paren(const string& str) {
-            return "(" + str + ")";
+        const SyntaxNodeList& getChildren() const {
+            return _children;
         }
 
-        string name;
-        SyntaxNodeList children;
+    private:
+        SyntaxNodeList _children;
     };
+    typedef boost::shared_ptr<ApplySyntaxNode> ApplySyntaxNodePtr;
+
+
+    class ValueSyntaxNode : public SyntaxNode {
+    public:
+        ValueSyntaxNode(const string& name)
+        : _name(name) {
+        }
+
+        string toString() const {
+            return _name;
+        }
+
+        string getName() const {
+            return _name;
+        }
+
+    private:
+        string _name;
+    };
+    typedef boost::shared_ptr<ValueSyntaxNode> ValueSyntaxNodePtr;
 
 
     inline SyntaxNodePtr makeBinaryNode(
@@ -79,10 +78,11 @@ namespace ren {
         assert(lhs);
         assert(rhs);
 
-        SyntaxNodeList children(2);
-        children[0] = lhs;
-        children[1] = rhs;
-        return SyntaxNodePtr(new SyntaxNode(name, children));
+        SyntaxNodeList children(3);
+        children[0].reset(new ValueSyntaxNode(name));
+        children[1] = lhs;
+        children[2] = rhs;
+        return SyntaxNodePtr(new ApplySyntaxNode(children));
     }
 
 }

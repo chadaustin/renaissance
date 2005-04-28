@@ -4,6 +4,19 @@
 
 namespace ren {
 
+    std::ostream& operator<<(std::ostream& os, const ArgumentList& list) {
+        for (ArgumentList::const_iterator i = list.begin();
+             i != list.end();
+             ++i
+        ) {
+            if (i != list.begin()) {
+                os << ' ';
+            }
+            os << *i;
+        }
+        return os;
+    }
+
     void Definition::print() {
         std::cout << "Function: " << name << std::endl;
         if (!arguments.empty()) {

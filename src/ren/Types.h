@@ -8,6 +8,9 @@
 #include <boost/shared_ptr.hpp>
 
 
+#define REN_SHARED_PTR(C) typedef boost::shared_ptr<C> C##Ptr
+
+
 namespace ren {
 
     using std::string;
@@ -26,8 +29,7 @@ namespace ren {
             return !(*this == rhs);
         }
     };
-    typedef boost::shared_ptr<TypeObject> TypeObjectPtr;
-
+    REN_SHARED_PTR(TypeObject);
 
     enum PrimitiveTypeCode {
         _FLOAT,
@@ -99,9 +101,18 @@ namespace ren {
         const string getName() const;
         bool operator==(const TypeObject& rhs) const;
 
+        size_t size() const {
+            return _elements.size();
+        }
+
+        TypeObjectPtr getType(size_t i) const {
+            return _elements[i];
+        }
+
     private:
         std::vector<TypeObjectPtr> _elements;
     };
+    REN_SHARED_PTR(TupleType);
 
 
     class FunctionType : public TypeObject {
@@ -123,6 +134,7 @@ namespace ren {
         TypeObjectPtr _in;
         TypeObjectPtr _out;
     };
+    REN_SHARED_PTR(FunctionType);
 
 
     /**

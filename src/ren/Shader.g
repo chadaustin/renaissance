@@ -22,6 +22,8 @@ options {
 
 // Don't let ID take these over.
 tokens {
+    APPLY;  // Imaginary token.
+
     ATTRIBUTE = "attribute";
     CONSTANT  = "constant";
     UNIFORM   = "uniform";
@@ -96,17 +98,27 @@ cmpExpr:    addExpr  ( (LESS^ | GREATER^ | LTE^ | GTE^) addExpr)* ;
 addExpr:    multExpr ( (PLUS^ | MINUS^) multExpr)* ;
 multExpr:   signExpr ( (TIMES^ | OVER^) signExpr)* ;
 signExpr:   (PLUS^ | MINUS^)? app ;
-app :       (dottedvalue)+ ;
-
-/*
-    : ID^ (dottedvalue)*
-    | LITERAL^ (dottedvalue)*
-    | LPAREN! expr RPAREN! (dottedvalue)*
+app! :
+        (f:dottedvalue a:argvalues)
+        {
+            //if (#f) std::cout << "f: " << #f->toStringList() << "\n";
+            //if (#a) std::cout << "a: " << #a->toStringList() << "\n";
+            if (#a) {
+                #app = #([APPLY, "@"], f, a);
+            } else {
+                #app = #f;
+            }
+            //if (#app) std::cout << "app: " << #app->toStringList() << "\n";
+        }
     ;
-*/
 
-dottedvalue
-    : value (DOT^ value)*
+argvalues : (dottedvalue)* ;
+
+dottedvalue!
+    : v:value { #dottedvalue = #v; }
+      (
+      DOT w:value { #dottedvalue = #([APPLY, "@"], w, #dottedvalue); }
+      )*
     ;
 
 value
@@ -161,7 +173,7 @@ args returns [ArgumentList arglist]
     ;
 
 expr returns [SyntaxNodePtr node] {
-    SyntaxNodePtr lhs, rhs;
+    SyntaxNodePtr e, lhs, rhs;
     SyntaxNodeList v;
 }
     : #(CONCAT  lhs=expr rhs=expr) { node = makeBinaryNode("++", lhs, rhs); }
@@ -178,19 +190,20 @@ expr returns [SyntaxNodePtr node] {
     | #(MINUS   lhs=expr rhs=expr) { node = makeBinaryNode("-",  lhs, rhs); }
     | #(TIMES   lhs=expr rhs=expr) { node = makeBinaryNode("*",  lhs, rhs); }
     | #(OVER    lhs=expr rhs=expr) { node = makeBinaryNode("/",  lhs, rhs); }
-    | #(name:ID v=values) {
-            node.reset(new SyntaxNode(name->getText(), v));
+    | #(APPLY e=expr v=values) {
+            v.insert(v.begin(), e);
+            node.reset(new ApplySyntaxNode(v));
         }
-    | #(lit:LITERAL v=values) {
-            node.reset(new SyntaxNode(lit->getText(), v));
+    | id:ID {
+            node.reset(new ValueSyntaxNode(id->getText()));
         }
-    | #(DOT lhs=expr rhs=expr) {
-            node = makeBinaryNode(".", lhs, rhs);
+    | lit:LITERAL {
+            node.reset(new ValueSyntaxNode(lit->getText()));
         }
     ;
 
 values returns [SyntaxNodeList values] {
     SyntaxNodePtr e;
 }
-    : ( e=expr { values.push_back(e); } )*
+    : ( e=expr { values.push_back(e); } )+
     ;
