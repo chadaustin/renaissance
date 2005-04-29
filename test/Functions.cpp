@@ -48,8 +48,8 @@ static const string functionFS = "";
 
 
 TEST(CompileFunction) {
-//    CompileResult cr = compile(function);
-//    CHECK(cr.success);
-//    CHECK_EQUAL(cr.vertexShader,   functionVS);
-//    CHECK_EQUAL(cr.fragmentShader, functionFS);
+    CompileResult cr = compile(function);
+    CHECK(cr.success);
+    CHECK_EQUAL(cr.vertexShader,   functionVS);
+    CHECK_EQUAL(cr.fragmentShader, functionFS);
 }

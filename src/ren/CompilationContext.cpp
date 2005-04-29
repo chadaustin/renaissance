@@ -7,6 +7,39 @@
 
 namespace ren {
 
+
+#if 0
+    struct BuiltIn {
+        string name;
+        Type type;
+        bool function;
+    };
+
+    static BuiltIn builtIns[] = {
+        // Default attributes.
+        { "gl_Color",          VEC4   },
+        { "gl_SecondaryColor", VEC4   },
+        { "gl_Normal",         VEC3   },
+        { "gl_Vertex",         VEC4   },
+        { "gl_FogCoord",       FLOAT  },
+        //{ "gl_MultiTexCoord",  "vec4[]" },
+
+        // ftransform is kind of a special attribute in that it's a function call...
+        { "ftransform",        VEC4, true },
+
+        // Default varyings.
+
+        // Default uniforms.
+
+        // Built-in state.
+        { "gl_ModelViewProjectionMatrix", MAT4 },
+    };
+
+
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof(*(array)))
+#endif
+
+
     static bool isInteger(const string& name) {
         for (size_t i = 0; i < name.size(); ++i) {
             if (!isdigit(name[i])) {
@@ -193,7 +226,7 @@ namespace ren {
 
                     ConcreteNodePtr cn(instantiate(d->expression, inner));
 
-                    AbstractionNode::ReplacementList arguments;
+                    ConcreteNodeList arguments;
                     for (size_t i = 0; i < d->arguments.size(); ++i) {
                         arguments.push_back(symbols[d->arguments[i]]);
                     }
