@@ -70,6 +70,19 @@ namespace ren {
     typedef boost::shared_ptr<ValueSyntaxNode> ValueSyntaxNodePtr;
 
 
+    inline SyntaxNodePtr makeUnaryNode(
+        const string& name,
+        SyntaxNodePtr lhs
+    ) {
+        assert(lhs);
+
+        SyntaxNodeList children(2);
+        children[0].reset(new ValueSyntaxNode(name));
+        children[1] = lhs;
+        return SyntaxNodePtr(new ApplySyntaxNode(children));
+    }
+
+
     inline SyntaxNodePtr makeBinaryNode(
         const string& name,
         SyntaxNodePtr lhs,

@@ -22,8 +22,12 @@ options {
 
 // Don't let ID take these over.
 tokens {
-    APPLY;  // Imaginary token.
+    // Imaginary tokens.
+    APPLY;
+    NEGATIVE;
+    POSITIVE;
 
+    // Keywords.
     ATTRIBUTE = "attribute";
     CONSTANT  = "constant";
     UNIFORM   = "uniform";
@@ -97,7 +101,13 @@ eqExpr:     cmpExpr  ( (EQ^ | NOTEQ^) cmpExpr)* ;
 cmpExpr:    addExpr  ( (LESS^ | GREATER^ | LTE^ | GTE^) addExpr)* ;
 addExpr:    multExpr ( (PLUS^ | MINUS^) multExpr)* ;
 multExpr:   signExpr ( (TIMES^ | OVER^) signExpr)* ;
-signExpr:   (PLUS^ | MINUS^)? app ;
+
+signExpr
+    :  app
+    |! PLUS  pa:app { #signExpr = #([POSITIVE, "+"], pa); }
+    |! MINUS ma:app { #signExpr = #([NEGATIVE, "-"], ma); }
+    ;
+
 app! :
         (f:dottedvalue a:argvalues)
         {
@@ -190,6 +200,8 @@ expr returns [SyntaxNodePtr node] {
     | #(MINUS   lhs=expr rhs=expr) { node = makeBinaryNode("-",  lhs, rhs); }
     | #(TIMES   lhs=expr rhs=expr) { node = makeBinaryNode("*",  lhs, rhs); }
     | #(OVER    lhs=expr rhs=expr) { node = makeBinaryNode("/",  lhs, rhs); }
+    | #(NEGATIVE lhs=expr)         { node = makeUnaryNode ("-",  lhs);      }
+    | #(POSITIVE lhs=expr)         { node = makeUnaryNode ("+",  lhs);      }
     | #(APPLY e=expr v=values) {
             v.insert(v.begin(), e);
             node.reset(new ApplySyntaxNode(v));

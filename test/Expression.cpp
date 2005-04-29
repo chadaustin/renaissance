@@ -40,3 +40,11 @@ TEST(ExpressionCompile) {
     CHECK_EQUAL(cr.vertexShader,   VS);
     CHECK_EQUAL(cr.fragmentShader, FS);
 }
+
+
+static const string negativeSource = "foo = -1";
+
+TEST(Negative) {
+    ProgramPtr p = parse(negativeSource);
+    CHECK(p);
+}
