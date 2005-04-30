@@ -154,6 +154,20 @@ namespace ren {
                 }
             }
 
+            if (name == "xyz") {
+                if (Type(argTypes) == makeTupleType(VEC4)) {
+                    Type ft(makeFunctionType(makeTupleType(VEC4), VEC3));
+                    return ConcreteNodePtr(new ValueNode("xyx", ft));
+                }
+            }
+
+            if (name == "xy") {
+                if (Type(argTypes) == makeTupleType(VEC4)) {
+                    Type ft(makeFunctionType(makeTupleType(VEC4), VEC2));
+                    return ConcreteNodePtr(new ValueNode("xy", ft));
+                }
+            }
+
             return ConcreteNodePtr();
         }
     };

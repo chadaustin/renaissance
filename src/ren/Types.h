@@ -190,6 +190,10 @@ namespace ren {
     }
 
 
+    inline Type makeTupleType(Type t) {
+        return new TupleType(t.get());
+    }
+
     inline Type makeTupleType(Type t1, Type t2) {
         return new TupleType(t1.get(), t2.get());
     }

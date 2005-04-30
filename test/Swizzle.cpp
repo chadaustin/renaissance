@@ -1,13 +1,16 @@
-#include <ren/Compiler.h>
-#include "TestFramework.h"
-using namespace ren;
+#include "TestPrologue.h"
 
 
 static const string source = "foo = gl_Vertex.xyz\n";
 
+
 TEST(Swizzle) {
     ProgramPtr p = parse(source);
     CHECK(p);
+
+    CompilationContext cc(p);
+    ConcreteNodePtr foo = cc.instantiate("foo");
+    CHECK_EQUAL(foo->getType(), VEC3);
 }
 
 
