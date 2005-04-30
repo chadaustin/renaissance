@@ -12,13 +12,23 @@
 namespace ren {
 
     struct Uniform {
-        Uniform(Type type_, string name_)
-        : type(type_)
-        , name(name_) {
+    public:
+        Uniform(Type type, string name)
+        : _type(type)
+        , _name(name) {
         }
 
-        Type type;
-        string name;
+        Type getType() const {
+            return _type;
+        }
+
+        string getName() const {
+            return _name;
+        }
+
+    private:
+        Type _type;
+        string _name;
     };
 
 
@@ -41,6 +51,15 @@ namespace ren {
 
         bool hasDefinition(const string& name) const {
             return getDefinition(name);
+        }
+
+        const Uniform* getUniform(const string& name) const {
+            for (size_t i = 0; i < uniforms.size(); ++i) {
+                if (uniforms[i].getName() == name) {
+                    return &uniforms[i];
+                }
+            }
+            return 0;
         }
 
         std::vector<Uniform> uniforms;

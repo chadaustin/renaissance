@@ -10,6 +10,12 @@
 
 #define REN_SHARED_PTR(C) typedef boost::shared_ptr<C> C##Ptr
 
+#define REN_DYNAMIC_CAST(name, type, object)    \
+    type name = dynamic_cast<type>(object)
+
+#define REN_DYNAMIC_CAST_PTR(name, type, object)        \
+    boost::shared_ptr<type> name = boost::dynamic_pointer_cast<type>(object)
+
 
 namespace ren {
 

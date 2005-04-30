@@ -1,7 +1,8 @@
-#ifndef CODE_NODE_H
-#define CODE_NODE_H
+#ifndef REN_CODE_NODE_H
+#define REN_CODE_NODE_H
 
 
+#include "ConcreteNode.h"
 #include "Types.h"
 
 
@@ -40,6 +41,10 @@ namespace ren {
             return "<expression>";
         }
 
+        const CodeNodeList& getArguments() const {
+            return _arguments;
+        }
+
     private:
         bool _infix;
         string _op;
@@ -50,16 +55,22 @@ namespace ren {
 
     class NameCodeNode : public CodeNode {
     public:
-        NameCodeNode(const string& name)
-        : _name(name) {
+        NameCodeNode(const string& name, ValueNodePtr value)
+        : _name(name)
+        , _value(value) {
         }
 
         string asExpression() const {
             return _name;
         }
 
+        ValueNodePtr getValue() const {
+            return _value;
+        }
+
     private:
         string _name;
+        ValueNodePtr _value;
     };
     REN_SHARED_PTR(NameCodeNode);
 

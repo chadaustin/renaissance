@@ -120,7 +120,11 @@ namespace ren {
 
             if (name == "ftransform") {
                 if (Type(argTypes) == Type(empty)) {
-                    return ConcreteNodePtr(new ValueNode("ftransform", VEC4, true));
+                    return ConcreteNodePtr(new ValueNode(
+                                               "ftransform",
+                                               VEC4,
+                                               ValueNode::BUILTIN,
+                                               true));
                 } else {
                     throw CompileError(name + ": Uh oh.  Can't do that.");
                 }
@@ -203,6 +207,16 @@ namespace ren {
             static Type empty(new TupleType);
 
             //std::cerr << "Instantiating name: " << name << " " << Type(argTypes) << "\n";
+
+            // Is it a uniform?
+            const Uniform* u = _program->getUniform(name);
+            if (u) {
+                return ConcreteNodePtr(
+                    new ValueNode(
+                        name,
+                        u->getType(),
+                        ValueNode::UNIFORM));
+            }
 
             // Find a definition.
             DefinitionPtr d = _program->getDefinition(

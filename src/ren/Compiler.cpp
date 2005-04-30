@@ -1,5 +1,5 @@
 #include <sstream>
-#include "CodeNode.h"
+#include "CodeGraph.h"
 #include "CompilationContext.h"
 #include "Compiler.h"
 #include "ConcreteNode.h"
@@ -45,10 +45,6 @@ namespace ren {
                 "It has type: " + node->getType().getName());
         }
     }
-
-
-#define REN_DYNAMIC_CAST(name, type, object)    \
-    type name = dynamic_cast<type>(object)
 
 
     typedef std::map<ConcreteNodePtr, ConcreteNodePtr> ReplacementMap;
@@ -97,8 +93,10 @@ namespace ren {
 
 
     CodeNodePtr evaluate(ConcreteNodePtr c) {
-        if (REN_DYNAMIC_CAST(v, ValueNode*, c.get())) {
-            return CodeNodePtr(new NameCodeNode(v->evaluate()));
+        if (REN_DYNAMIC_CAST_PTR(v, ValueNode, c)) {
+            return CodeNodePtr(new NameCodeNode(
+                                   v->evaluate(),
+                                   v));
         } else if (REN_DYNAMIC_CAST(a, ApplicationNode*, c.get())) {
 
             ConcreteNodePtr function = a->getFunction();
@@ -163,21 +161,15 @@ namespace ren {
 
         CompilationContext cc(program);
 
-        std::ostringstream vertexShader;
-        std::ostringstream fragmentShader;
+        // Build code graph.
 
+        CodeGraph cg;
+        
         if (program->hasDefinition("gl_Position")) {
             ConcreteNodePtr gl_Position = cc.instantiate("gl_Position");
             if (gl_Position) {
                 requireType("gl_Position", gl_Position, VEC4);
-
-                vertexShader
-                    << "void main()\n"
-                    << "{\n"
-                    << "  gl_Position = "
-                    << evaluate(gl_Position)->asExpression()
-                    << ";\n"
-                    << "}\n";
+                cg.outputs["gl_Position"] = evaluate(gl_Position);
             }
         }
 
@@ -185,15 +177,39 @@ namespace ren {
             ConcreteNodePtr gl_FragColor = cc.instantiate("gl_FragColor");
             if (gl_FragColor) {
                 requireType("gl_FragColor", gl_FragColor, VEC4);
-
-                fragmentShader
-                    << "void main()\n"
-                    << "{\n"
-                    << "  gl_FragColor = "
-                    << evaluate(gl_FragColor)->asExpression()
-                    << ";\n"
-                    << "}\n";
+                cg.outputs["gl_FragColor"] = evaluate(gl_FragColor);
             }
+        }
+
+        // Split into vertex and fragment stages.
+
+        // Generate GLSL.
+
+        std::ostringstream vertexShader;
+        std::ostringstream fragmentShader;
+
+        if (cg.outputs.count("gl_Position")) {
+            std::ostringstream uniforms;
+            cg.getUniforms(uniforms, cg.outputs["gl_Position"]);
+
+            vertexShader
+                << uniforms.str()
+                << "void main()\n"
+                << "{\n"
+                << "  gl_Position = "
+                << cg.outputs["gl_Position"]->asExpression()
+                << ";\n"
+                << "}\n";
+        }
+
+        if (cg.outputs.count("gl_FragColor")) {
+            fragmentShader
+                << "void main()\n"
+                << "{\n"
+                << "  gl_FragColor = "
+                << cg.outputs["gl_FragColor"]->asExpression()
+                << ";\n"
+                << "}\n";
         }
 
         return CompileResult(

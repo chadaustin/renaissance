@@ -131,14 +131,31 @@ namespace ren {
 
     class ValueNode : public ConcreteNode {
     public:
-        ValueNode(const string& name, Type type, bool isFunction = false)
+        enum InputType {
+            BUILTIN,
+            UNIFORM,
+        };
+
+        ValueNode(const string& name,
+                  Type type,
+                  InputType inputType = BUILTIN,
+                  bool isFunction = false)
         : _name(name)
         , _type(type)
+        , _inputType(inputType)
         , _isFunction(isFunction) {
+        }
+
+        string getName() const {
+            return _name;
         }
 
         Type getType() const {
             return _type;
+        }
+
+        InputType getInputType() const {
+            return _inputType;
         }
 
         const string evaluate() const {
@@ -148,6 +165,7 @@ namespace ren {
     private:
         string _name;
         Type _type;
+        InputType _inputType;
         bool _isFunction;
     };
     REN_SHARED_PTR(ValueNode);
