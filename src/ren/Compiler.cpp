@@ -79,7 +79,7 @@ namespace ren {
         } else if (REN_DYNAMIC_CAST(p, ArgumentNode*, node.get())) {
             (void)p;
             return node;
-        } else if (REN_DYNAMIC_CAST(p, InfixNode*, node.get())) {
+        } else if (REN_DYNAMIC_CAST(p, FunctionNode*, node.get())) {
             (void)p;
             return node;
         } else if (REN_DYNAMIC_CAST(p, ValueNode*, node.get())) {
@@ -102,17 +102,17 @@ namespace ren {
             ConcreteNodePtr function = a->getFunction();
             const ConcreteNodeList& arguments = a->getArguments();
 
-            if (REN_DYNAMIC_CAST(infix, InfixNode*, function.get())) {
+            if (REN_DYNAMIC_CAST(f, FunctionNode*, function.get())) {
 
-                assert(arguments.size() == 2);
-                CodeNodeList args(2);
-                args[0] = evaluate(arguments[0]);
-                args[1] = evaluate(arguments[1]);
-
+                CodeNodeList args;
+                for (size_t i = 0; i < arguments.size(); ++i) {
+                    args.push_back(evaluate(arguments[i]));
+                }
                 return CodeNodePtr(new CallCodeNode(
-                                       true,
-                                       infix->getOperator(),
+                                       f->getCallType(),
+                                       f->getName(),
                                        args));
+
             } else if (REN_DYNAMIC_CAST(ab, AbstractionNode*, function.get())) {
 
                 ConcreteNodePtr inside = ab->getInside();
@@ -137,8 +137,8 @@ namespace ren {
             assert(!"Can't directly evaluate an ArgumentNode");
             (void)p;
             return CodeNodePtr();
-        } else if (REN_DYNAMIC_CAST(p, InfixNode*, c.get())) {
-            assert(!"Can't directly evaluate an InfixNode");
+        } else if (REN_DYNAMIC_CAST(p, FunctionNode*, c.get())) {
+            assert(!"Can't directly evaluate a FunctionNode");
             (void)p;
             return CodeNodePtr();
         } else {

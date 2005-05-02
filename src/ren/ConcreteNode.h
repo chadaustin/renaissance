@@ -33,13 +33,7 @@ namespace ren {
         }
 
         Type getType() const {
-            Type functionType(_function->getType());
-            if (const FunctionType* ft = dynamic_cast<const FunctionType*>(
-                    functionType.get().get())) {
-                return ft->getOutType();
-            } else {
-                throw CompileError("Calling non-function.");
-            }
+            return asFunction(_function->getType()).out;
         }
 
         ConcreteNodePtr getFunction() const {
@@ -62,17 +56,16 @@ namespace ren {
         AbstractionNode(ConcreteNodeList replacements, ConcreteNodePtr inside)
         : _replacements(replacements)
         , _inside(inside) {
+            assert(_replacements.size() >= 1);
         }
 
         Type getType() const {
-            std::vector<TypeObjectPtr> types;
+            TypeList types;
             for (size_t i = 0; i < _replacements.size(); ++i) {
-                types.push_back(_replacements[i]->getType().get());
+                types.push_back(_replacements[i]->getType());
             }
 
-            Type ft(makeFunctionType(new TupleType(types),
-                                     _inside->getType()));
-            return ft;
+            return makeTuple(types) >> _inside->getType();
         }
 
         const ConcreteNodeList& getReplacements() const {
@@ -106,27 +99,38 @@ namespace ren {
     REN_SHARED_PTR(ArgumentNode);
 
 
-    /// Represents an infix operator.
-    class InfixNode : public ConcreteNode {
+    class FunctionNode : public ConcreteNode {
     public:
-        InfixNode(const string& op, Type type)
-        : _op(op)
-        , _type(type) {
+        enum CallType {
+            SWIZZLE,
+            INFIX,
+            FUNCTION,
+        };
+
+        FunctionNode(const string& name, Type type, CallType callType)
+        : _name(name)
+        , _type(type)
+        , _callType(callType) {
         }
 
         Type getType() const {
             return _type;
         }
 
-        string getOperator() const {
-            return _op;
+        string getName() const {
+            return _name;
+        }
+
+        CallType getCallType() const {
+            return _callType;
         }
 
     private:
-        string _op;
+        string _name;
         Type _type;
+        CallType _callType;
     };
-    REN_SHARED_PTR(InfixNode);
+    REN_SHARED_PTR(FunctionNode);
 
 
     class ValueNode : public ConcreteNode {

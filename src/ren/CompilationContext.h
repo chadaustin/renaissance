@@ -18,13 +18,10 @@ namespace ren {
         }
 
         ConcreteNodePtr instantiate(const string& name) {
-            static TupleTypePtr empty(new TupleType);
-            return instantiate(name, empty);
+            return instantiate(name, NullType);
         }
 
-        ConcreteNodePtr instantiate(
-            const string& name,
-            const TupleTypePtr& argTypes);
+        ConcreteNodePtr instantiate(const string& name, Type argTypes);
 
     private:
         ProgramPtr _program;

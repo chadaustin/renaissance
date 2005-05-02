@@ -18,6 +18,7 @@ libenv.Command(
     'antlr -o $TARGET.dir $SOURCES')
 
 sources = Split("""
+    BuiltInScope.cpp
     CompilationContext.cpp
     Compiler.cpp
     Definition.cpp
@@ -30,6 +31,7 @@ sources = Split("""
 """)
 
 headers = Split("""
+    Base.h
     CompilationContext.h
     Compiler.h
     ConcreteNode.h

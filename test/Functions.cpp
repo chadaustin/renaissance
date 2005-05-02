@@ -53,3 +53,34 @@ TEST(CompileFunction) {
     CHECK_EQUAL(cr.vertexShader,   functionVS);
     CHECK_EQUAL(cr.fragmentShader, functionFS);
 }
+
+
+static const string vcons =
+    "f = 0.0\n"
+    "gl_Position = vec4 0.0 0.0 0.0 0.0\n"
+    ;
+
+
+TEST(VectorConstructor) {
+    ProgramPtr p = parse(vcons);
+    CHECK(p);
+
+    CompilationContext cc(p);
+    CHECK_EQUAL(cc.instantiate("gl_Position")->getType(), VEC4);
+}
+
+
+TEST(CompileVectorConstructor) {
+    static const string VS =
+        "void main()\n"
+        "{\n"
+        "  gl_Position = vec4(0.0, 0.0, 0.0, 0.0);\n"
+        "}\n"
+        ;
+    static const string FS = "";
+
+    CompileResult cr = compile(vcons);
+    CHECK_EQUAL(cr.vertexShader, VS);
+    CHECK_EQUAL(cr.fragmentShader, FS);
+    
+}

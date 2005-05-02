@@ -14,6 +14,8 @@ TEST(Expression) {
     CHECK(gl_Position);
 
     CompilationContext cc1(p1);
+    CHECK_EQUAL(cc1.instantiate("gl_ModelViewProjectionMatrix")->getType(), MAT4);
+    CHECK_EQUAL(cc1.instantiate("gl_Vertex")->getType(),   VEC4);
     CHECK_EQUAL(cc1.instantiate("gl_Position")->getType(), VEC4);
 
     ProgramPtr p2 = parse(source2);

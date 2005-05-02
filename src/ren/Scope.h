@@ -2,7 +2,7 @@
 #define REN_SCOPE_H
 
 
-#include <boost/shared_ptr.hpp>
+#include "ConcreteNode.h"
 #include "Types.h"
 
 
@@ -12,9 +12,7 @@ namespace ren {
     public:
         virtual ~Scope() { }
 
-        virtual ConcreteNodePtr lookup(
-            const string& name,
-            const TupleTypePtr& argTypes) = 0;
+        virtual ConcreteNodePtr lookup(const string& name, Type argTypes) = 0;
     };
     REN_SHARED_PTR(Scope);
 

@@ -20,25 +20,47 @@ namespace ren {
 
     class CallCodeNode : public CodeNode {
     public:
+        typedef FunctionNode::CallType CallType;
+
         CallCodeNode(
-            bool infix,
+            CallType callType,
             const string& op,
             const CodeNodeList& arguments)
-        : _infix(infix)
+        : _callType(callType)
         , _op(op)
         , _arguments(arguments) {
         }
 
         string asExpression() const {
-            if (_infix) {
-                assert(_arguments.size() == 2);
-                string lhs = _arguments[0]->asExpression();
-                string rhs = _arguments[1]->asExpression();
-                return "(" + lhs + " " + _op + " " + rhs + ")";
-            } else {
-                return "<unsupported>";
+            switch (_callType) {
+                case FunctionNode::SWIZZLE: {
+                    assert(_arguments.size() == 1);
+                    string arg = _arguments[0]->asExpression();
+                    return  arg + "." + _op;
+                }
+
+                case FunctionNode::INFIX: {
+                    assert(_arguments.size() == 2);
+                    string lhs = _arguments[0]->asExpression();
+                    string rhs = _arguments[1]->asExpression();
+                    return "(" + lhs + " " + _op + " " + rhs + ")";
+                }
+
+                case FunctionNode::FUNCTION: {
+                    std::string rv = _op + "(";
+                    for (size_t i = 0; i < _arguments.size(); ++i) {
+                        if (i != 0) {
+                            rv += ", ";
+                        }
+                        rv += _arguments[i]->asExpression();
+                    }
+                    return rv + ")";
+                }
+                    
+                default:
+                    assert(!"Unknown Call Type");
+                    return "<unknown>";
             }
-            return "<expression>";
         }
 
         const CodeNodeList& getArguments() const {
@@ -46,7 +68,7 @@ namespace ren {
         }
 
     private:
-        bool _infix;
+        CallType _callType;
         string _op;
         CodeNodeList _arguments;
     };

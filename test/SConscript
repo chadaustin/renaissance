@@ -18,6 +18,8 @@ sources = Split("""
     Swizzle.cpp
     Uniforms.cpp
     VectorConcatenation.cpp
+
+    Types.cpp
 """)
 
 # Depend on the test programs so that typing "scons test" makes everything

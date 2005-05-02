@@ -2,240 +2,92 @@
 #define REN_TYPES_H
 
 
-#include <string>
 #include <vector>
-#include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
-
-
-#define REN_SHARED_PTR(C) typedef boost::shared_ptr<C> C##Ptr
-
-#define REN_DYNAMIC_CAST(name, type, object)    \
-    type name = dynamic_cast<type>(object)
-
-#define REN_DYNAMIC_CAST_PTR(name, type, object)        \
-    boost::shared_ptr<type> name = boost::dynamic_pointer_cast<type>(object)
+#include "Base.h"
 
 
 namespace ren {
 
-    using std::string;
-
-
-    class TypeObject : public boost::noncopyable {
-    public:
-        // This virtual destructor isn't strictly necessary, because we use
-        // boost::shared_ptr.  But gcc complains loudly.
-        virtual ~TypeObject() { }
-
-        virtual const string getName() const = 0;
-        virtual bool operator==(const TypeObject& rhs) const = 0;
-
-        bool operator!=(const TypeObject& rhs) const {
-            return !(*this == rhs);
-        }
-    };
+    class TypeObject;
     REN_SHARED_PTR(TypeObject);
 
-    enum PrimitiveTypeCode {
-        _FLOAT,
-        _VEC2,
-        _VEC3,
-        _VEC4,
-
-        _INT,
-        _VEC2I,
-        _VEC3I,
-        _VEC4I,
-
-        _BOOL,
-        _VEC2B,
-        _VEC3B,
-        _VEC4B,
-
-        _MAT2,
-        _MAT3,
-        _MAT4,
-
-        _SAMPLER1D,
-        _SAMPLER2D,
-        _SAMPLER3D,
-        _SAMPLERCUBE,
-        _SAMPLER1DSHADOW,
-        _SAMPLER2DSHADOW,
-    };
-
-
-    class PrimitiveType : public TypeObject {
-    public:
-        PrimitiveType(PrimitiveTypeCode code)
-        : _code(code) {
-        }
-
-        const string getName() const;
-        bool operator==(const TypeObject& rhs) const;
-
-    private:
-        PrimitiveTypeCode _code;
-    };
-
-
-    class TupleType : public TypeObject {
-    public:
-        TupleType() {
-        }
-
-        TupleType(TypeObjectPtr t1) {
-            assert(t1);
-            _elements.push_back(t1);
-        }
-
-        TupleType(TypeObjectPtr t1, TypeObjectPtr t2) {
-            assert(t1);
-            assert(t2);
-            _elements.push_back(t1);
-            _elements.push_back(t2);
-        }
-
-        TupleType(const std::vector<TypeObjectPtr>& elements)
-        : _elements(elements) {
-            for (size_t i = 0; i < _elements.size(); ++i) {
-                assert(_elements[i]);
-            }
-        }
-
-        const string getName() const;
-        bool operator==(const TypeObject& rhs) const;
-
-        size_t size() const {
-            return _elements.size();
-        }
-
-        TypeObjectPtr getType(size_t i) const {
-            return _elements[i];
-        }
-
-    private:
-        std::vector<TypeObjectPtr> _elements;
-    };
-    REN_SHARED_PTR(TupleType);
-
-
-    class FunctionType : public TypeObject {
-    public:
-        FunctionType(TypeObjectPtr in, TypeObjectPtr out)
-        : _in(in)
-        , _out(out) {
-            assert(in);
-            assert(out);
-        }
-
-        const string getName() const;
-        bool operator==(const TypeObject& rhs) const;
-
-        TypeObjectPtr getInType()  const { return _in;  }
-        TypeObjectPtr getOutType() const { return _out; }
-
-    private:
-        TypeObjectPtr _in;
-        TypeObjectPtr _out;
-    };
-    REN_SHARED_PTR(FunctionType);
-
-
     /**
-     * A value-semantics TypeObjects wrapper, so I don't go insane with
+     * A value-semantics TypeObject wrapper, so I don't go insane with
      * Java-ish code.
      */
     class Type {
     public:
-        template<typename TypeType>
-        Type(TypeType* object)
-        : _object(object) {
-            assert(_object);
-        }
+        Type(NotNull<TypeObject*> object);
+        Type(NotNull<TypeObjectPtr> object);
+        Type(const Type& rhs);
 
-        template<typename TypeType>
-        Type(boost::shared_ptr<TypeType> object)
-        : _object(object) {
-            assert(_object);
-        }
+        const string getName() const;
 
-        Type(const Type& rhs)
-        : _object(rhs._object) {
-        }
+        bool operator==(const Type& rhs) const;
+        bool operator!=(const Type& rhs) const;
 
         TypeObjectPtr get() const {
             return _object;
         }
 
-        const string getName() const {
-            return _object->getName();
-        }
-
-        bool operator==(const Type& rhs) const {
-            return *_object == *rhs._object;
-        }
-
-        bool operator!=(const Type& rhs) const {
-            return !(*this == rhs);
-        }
-
     private:
         TypeObjectPtr _object;
     };
+    typedef std::vector<Type> TypeList;
 
     inline std::ostream& operator<<(std::ostream& os, const Type& type) {
         return os << type.getName();
     }
 
 
-    inline Type makeTupleType(Type t) {
-        return new TupleType(t.get());
-    }
-
-    inline Type makeTupleType(Type t1, Type t2) {
-        return new TupleType(t1.get(), t2.get());
-    }
-
-    inline Type makeFunctionType(Type in, Type out) {
-        return new FunctionType(in.get(), out.get());
-    }
+    Type operator*(Type lhs, Type rhs);
+    Type operator>>(Type lhs, Type rhs);
 
 
-    static Type FLOAT(new PrimitiveType(_FLOAT));
-    static Type VEC2 (new PrimitiveType(_VEC2));
-    static Type VEC3 (new PrimitiveType(_VEC3));
-    static Type VEC4 (new PrimitiveType(_VEC4));
-
-    static Type INT  (new PrimitiveType(_INT));
-    static Type VEC2I(new PrimitiveType(_VEC2I));
-    static Type VEC3I(new PrimitiveType(_VEC3I));
-    static Type VEC4I(new PrimitiveType(_VEC4I));
-
-    static Type BOOL (new PrimitiveType(_BOOL));
-    static Type VEC2B(new PrimitiveType(_VEC2B));
-    static Type VEC3B(new PrimitiveType(_VEC3B));
-    static Type VEC4B(new PrimitiveType(_VEC4B));
-
-    static Type MAT2(new PrimitiveType(_MAT2));
-    static Type MAT3(new PrimitiveType(_MAT3));
-    static Type MAT4(new PrimitiveType(_MAT4));
-
-    static Type SAMPLER1D      (new PrimitiveType(_SAMPLER1D));
-    static Type SAMPLER2D      (new PrimitiveType(_SAMPLER2D));
-    static Type SAMPLER3D      (new PrimitiveType(_SAMPLER3D));
-    static Type SAMPLERCUBE    (new PrimitiveType(_SAMPLERCUBE));
-    static Type SAMPLER1DSHADOW(new PrimitiveType(_SAMPLER1DSHADOW));
-    static Type SAMPLER2DSHADOW(new PrimitiveType(_SAMPLER2DSHADOW));
+    Type makeTuple(const TypeList& list);
+    TypeList asTuple(Type t);
 
 
-    enum Frequency {
-        CONSTANT,
-        UNIFORM,
-        VERTEX,
-        FREQUENCY,
+    struct Function {
+        Function(Type in_, Type out_)
+        : in(in_)
+        , out(out_) {
+        }
+
+        Type in;
+        Type out;
     };
+    Function asFunction(Type t);
+
+
+    extern const Type NullType;
+
+    extern const Type FLOAT;
+    extern const Type VEC2;
+    extern const Type VEC3;
+    extern const Type VEC4;
+
+    extern const Type INT;
+    extern const Type VEC2I;
+    extern const Type VEC3I;
+    extern const Type VEC4I;
+
+    extern const Type BOOL; 
+    extern const Type VEC2B;
+    extern const Type VEC3B;
+    extern const Type VEC4B;
+
+    extern const Type MAT2;
+    extern const Type MAT3;
+    extern const Type MAT4;
+
+    extern const Type SAMPLER1D;
+    extern const Type SAMPLER2D;
+    extern const Type SAMPLER3D;
+    extern const Type SAMPLERCUBE;
+    extern const Type SAMPLER1DSHADOW;
+    extern const Type SAMPLER2DSHADOW;
+
 
 }
 
