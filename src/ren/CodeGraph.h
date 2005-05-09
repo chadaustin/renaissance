@@ -30,6 +30,24 @@ namespace ren {
             }
         }
 
+        void getAttributes(std::ostream& os, CodeNodePtr node) {
+            assert(node);
+            if (REN_DYNAMIC_CAST_PTR(p, CallCodeNode, node)) {
+                const CodeNodeList& args = p->getArguments();
+                for (size_t i = 0; i < args.size(); ++i) {
+                    getUniforms(os, args[i]);
+                }
+            } else if (REN_DYNAMIC_CAST_PTR(p, NameCodeNode, node)) {
+                ValueNodePtr v = p->getValue();
+                if (v->getInputType() == ValueNode::ATTRIBUTE) {
+                    os << "attribute " << v->getType()
+                       << " " << v->getName() << ";\n";
+                }
+            } else {
+                assert(!"Unknown Code Node");
+            }
+        }
+
     private:
         
     };

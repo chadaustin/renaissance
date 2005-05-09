@@ -11,9 +11,9 @@
 
 namespace ren {
 
-    struct Uniform {
+    struct Input {
     public:
-        Uniform(Type type, string name)
+        Input(Type type, string name)
         : _type(type)
         , _name(name) {
         }
@@ -30,6 +30,10 @@ namespace ren {
         Type _type;
         string _name;
     };
+
+
+    typedef Input Uniform;
+    typedef Input Attribute;
 
 
     struct Program {
@@ -62,7 +66,17 @@ namespace ren {
             return 0;
         }
 
+        const Attribute* getAttribute(const string& name) const {
+            for (size_t i = 0; i < attributes.size(); ++i) {
+                if (attributes[i].getName() == name) {
+                    return &attributes[i];
+                }
+            }
+            return 0;
+        }
+
         std::vector<Uniform> uniforms;
+        std::vector<Attribute> attributes;
         std::vector<DefinitionPtr> definitions;
     };
     typedef boost::shared_ptr<Program> ProgramPtr;

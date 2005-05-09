@@ -192,8 +192,12 @@ namespace ren {
             std::ostringstream uniforms;
             cg.getUniforms(uniforms, cg.outputs["gl_Position"]);
 
+            std::ostringstream attributes;
+            cg.getAttributes(attributes, cg.outputs["gl_Position"]);
+
             vertexShader
                 << uniforms.str()
+                << attributes.str()
                 << "void main()\n"
                 << "{\n"
                 << "  gl_Position = "

@@ -72,14 +72,21 @@ namespace ren {
             { "*",          MAT4 * VEC4 >> VEC4,    INFIX },
             { "+",          INT * INT >> INT,       INFIX },
             { "/",          VEC2 * VEC2 >> VEC2,    INFIX },
+            { "/",          FLOAT * FLOAT >> FLOAT, INFIX },
+            { "-",          FLOAT * FLOAT >> FLOAT, INFIX },
+
             { "ftransform", VEC4,                   NULLARY_FUNCTION },
             { "gl_Vertex",  VEC4,                   VALUE },
             { "gl_Color",   VEC4,                   VALUE },
             { "gl_ModelViewProjectionMatrix", MAT4, VALUE },
+
+            { "mix", VEC3 * VEC3 * FLOAT >> VEC3,   FUNCTION },
+            { "vec4", FLOAT * FLOAT * FLOAT * FLOAT >> VEC4, FUNCTION },
+
             { "xyz", VEC4 >> VEC3,                  SWIZZLE },
             { "xy",  VEC4 >> VEC2,                  SWIZZLE },
             { "x",   VEC4 >> FLOAT,                 SWIZZLE },
-            { "vec4", FLOAT * FLOAT * FLOAT * FLOAT >> VEC4, FUNCTION },
+            { "++",  VEC3 * FLOAT >> VEC4,          FUNCTION },
         };
 
 #define REN_ARRAY_SIZE(array) (sizeof(array) / sizeof(*(array)))

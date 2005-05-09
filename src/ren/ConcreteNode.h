@@ -138,6 +138,7 @@ namespace ren {
         enum InputType {
             BUILTIN,
             UNIFORM,
+            ATTRIBUTE,
         };
 
         ValueNode(const string& name,

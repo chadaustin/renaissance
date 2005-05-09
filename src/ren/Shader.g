@@ -153,10 +153,16 @@ program returns [ProgramPtr p] {
     DefinitionPtr def;
 }
     : (
-            #(UNIFORM type:ID name:ID) {
+            #(UNIFORM utype:ID uname:ID) {
                 p->uniforms.push_back(Uniform(
-                        getTypeFromString(type->getText()),
-                        name->getText()));
+                        getTypeFromString(utype->getText()),
+                        uname->getText()));
+            }
+        |
+            #(ATTRIBUTE atype:ID aname:ID) {
+                p->attributes.push_back(Attribute(
+                        getTypeFromString(atype->getText()),
+                        aname->getText()));
             }
         |
             def=definition {

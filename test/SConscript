@@ -5,6 +5,7 @@ env = env.Copy(tools=['Renaissance', 'Boost', 'BoostTest'])
 sources = Split("""
     TestMain.cpp
 
+    Attributes.cpp
     BasicProgram.cpp
     CodeGeneration.cpp
     Comments.cpp

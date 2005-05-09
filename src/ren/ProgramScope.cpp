@@ -61,14 +61,25 @@ namespace ren {
         //std::cerr << "Instantiating name: " << name << " "
         //          << argTypes << "\n";
 
-        // Is it a uniform?
-        const Uniform* u = _program->getUniform(name);
-        if (u && argTypes == NullType) {
-            return ConcreteNodePtr(
-                new ValueNode(
-                    name,
-                    u->getType(),
-                    ValueNode::UNIFORM));
+        if (argTypes == NullType) {
+
+            // Is it a uniform?
+            if (const Uniform* u = _program->getUniform(name)) {
+                return ConcreteNodePtr(
+                    new ValueNode(
+                        name,
+                        u->getType(),
+                        ValueNode::UNIFORM));
+            }
+
+            // Is it an attribute?
+            if (const Attribute* a = _program->getAttribute(name)) {
+                return ConcreteNodePtr(
+                    new ValueNode(
+                        name,
+                        a->getType(),
+                        ValueNode::ATTRIBUTE));
+            }
         }
 
         TypeList argTuple(asTuple(argTypes));

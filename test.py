@@ -52,12 +52,12 @@ Function: bing
 
     'function.rs':  { 'lexer': """\
 mult matrix vector = matrix * vector
-gl_Position = mult gl_ModelViewProjection gl_Vertex
+gl_Position = mult gl_ModelViewProjectionMatrix gl_Vertex
 """,
 
                       'parser': """\
  ( = ( mult matrix vector ) ( * matrix vector ) )
- ( = gl_Position ( @ mult gl_ModelViewProjection gl_Vertex ) )
+ ( = gl_Position ( @ mult gl_ModelViewProjectionMatrix gl_Vertex ) )
 """,
 
                       'validator': """\
@@ -65,7 +65,7 @@ Function: mult
   Arguments: matrix vector
   Expression: (* matrix vector)
 Function: gl_Position
-  Expression: (mult gl_ModelViewProjection gl_Vertex)
+  Expression: (mult gl_ModelViewProjectionMatrix gl_Vertex)
 """ } }
 
 
