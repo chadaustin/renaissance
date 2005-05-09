@@ -1,4 +1,5 @@
 #include <boost/noncopyable.hpp>
+#include "Errors.h"
 #include "Types.h"
 
 
@@ -32,32 +33,40 @@ namespace ren {
     REN_SHARED_PTR(NullTypeObject);
 
 
+#define REN_PRIMITIVE_TYPES                                             \
+        REN_PRIMITIVE_TYPE(FLOAT, "float")                              \
+        REN_PRIMITIVE_TYPE(VEC2,  "vec2")                               \
+        REN_PRIMITIVE_TYPE(VEC3,  "vec3")                               \
+        REN_PRIMITIVE_TYPE(VEC4,  "vec4")                               \
+                                                                        \
+        REN_PRIMITIVE_TYPE(INT,   "int")                                \
+        REN_PRIMITIVE_TYPE(VEC2I, "vec2i")                              \
+        REN_PRIMITIVE_TYPE(VEC3I, "vec3i")                              \
+        REN_PRIMITIVE_TYPE(VEC4I, "vec4i")                              \
+                                                                        \
+        REN_PRIMITIVE_TYPE(BOOL,  "bool")                               \
+        REN_PRIMITIVE_TYPE(VEC2B, "vec2b")                              \
+        REN_PRIMITIVE_TYPE(VEC3B, "vec3b")                              \
+        REN_PRIMITIVE_TYPE(VEC4B, "vec4b")                              \
+                                                                        \
+        REN_PRIMITIVE_TYPE(MAT2, "mat2")                                \
+        REN_PRIMITIVE_TYPE(MAT3, "mat3")                                \
+        REN_PRIMITIVE_TYPE(MAT4, "mat4")                                \
+                                                                        \
+        REN_PRIMITIVE_TYPE(SAMPLER1D,       "sampler1D")                \
+        REN_PRIMITIVE_TYPE(SAMPLER2D,       "sampler2D")                \
+        REN_PRIMITIVE_TYPE(SAMPLER3D,       "sampler3D")                \
+        REN_PRIMITIVE_TYPE(SAMPLERCUBE,     "samplerCube")              \
+        REN_PRIMITIVE_TYPE(SAMPLER1DSHADOW, "sampler1DShadow")          \
+        REN_PRIMITIVE_TYPE(SAMPLER2DSHADOW, "sampler2DShadow")
+
+
     enum PrimitiveTypeCode {
-        _FLOAT,
-        _VEC2,
-        _VEC3,
-        _VEC4,
 
-        _INT,
-        _VEC2I,
-        _VEC3I,
-        _VEC4I,
+#define REN_PRIMITIVE_TYPE(code, name) _##code,
+        REN_PRIMITIVE_TYPES
+#undef REN_PRIMITIVE_TYPE
 
-        _BOOL,
-        _VEC2B,
-        _VEC3B,
-        _VEC4B,
-
-        _MAT2,
-        _MAT3,
-        _MAT4,
-
-        _SAMPLER1D,
-        _SAMPLER2D,
-        _SAMPLER3D,
-        _SAMPLERCUBE,
-        _SAMPLER1DSHADOW,
-        _SAMPLER2DSHADOW,
     };
 
 
@@ -68,36 +77,13 @@ namespace ren {
         }
 
         const string getName() const {
-#define REN_NAME_CASE(type, name) case _##type: return (name)
             switch (_code) {
-                REN_NAME_CASE(FLOAT, "float");
-                REN_NAME_CASE(VEC2,  "vec2");
-                REN_NAME_CASE(VEC3,  "vec3");
-                REN_NAME_CASE(VEC4,  "vec4");
 
-                REN_NAME_CASE(INT,   "int");
-                REN_NAME_CASE(VEC2I, "vec2i");
-                REN_NAME_CASE(VEC3I, "vec3i");
-                REN_NAME_CASE(VEC4I, "vec4i");
-
-                REN_NAME_CASE(BOOL,  "bool");
-                REN_NAME_CASE(VEC2B, "vec2b");
-                REN_NAME_CASE(VEC3B, "vec3b");
-                REN_NAME_CASE(VEC4B, "vec4b");
-
-                REN_NAME_CASE(MAT2, "mat2");
-                REN_NAME_CASE(MAT3, "mat3");
-                REN_NAME_CASE(MAT4, "mat4");
-
-                REN_NAME_CASE(SAMPLER1D,       "sampler1D");
-                REN_NAME_CASE(SAMPLER2D,       "sampler2D");
-                REN_NAME_CASE(SAMPLER3D,       "sampler3D");
-                REN_NAME_CASE(SAMPLERCUBE,     "samplerCube");
-                REN_NAME_CASE(SAMPLER1DSHADOW, "sampler1DShadow");
-                REN_NAME_CASE(SAMPLER2DSHADOW, "sampler2DShadow");
+#define REN_PRIMITIVE_TYPE(code, name) case _##code: return name;
+        REN_PRIMITIVE_TYPES
+#undef REN_PRIMITIVE_TYPE
                 default: assert(false); return "<unknown>";
             }
-#undef REN_NAME_CASE
         }
 
         bool operator==(const TypeObject& rhs) const {
@@ -310,32 +296,18 @@ namespace ren {
     }
 
 
+    Type getTypeFromString(const string& name) {
+#define REN_PRIMITIVE_TYPE(code, n) if (name == n) return code;
+        REN_PRIMITIVE_TYPES
+#undef REN_PRIMITIVE_TYPE
+            throw CompileError(name + ": unknown type");
+    }
+
+
     const Type NullType(new NullTypeObject);
 
-    const Type FLOAT(new PrimitiveType(_FLOAT));
-    const Type VEC2 (new PrimitiveType(_VEC2));
-    const Type VEC3 (new PrimitiveType(_VEC3));
-    const Type VEC4 (new PrimitiveType(_VEC4));
-
-    const Type INT  (new PrimitiveType(_INT));
-    const Type VEC2I(new PrimitiveType(_VEC2I));
-    const Type VEC3I(new PrimitiveType(_VEC3I));
-    const Type VEC4I(new PrimitiveType(_VEC4I));
-
-    const Type BOOL (new PrimitiveType(_BOOL));
-    const Type VEC2B(new PrimitiveType(_VEC2B));
-    const Type VEC3B(new PrimitiveType(_VEC3B));
-    const Type VEC4B(new PrimitiveType(_VEC4B));
-
-    const Type MAT2(new PrimitiveType(_MAT2));
-    const Type MAT3(new PrimitiveType(_MAT3));
-    const Type MAT4(new PrimitiveType(_MAT4));
-
-    const Type SAMPLER1D      (new PrimitiveType(_SAMPLER1D));
-    const Type SAMPLER2D      (new PrimitiveType(_SAMPLER2D));
-    const Type SAMPLER3D      (new PrimitiveType(_SAMPLER3D));
-    const Type SAMPLERCUBE    (new PrimitiveType(_SAMPLERCUBE));
-    const Type SAMPLER1DSHADOW(new PrimitiveType(_SAMPLER1DSHADOW));
-    const Type SAMPLER2DSHADOW(new PrimitiveType(_SAMPLER2DSHADOW));
+#define REN_PRIMITIVE_TYPE(code, name) const Type code(new PrimitiveType(_##code));
+    REN_PRIMITIVE_TYPES
+#undef REN_PRIMITIVE_TYPE
 
 }

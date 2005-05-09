@@ -18,7 +18,9 @@ TEST(Uniforms) {
     CompilationContext cc(p);
     ConcreteNodePtr gl_PositionNode = cc.instantiate("gl_Position");
     CHECK(gl_PositionNode);
-    CHECK(gl_PositionNode->getType() == VEC4);
+    CHECK_EQUAL(gl_PositionNode->getType(), VEC4);
+    CHECK_EQUAL(cc.instantiate("FloatUniform")->getType(), FLOAT);
+    CHECK_EQUAL(cc.instantiate("Mat3Uniform")->getType(), MAT3);
 }
 
 

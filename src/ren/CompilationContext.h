@@ -4,7 +4,6 @@
 
 #include <sstream>
 #include "ConcreteNode.h"
-#include "Errors.h"
 #include "Program.h"
 #include "Types.h"
 

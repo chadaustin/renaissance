@@ -25,6 +25,11 @@ namespace ren {
 
         bool operator==(const Type& rhs) const;
         bool operator!=(const Type& rhs) const;
+        bool operator<(const Type& rhs) const {
+            // We're going to treat name as being the unique "canonical"
+            // version of the type.
+            return getName() < rhs.getName();
+        }
 
         TypeObjectPtr get() const {
             return _object;
@@ -58,6 +63,9 @@ namespace ren {
         Type out;
     };
     Function asFunction(Type t);
+
+
+    Type getTypeFromString(const string& name);
 
 
     extern const Type NullType;

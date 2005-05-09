@@ -154,8 +154,9 @@ program returns [ProgramPtr p] {
 }
     : (
             #(UNIFORM type:ID name:ID) {
-                // TYPE=type->getText();
-                p->uniforms.push_back(Uniform(VEC4, name->getText()));
+                p->uniforms.push_back(Uniform(
+                        getTypeFromString(type->getText()),
+                        name->getText()));
             }
         |
             def=definition {

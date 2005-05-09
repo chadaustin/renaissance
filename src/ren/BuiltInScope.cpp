@@ -71,6 +71,7 @@ namespace ren {
         static const BuiltIn builtIns[] = {
             { "*",          MAT4 * VEC4 >> VEC4,    INFIX },
             { "+",          INT * INT >> INT,       INFIX },
+            { "/",          VEC2 * VEC2 >> VEC2,    INFIX },
             { "ftransform", VEC4,                   NULLARY_FUNCTION },
             { "gl_Vertex",  VEC4,                   VALUE },
             { "gl_Color",   VEC4,                   VALUE },
