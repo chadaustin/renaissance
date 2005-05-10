@@ -33,10 +33,10 @@ gl_Position = ftransform
 
 # Brick.
 
-py = position.y #* 0.5
-condition = fract py > 0.5
+origposition = gl_Vertex.xy / BrickSize
+condition = fract (origposition.y * 0.5) > 0.5
 xoffset = if condition then 0.5 else 0.0
-position = gl_Vertex.xy / BrickSize + vec2 xoffset 0.0
+position = origposition + vec2 xoffset 0.0
 
 useBrick = step (fract position) BrickPct
 
