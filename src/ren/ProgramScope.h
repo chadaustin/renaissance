@@ -31,6 +31,12 @@ namespace ren {
         ConcreteNodePtr lookup(const string& name, Type argTypes);
 
     private:
+        ConcreteNodePtr cache(Signature sig, ConcreteNodePtr value) {
+            assert(value);
+            _lookupCache[sig] = value;
+            return value;
+        }
+
         ConcreteNodePtr instantiate(SyntaxNodePtr syntaxNode, ScopePtr scope);
 
         ProgramPtr _program;

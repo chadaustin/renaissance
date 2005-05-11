@@ -31,6 +31,10 @@ tokens {
     ATTRIBUTE = "attribute";
     CONSTANT  = "constant";
     UNIFORM   = "uniform";
+
+    IF   = "if";
+    THEN = "then";
+    ELSE = "else";
 }
 
 ID: ('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
@@ -103,7 +107,8 @@ addExpr:    multExpr ( (PLUS^ | MINUS^) multExpr)* ;
 multExpr:   signExpr ( (TIMES^ | OVER^) signExpr)* ;
 
 signExpr
-    :  app
+    :  IF^ expr THEN! signExpr ELSE! signExpr
+    |  app
     |! PLUS  pa:app { #signExpr = #([POSITIVE, "+"], pa); }
     |! MINUS ma:app { #signExpr = #([NEGATIVE, "-"], ma); }
     ;
@@ -190,7 +195,7 @@ args returns [ArgumentList arglist]
     ;
 
 expr returns [SyntaxNodePtr node] {
-    SyntaxNodePtr e, lhs, rhs;
+    SyntaxNodePtr e, cond, lhs, rhs;
     SyntaxNodeList v;
 }
     : #(CONCAT  lhs=expr rhs=expr) { node = makeBinaryNode("++", lhs, rhs); }
@@ -209,6 +214,14 @@ expr returns [SyntaxNodePtr node] {
     | #(OVER    lhs=expr rhs=expr) { node = makeBinaryNode("/",  lhs, rhs); }
     | #(NEGATIVE lhs=expr)         { node = makeUnaryNode ("-",  lhs);      }
     | #(POSITIVE lhs=expr)         { node = makeUnaryNode ("+",  lhs);      }
+    | #(IF cond=expr lhs=expr rhs=expr) {
+            v.resize(4);
+            v[0].reset(new ValueSyntaxNode("if"));
+            v[1] = cond;
+            v[2] = lhs;
+            v[3] = rhs;
+            node.reset(new ApplySyntaxNode(v));
+        }
     | #(APPLY e=expr v=values) {
             v.insert(v.begin(), e);
             node.reset(new ApplySyntaxNode(v));

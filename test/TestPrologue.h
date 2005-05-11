@@ -2,6 +2,7 @@
 #define TEST_PROLOGUE_H
 
 
+#include <ren/GLSLShader.h>
 #include <ren/Program.h>
 #include <ren/Compiler.h>
 #include <ren/CompilationContext.h>

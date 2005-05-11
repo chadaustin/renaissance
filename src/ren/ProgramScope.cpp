@@ -56,6 +56,10 @@ namespace ren {
                                name);
         }
 
+        if (_lookupCache[sig]) {
+            return _lookupCache[sig];
+        }
+
         RecursionGuard guard__(sig, *this);
 
         //std::cerr << "Instantiating name: " << name << " "
@@ -65,20 +69,20 @@ namespace ren {
 
             // Is it a uniform?
             if (const Uniform* u = _program->getUniform(name)) {
-                return ConcreteNodePtr(
+                return cache(sig, ConcreteNodePtr(
                     new ValueNode(
                         name,
                         u->getType(),
-                        ValueNode::UNIFORM));
+                        ValueNode::UNIFORM)));
             }
 
             // Is it an attribute?
             if (const Attribute* a = _program->getAttribute(name)) {
-                return ConcreteNodePtr(
+                return cache(sig, ConcreteNodePtr(
                     new ValueNode(
                         name,
                         a->getType(),
-                        ValueNode::ATTRIBUTE));
+                        ValueNode::ATTRIBUTE)));
             }
         }
 
@@ -92,7 +96,8 @@ namespace ren {
             //std::cerr << "...definition\n";
 
             if (argTypes == NullType) {
-                return instantiate(d->expression, shared_from_this());
+                return cache(sig,
+                             instantiate(d->expression, shared_from_this()));
             } else {
                 // create new abstraction node, pass in a scope.
                 InnerScope::SymbolMap symbols;
@@ -109,7 +114,8 @@ namespace ren {
                 for (size_t i = 0; i < d->arguments.size(); ++i) {
                     arguments.push_back(symbols[d->arguments[i]]);
                 }
-                return ConcreteNodePtr(new AbstractionNode(arguments, cn));
+                return cache(sig, ConcreteNodePtr(new AbstractionNode(
+                                                      arguments, cn)));
             }
         }
 

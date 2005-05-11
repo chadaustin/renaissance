@@ -7,6 +7,7 @@ sources = Split("""
 
     Attributes.cpp
     BasicProgram.cpp
+    Branch.cpp
     CodeGeneration.cpp
     Comments.cpp
     ConstantProgram.cpp
@@ -16,6 +17,7 @@ sources = Split("""
     Expression.cpp
     Functions.cpp
     Literals.cpp
+    Sharing.cpp
     Swizzle.cpp
     Uniforms.cpp
     VectorConcatenation.cpp

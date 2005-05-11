@@ -6,12 +6,21 @@ TEST(NullType) {
     CHECK_EQUAL(NullType.getName(), "null");
 
     CHECK_EQUAL(NullType, NullType * NullType);
+
+    Type t1 = NullType;
+    Type t2 = NullType;
+    CHECK(!(t1 < t2));
+    CHECK(!(t2 < t1));
 }
 
 
 TEST(PrimitiveTypes) {
     CHECK_EQUAL(INT, INT);
     CHECK(INT != FLOAT);
+
+    Type t1 = INT;
+    Type t2 = FLOAT;
+    CHECK(t1 < t2 || t2 < t1);
 }
 
 

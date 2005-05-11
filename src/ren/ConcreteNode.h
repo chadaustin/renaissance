@@ -2,6 +2,7 @@
 #define REN_CONCRETE_NODE_H
 
 
+#include <sstream>
 #include <boost/shared_ptr.hpp>
 #include "Errors.h"
 #include "Types.h"
@@ -20,6 +21,8 @@ namespace ren {
         virtual ~ConcreteNode() {
         }
 
+        virtual string asStringTree() const = 0;
+
         virtual Type getType() const = 0;
         //virtual Frequency getFrequency() = 0;
     };
@@ -30,6 +33,14 @@ namespace ren {
         ApplicationNode(ConcreteNodePtr function, ConcreteNodeList arguments)
         : _function(function)
         , _arguments(arguments) {
+        }
+
+        string asStringTree() const {
+            string rv = "(@ " + _function->asStringTree();
+            for (size_t i = 0; i < _arguments.size(); ++i) {
+                rv += " " + _arguments[i]->asStringTree();
+            }
+            return rv + ")";
         }
 
         Type getType() const {
@@ -57,6 +68,14 @@ namespace ren {
         : _replacements(replacements)
         , _inside(inside) {
             assert(_replacements.size() >= 1);
+        }
+
+        string asStringTree() const {
+            string rv = "\\";
+            for (size_t i = 0; i < _replacements.size(); ++i) {
+                rv += _replacements[i]->asStringTree() + ".";
+            }
+            return rv + _inside->asStringTree();;
         }
 
         Type getType() const {
@@ -89,6 +108,12 @@ namespace ren {
         : _type(type) {
         }
 
+        string asStringTree() const {
+            std::ostringstream os;
+            os << this;
+            return os.str();
+        }
+
         Type getType() const {
             return _type;
         }
@@ -111,6 +136,10 @@ namespace ren {
         : _name(name)
         , _type(type)
         , _callType(callType) {
+        }
+
+        string asStringTree() const {
+            return _name;
         }
 
         Type getType() const {
@@ -152,6 +181,10 @@ namespace ren {
         }
 
         string getName() const {
+            return _name;
+        }
+
+        string asStringTree() const {
             return _name;
         }
 

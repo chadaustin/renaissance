@@ -22,6 +22,7 @@ sources = Split("""
     CompilationContext.cpp
     Compiler.cpp
     Definition.cpp
+    GLSLShader.cpp
     Program.cpp
     ProgramScope.cpp
     Types.cpp
@@ -33,11 +34,13 @@ sources = Split("""
 
 headers = Split("""
     Base.h
+    CodeNode.h
     CompilationContext.h
     Compiler.h
     ConcreteNode.h
     Definition.h
     Errors.h
+    GLSLShader.h
     Program.h
     ProgramScope.h
     Scope.h
