@@ -30,6 +30,7 @@ namespace ren {
 
 
     ConcreteNodePtr BuiltInScope::lookup(const string& name, Type argTypes) {
+        // Boolean constants.
         if (name == "true" || name == "false") {
             if (Type(argTypes) == NullType) {
                 return ConcreteNodePtr(new ValueNode(name, BOOL));
@@ -38,6 +39,7 @@ namespace ren {
             }
         }
 
+        // Integer constants.
         if (isInteger(name)) {
             if (Type(argTypes) == NullType) {
                 return ConcreteNodePtr(new ValueNode(name, INT));
@@ -46,12 +48,28 @@ namespace ren {
             }
         }
 
+        // Float constants.
         if (isFloat(name)) {
             if (Type(argTypes) == NullType) {
                 return ConcreteNodePtr(new ValueNode(name, FLOAT));
             } else {
                 throw CompileError("Can't call a float.");
             }
+        }
+
+        // If construct.
+        if (name == "if") {
+            TypeList tl(asTuple(argTypes));
+            if (tl.size() != 3) {
+                throw CompileError("if construct requires three arguments.");
+            }
+            if (tl[0] != BOOL) {
+                throw CompileError("if condition must have type bool.");
+            }
+            if (tl[1] != tl[2]) {
+                throw CompileError("if true-part and false-part must have same type.");
+            }
+            return ConcreteNodePtr(new IfNode(argTypes >> tl[1]));
         }
 
         enum BuiltInType {

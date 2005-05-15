@@ -25,6 +25,7 @@ sources = Split("""
     GLSLShader.cpp
     Program.cpp
     ProgramScope.cpp
+    ShadeGraph.cpp
     Types.cpp
 
     ShaderLexer.cpp
@@ -34,6 +35,7 @@ sources = Split("""
 
 headers = Split("""
     Base.h
+    BuiltInScope.h
     CodeNode.h
     CompilationContext.h
     Compiler.h
@@ -41,9 +43,11 @@ headers = Split("""
     Definition.h
     Errors.h
     GLSLShader.h
+    GLSLStatement.h
     Program.h
     ProgramScope.h
     Scope.h
+    ShadeGraph.h
     SyntaxNode.h
     Types.h
 

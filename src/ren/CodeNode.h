@@ -8,10 +8,14 @@
 
 namespace ren {
 
+    class CodeNode;
+    REN_SHARED_PTR(CodeNode);
+    typedef std::vector<CodeNodePtr> CodeNodeList;
+
+
     class CodeNode {
     public:
-        CodeNode() 
-        : referenceCount(0) {
+        CodeNode() {
         }
 
         virtual ~CodeNode() { }
@@ -19,15 +23,48 @@ namespace ren {
         virtual Type getType() const = 0;
         virtual string asExpression() const = 0;
 
-        /**
-         * Number of times this node is referenced in the call graph.
-         * Used in the algorithm to split shared computations.
-         */
-        int referenceCount;
+        /// Don't resize the list returned by this method.
+        virtual CodeNodeList& getChildren() = 0;
     };
-    REN_SHARED_PTR(CodeNode);
 
-    typedef std::vector<CodeNodePtr> CodeNodeList;
+
+    /// Represents a conditional.
+    class IfCodeNode : public CodeNode {
+    public:
+        IfCodeNode(
+            Type type,
+            CodeNodePtr condition,
+            CodeNodePtr truePart,
+            CodeNodePtr falsePart)
+        : _type(type)
+        , _children(3) {
+            _children[0] = condition;
+            _children[1] = truePart;
+            _children[2] = falsePart;
+        }
+
+        Type getType() const {
+            return _type;
+        }
+
+        string asExpression() const {
+            //assert(!"IfCodeNode can't directly be turned into an expression.");
+            return
+                "(" + _children[0]->asExpression() +
+                " ? " + _children[1]->asExpression() +
+                " : " + _children[2]->asExpression();
+        }
+
+
+        CodeNodeList& getChildren() {
+            return _children;
+        }
+
+    private:
+        Type _type;
+        CodeNodeList _children;
+    };
+    REN_SHARED_PTR(IfCodeNode);
 
 
     /// Represents a call to a native function.
@@ -82,7 +119,7 @@ namespace ren {
             }
         }
 
-        CodeNodeList& getArguments() {
+        CodeNodeList& getChildren() {
             return _arguments;
         }
 
@@ -117,6 +154,10 @@ namespace ren {
             return _name;
         }
 
+        CodeNodeList& getChildren() {
+            return _children;
+        }
+
         string getName() const {
             return _name;
         }
@@ -129,6 +170,9 @@ namespace ren {
         string _name;
         Type _type;
         InputType _inputType;
+
+        // We need to return something...  leave it empty.
+        CodeNodeList _children;
     };
     REN_SHARED_PTR(NameCodeNode);
 

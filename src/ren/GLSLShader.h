@@ -3,14 +3,32 @@
 
 
 #include <iostream>
+#include <map>
+#include <vector>
 #include "Base.h"
 #include "CodeNode.h"
+#include "GLSLStatement.h"
 
 
 namespace ren {
 
-    extern void countReferences(CodeNodePtr node);
-    extern CodeNodePtr findMultiplyReferenced(CodeNodePtr node);
+    typedef std::vector<StatementPtr> ReferencePath;
+    typedef std::vector<ReferencePath> ReferenceList;
+    typedef std::map<CodeNodePtr, ReferenceList> ReferenceMap;
+
+    extern void countReferences(
+        CodeNodePtr node,
+        ReferenceMap& refs,
+        const ReferencePath& path);
+
+    extern void countReferences(
+        StatementPtr statement,
+        ReferenceMap& refs);
+
+    extern CodeNodePtr findMultiplyReferenced(
+        CodeNodePtr node,
+        const ReferenceMap& refs);
+
 
     class GLSLShader {
     public:
@@ -24,36 +42,18 @@ namespace ren {
             string type;
         };
 
-        struct Statement {
-            bool define;
-            string lhs;
-            CodeNodePtr rhs;
-        };
-
         std::vector<Uniform>   uniforms;
         std::vector<Attribute> attributes;
-        std::vector<Statement> statements;
+        BlockPtr main;
 
         GLSLShader();
 
-        void optimize();
         void generate(std::ostream& os);
 
     private:
-        static void clearReferences(CodeNodePtr node) {
-            assert(node);
-            node->referenceCount = 0;
-            if (REN_DYNAMIC_CAST_PTR(p, CallCodeNode, node)) {
-                const CodeNodeList& args = p->getArguments();
-                for (size_t i = 0; i < args.size(); ++i) {
-                    clearReferences(args[i]);
-                }
-            } else if (REN_DYNAMIC_CAST_PTR(p, NameCodeNode, node)) {
-                // Do nothing.
-            } else {
-                assert(!"Unknown code node type");
-            }
-        }
+        string newRegisterName();
+        void splitBranches();
+        void share();
 
         int _register;
     };

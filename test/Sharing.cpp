@@ -27,19 +27,18 @@ TEST(Sharing) {
     REN_DYNAMIC_CAST_PTR(pos_code_call, CallCodeNode, pos_code);
     CHECK(pos_code_call);
     
-    const CodeNodeList& args = pos_code_call->getArguments();
+    CodeNodeList args = pos_code_call->getChildren();
     CHECK_EQUAL(args.size(), 4U);
     CHECK_EQUAL(args[0], args[1]);
     CHECK_EQUAL(args[0], args[2]);
     CHECK_EQUAL(args[0], args[3]);
 
-    CHECK_EQUAL(pos_code->referenceCount, 0);
-    CHECK_EQUAL(args[0]->referenceCount,  0);
-    countReferences(pos_code);
-    CHECK_EQUAL(pos_code->referenceCount, 1);
-    CHECK_EQUAL(args[0]->referenceCount,  4);
+    ReferenceMap rm;
+    countReferences(pos_code, rm, ReferencePath());
+    CHECK_EQUAL(rm[pos_code].size(), 1U);
+    CHECK_EQUAL(rm[args[0]].size(),  4U);
 
-    CHECK_EQUAL(args[0], findMultiplyReferenced(pos_code));
+    CHECK_EQUAL(args[0], findMultiplyReferenced(pos_code, rm));
 
     static string VS =
         "void main()\n"

@@ -124,6 +124,25 @@ namespace ren {
     REN_SHARED_PTR(ArgumentNode);
 
 
+    class IfNode : public ConcreteNode {
+    public:
+        IfNode(Type type)
+        : _type(type) {
+        }
+
+        string asStringTree() const {
+            return "if";
+        }
+
+        Type getType() const {
+            return _type;
+        }
+
+    private:
+        Type _type;
+    };
+
+
     class FunctionNode : public ConcreteNode {
     public:
         enum CallType {

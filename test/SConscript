@@ -25,9 +25,8 @@ sources = Split("""
     Types.cpp
 """)
 
-# Depend on the test programs so that typing "scons test" makes everything
-# for test.py up-to-date as well.
-testProgramsLocation = Dir('#/stage/bin')
-
 runner = env.Program('testRunner', sources)
-AlwaysBuild( env.Alias('test', [runner, testProgramsLocation], runner[0].path) )
+AlwaysBuild( env.Alias('test', [runner], runner[0].path) )
+
+testProgramsLocation = Dir('#/stage/bin')
+env.Alias('testprogs', testProgramsLocation)

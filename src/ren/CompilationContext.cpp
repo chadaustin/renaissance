@@ -83,12 +83,12 @@ namespace ren {
                                             v->evaluate(),
                                             v->getType(),
                                             v->getInputType())));
-        } else if (REN_DYNAMIC_CAST(a, ApplicationNode*, c.get())) {
+        } else if (REN_DYNAMIC_CAST_PTR(a, ApplicationNode, c)) {
 
             ConcreteNodePtr function = a->getFunction();
             const ConcreteNodeList& arguments = a->getArguments();
 
-            if (REN_DYNAMIC_CAST(f, FunctionNode*, function.get())) {
+            if (REN_DYNAMIC_CAST_PTR(f, FunctionNode, function)) {
 
                 CodeNodeList args;
                 for (size_t i = 0; i < arguments.size(); ++i) {
@@ -100,7 +100,7 @@ namespace ren {
                                                 f->getName(),
                                                 args)));
 
-            } else if (REN_DYNAMIC_CAST(ab, AbstractionNode*, function.get())) {
+            } else if (REN_DYNAMIC_CAST_PTR(ab, AbstractionNode, function)) {
 
                 ConcreteNodePtr inside = ab->getInside();
                 const ConcreteNodeList& replacements = ab->getReplacements();
@@ -114,6 +114,21 @@ namespace ren {
 
                 // clone inside, replacing arguments
                 return cache(c, evaluate(copyAndReplace(inside, rm)));
+
+            } else if (REN_DYNAMIC_CAST_PTR(in, IfNode, function)) {
+
+                if (arguments.size() != 3) {
+                    throw CompileError("if construct requires exactly 3 arguments.");
+                }
+                CodeNodePtr condition(evaluate(arguments[0]));
+                CodeNodePtr truePart (evaluate(arguments[1]));
+                CodeNodePtr falsePart(evaluate(arguments[2]));
+                assert(truePart->getType() == falsePart->getType());
+                return cache(c, CodeNodePtr(new IfCodeNode(
+                                                truePart->getType(),
+                                                condition,
+                                                truePart,
+                                                falsePart)));
 
             } else {
                 assert(!"Error Unknown Function Type!");
