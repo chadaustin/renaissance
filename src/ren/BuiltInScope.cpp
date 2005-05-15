@@ -77,6 +77,7 @@ namespace ren {
             NULLARY_FUNCTION,
             FUNCTION,
             INFIX,
+            PREFIX,
             SWIZZLE,
         };
 
@@ -88,28 +89,55 @@ namespace ren {
 
         static const BuiltIn builtIns[] = {
             { "*",          MAT4 * VEC4 >> VEC4,    INFIX },
+            { "*", MAT3 * VEC3 >> VEC3, INFIX },
             { "*",          FLOAT * FLOAT >> FLOAT, INFIX },
 
             { "+",          INT * INT >> INT,       INFIX },
+            { "+",          VEC2 * VEC2 >> VEC2,    INFIX },
+            { "+", FLOAT * FLOAT >> FLOAT, INFIX },
             { "/",          VEC2 * VEC2 >> VEC2,    INFIX },
             { "/",          FLOAT * FLOAT >> FLOAT, INFIX },
+
             { "-",          FLOAT * FLOAT >> FLOAT, INFIX },
+            { "-",          VEC3 * VEC3 >> VEC3,    INFIX },
+
+            { "-", VEC3 >> VEC3, PREFIX },
 
             { ">",          FLOAT * FLOAT >> BOOL,  INFIX },
 
             { "ftransform", VEC4,                   NULLARY_FUNCTION },
             { "gl_Vertex",  VEC4,                   VALUE },
             { "gl_Color",   VEC4,                   VALUE },
+            { "gl_Normal",  VEC3, VALUE },
+
+            { "gl_ModelViewMatrix",           MAT4, VALUE },
+            { "gl_NormalMatrix",              MAT3, VALUE },
             { "gl_ModelViewProjectionMatrix", MAT4, VALUE },
 
-            { "mix",   VEC3 * VEC3 * FLOAT >> VEC3,           FUNCTION },
+            { "normalize", VEC3 >> VEC3, FUNCTION },
+
+            { "reflect", VEC3 * VEC3 >> VEC3, FUNCTION },
+
+            { "pow", FLOAT * FLOAT >> FLOAT, FUNCTION },
+
+            { "mix",   VEC3 * VEC3 * FLOAT           >> VEC3, FUNCTION },
+            { "vec2",  FLOAT * FLOAT                 >> VEC2, FUNCTION },
             { "vec4",  FLOAT * FLOAT * FLOAT * FLOAT >> VEC4, FUNCTION },
+
             { "fract", FLOAT >> FLOAT,                        FUNCTION },
+            { "fract", VEC2  >> VEC2,                         FUNCTION },
+
+            { "step",  VEC2 * VEC2 >> VEC2, FUNCTION },
+
+            { "dot", VEC3 * VEC3 >> FLOAT, FUNCTION },
+
+            { "max", FLOAT * FLOAT >> FLOAT, FUNCTION },
 
             { "y",   VEC2 >> FLOAT,                 SWIZZLE },
             { "xyz", VEC4 >> VEC3,                  SWIZZLE },
             { "xy",  VEC4 >> VEC2,                  SWIZZLE },
             { "x",   VEC4 >> FLOAT,                 SWIZZLE },
+            { "x",   VEC2 >> FLOAT,                 SWIZZLE },
             { "wxyz", VEC4 >> VEC4,                 SWIZZLE },
 
             { "++",  VEC3 * FLOAT >> VEC4,          FUNCTION },
@@ -133,6 +161,10 @@ namespace ren {
                     case FUNCTION:
                         return ConcreteNodePtr(
                             new FunctionNode(b.name, b.type, FunctionNode::FUNCTION));
+                        break;
+                    case PREFIX:
+                        return ConcreteNodePtr(
+                            new FunctionNode(b.name, b.type, FunctionNode::PREFIX));
                         break;
                     case INFIX:
                         return ConcreteNodePtr(

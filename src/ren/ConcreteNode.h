@@ -148,6 +148,7 @@ namespace ren {
         enum CallType {
             SWIZZLE,
             INFIX,
+            PREFIX,
             FUNCTION,
         };
 

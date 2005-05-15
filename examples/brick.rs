@@ -16,20 +16,20 @@ DiffuseContribution = 1.0 - SpecularContribution
 # Transform.
 
 gl_Position = ftransform
-#ecPosition = (gl_ModelViewMatrix * gl_Vertex).xyz
-#tnorm = normalize (gl_NormalMatrix * gl_Normal)
+ecPosition = (gl_ModelViewMatrix * gl_Vertex).xyz
+tnorm = normalize (gl_NormalMatrix * gl_Normal)
 
 
 # Lighting.
 
-#lightVec   = normalize (LightPosition - ecPosition)
-#reflectVec = reflect (-lightVec) tnorm
-#viewVec    = normalize (-ecPosition)
+lightVec   = normalize (LightPosition - ecPosition)
+reflectVec = reflect (-lightVec) tnorm
+viewVec    = normalize (-ecPosition)
 
-#diffuse = max (dot lightVec viewVec) 0.0
-#s = pow (max (dot reflectVec viewVec) 0.0) 16.0
-#spec = if (diffuse > 0.0) then s else 0.0
-#LightIntensity = DiffuseContribution * diffuse + SpecularContribution * specular
+diffuse = max (dot lightVec viewVec) 0.0
+s = pow (max (dot reflectVec viewVec) 0.0) 16.0
+spec = if (diffuse > 0.0) then s else 0.0
+LightIntensity = DiffuseContribution * diffuse + SpecularContribution * spec
 
 # Brick.
 

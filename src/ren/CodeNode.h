@@ -102,6 +102,12 @@ namespace ren {
                     return "(" + lhs + " " + _op + " " + rhs + ")";
                 }
 
+                case FunctionNode::PREFIX: {
+                    assert(_arguments.size() == 1);
+                    string e = _arguments[0]->asExpression();
+                    return "(" + _op + e + ")";
+                }
+
                 case FunctionNode::FUNCTION: {
                     std::string rv = _op + "(";
                     for (size_t i = 0; i < _arguments.size(); ++i) {
