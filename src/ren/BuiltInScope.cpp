@@ -101,6 +101,8 @@ namespace ren {
             { "-",          FLOAT * FLOAT >> FLOAT, INFIX },
             { "-",          VEC3 * VEC3 >> VEC3,    INFIX },
 
+            { "+", FLOAT >> FLOAT, PREFIX },
+            { "-", FLOAT >> FLOAT, PREFIX },
             { "-", VEC3 >> VEC3, PREFIX },
 
             { ">",          FLOAT * FLOAT >> BOOL,  INFIX },
@@ -134,6 +136,7 @@ namespace ren {
             { "max", FLOAT * FLOAT >> FLOAT, FUNCTION },
 
             { "y",   VEC2 >> FLOAT,                 SWIZZLE },
+            { "y",   VEC4 >> FLOAT,                 SWIZZLE },
             { "xyz", VEC4 >> VEC3,                  SWIZZLE },
             { "xy",  VEC4 >> VEC2,                  SWIZZLE },
             { "x",   VEC4 >> FLOAT,                 SWIZZLE },
