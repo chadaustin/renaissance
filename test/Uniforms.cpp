@@ -6,6 +6,7 @@ static const string source =
     "uniform vec4  Vec4Uniform\n"
     "uniform mat3  Mat3Uniform\n"
     "gl_Position = Vec4Uniform\n"
+    "gl_FragColor = Vec4Uniform\n"
     ;
 
 TEST(Uniforms) {
@@ -31,7 +32,13 @@ TEST(UniformsCompile) {
         "{\n"
         "  gl_Position = Vec4Uniform;\n"
         "}\n";
-    static string FS = "";
+    static string FS =
+        "uniform vec4 Vec4Uniform;\n"
+        "void main()\n"
+        "{\n"
+        "  gl_FragColor = Vec4Uniform;\n"
+        "}\n";
+    ;
 
     CompileResult cr = compile(source);
     CHECK_EQUAL(cr.vertexShader,   VS);

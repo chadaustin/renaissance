@@ -85,6 +85,33 @@ namespace ren {
         }
 
         if (outputs.count("gl_FragColor")) {
+            // Declare referenced uniforms.
+            NameCodeNodeSet uniforms;
+            getUniforms(uniforms, outputs["gl_FragColor"]);
+            for (NameCodeNodeSet::iterator i = uniforms.begin();
+                 i != uniforms.end();
+                 ++i
+            ) {
+                GLSLShader::Uniform u;
+                u.name = (*i)->getName();
+                u.type = (*i)->getType().getName();
+                fs.uniforms.push_back(u);
+            }
+
+            // Declare referenced attributes.
+            NameCodeNodeSet attributes;
+            getAttributes(attributes, outputs["gl_FragColor"]);
+            for (NameCodeNodeSet::iterator i = attributes.begin();
+                 i != attributes.end();
+                 ++i
+            ) {
+                GLSLShader::Attribute a;
+                a.name = (*i)->getName();
+                a.type = (*i)->getType().getName();
+                fs.attributes.push_back(a);
+            }
+
+            // Add statements.
             AssignmentPtr s(new Assignment);
             s->define = false;
             s->lhs = "gl_FragColor";

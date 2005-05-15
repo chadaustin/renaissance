@@ -67,6 +67,10 @@ namespace ren {
 
     Type getTypeFromString(const string& name);
 
+    Type getElementType(Type t);
+    unsigned getVectorLength(Type t);
+    Type getVectorType(Type element, int length);
+
 
     extern const Type NullType;
 

@@ -1,14 +1,14 @@
 #include "TestPrologue.h"
 
 
-static const string source =
+static const string sharing =
     "f = gl_Vertex.x\n"
     "gl_Position = vec4 f f f f\n"
     ;
 
 
 TEST(Sharing) {
-    ProgramPtr p = parse(source);
+    ProgramPtr p = parse(sharing);
     CHECK(p);
 
     CompilationContext cc(p);
@@ -48,8 +48,33 @@ TEST(Sharing) {
         "}\n";
     static string FS = "";
 
-    CompileResult cr = compile(source);
+    CompileResult cr = compile(sharing);
     CHECK(cr.success);
     CHECK_EQUAL(cr.vertexShader,   VS);
+    CHECK_EQUAL(cr.fragmentShader, FS);
+}
+
+
+static const string doublesharing =
+    "a = gl_Vertex.x\n"
+    "b = a + a\n"
+    "gl_Position = vec4 b b b b\n"
+    ;
+
+
+TEST(DoubleSharing) {
+    string VS =
+        "void main()\n"
+        "{\n"
+        "  float _ren_r1 = gl_Vertex.x;\n"
+        "  float _ren_r0 = (_ren_r1 + _ren_r1);\n"
+        "  gl_Position = vec4(_ren_r0, _ren_r0, _ren_r0, _ren_r0);\n"
+        "}\n"
+        ;
+    string FS = "";
+
+    CompileResult cr(compile(doublesharing));
+    CHECK(cr.success);
+    CHECK_EQUAL(cr.vertexShader, VS);
     CHECK_EQUAL(cr.fragmentShader, FS);
 }

@@ -72,6 +72,23 @@ namespace ren {
             return ConcreteNodePtr(new IfNode(argTypes >> tl[1]));
         }
 
+        // Vector concatenation.
+        if (name == "++") {
+            TypeList tl(asTuple(argTypes));
+            if (tl.size() == 2) {
+                Type el1 = getElementType(tl[0]);
+                Type el2 = getElementType(tl[1]);
+                if (el1 == el2 && el1 != NullType) {
+                    int length1 = getVectorLength(tl[0]);
+                    int length2 = getVectorLength(tl[1]);
+                    Type vec = getVectorType(el1, length1 + length2);
+                    return ConcreteNodePtr(
+                        new FunctionNode(vec.getName(), el1 * el2 >> vec,
+                                         FunctionNode::FUNCTION));
+                }
+            }
+        }
+
         enum BuiltInType {
             VALUE,
             NULLARY_FUNCTION,
@@ -142,8 +159,6 @@ namespace ren {
             { "x",   VEC4 >> FLOAT,                 SWIZZLE },
             { "x",   VEC2 >> FLOAT,                 SWIZZLE },
             { "wxyz", VEC4 >> VEC4,                 SWIZZLE },
-
-            { "++",  VEC3 * FLOAT >> VEC4,          FUNCTION },
         };
 
 #define REN_ARRAY_SIZE(array) (sizeof(array) / sizeof(*(array)))

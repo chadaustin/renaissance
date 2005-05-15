@@ -304,6 +304,69 @@ namespace ren {
     }
 
 
+    Type getElementType(Type t) {
+        if (t == FLOAT) return FLOAT;
+        if (t == VEC2)  return FLOAT;
+        if (t == VEC3)  return FLOAT;
+        if (t == VEC4)  return FLOAT;
+
+        if (t == INT)   return INT;
+        if (t == VEC2I) return INT;
+        if (t == VEC3I) return INT;
+        if (t == VEC4I) return INT;
+
+        if (t == BOOL)  return BOOL;
+        if (t == VEC2B) return BOOL;
+        if (t == VEC3B) return BOOL;
+        if (t == VEC4B) return BOOL;
+
+        return NullType;
+    }
+
+
+    unsigned getVectorLength(Type t) {
+        if (t == FLOAT) return 1;
+        if (t == VEC2)  return 2;
+        if (t == VEC3)  return 3;
+        if (t == VEC4)  return 4;
+
+        if (t == INT)   return 1;
+        if (t == VEC2I) return 2;
+        if (t == VEC3I) return 3;
+        if (t == VEC4I) return 4;
+
+        if (t == BOOL)  return 1;
+        if (t == VEC2B) return 2;
+        if (t == VEC3B) return 3;
+        if (t == VEC4B) return 4;
+
+        return 0;
+    }
+
+    Type getVectorType(Type element, int length) {
+        if (element == FLOAT) {
+            if (length == 1) return FLOAT;
+            if (length == 2) return VEC2;
+            if (length == 3) return VEC3;
+            if (length == 4) return VEC4;
+        }
+        if (element == INT) {
+            if (length == 1) return INT;
+            if (length == 2) return VEC2I;
+            if (length == 3) return VEC3I;
+            if (length == 4) return VEC4I;
+        }
+        if (element == BOOL) {
+            if (length == 1) return BOOL;
+            if (length == 2) return VEC2I;
+            if (length == 3) return VEC3I;
+            if (length == 4) return VEC4I;
+        }
+        return NullType;
+    }
+
+
+
     const Type NullType(new NullTypeObject);
 
 #define REN_PRIMITIVE_TYPE(code, name) const Type code(new PrimitiveType(_##code));
