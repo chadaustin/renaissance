@@ -112,6 +112,8 @@ namespace ren {
             { "+",          INT * INT >> INT,       INFIX },
             { "+",          VEC2 * VEC2 >> VEC2,    INFIX },
             { "+", FLOAT * FLOAT >> FLOAT, INFIX },
+            { "+", VEC4 * VEC4 >> VEC4, INFIX },
+
             { "/",          VEC2 * VEC2 >> VEC2,    INFIX },
             { "/",          FLOAT * FLOAT >> FLOAT, INFIX },
 

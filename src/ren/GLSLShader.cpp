@@ -115,18 +115,19 @@ namespace ren {
     }
 
 
-    IfCodeNodePtr findBranch(StatementPtr stmt) {
+    IfCodeNodePtr findBranch(StatementPtr stmt, StatementPtr& ref) {
         assert(stmt);
 
         if (CodeNodePtr e = stmt->getExpression()) {
             if (IfCodeNodePtr f = findBranch(e)) {
+                ref = stmt;
                 return f;
             }
         }
 
         StatementList children = stmt->getChildren();
         for (size_t i = 0; i < children.size(); ++i) {
-            if (IfCodeNodePtr f = findBranch(children[i])) {
+            if (IfCodeNodePtr f = findBranch(children[i], ref)) {
                 return f;
             }
         }
@@ -172,6 +173,23 @@ namespace ren {
     }
 
 
+    void replace(StatementPtr& in, StatementPtr st, StatementPtr with) {
+        assert(in);
+        assert(st);
+        assert(with);
+
+        if (in == st) {
+            in = with;
+            return;
+        }
+
+        StatementList& children = in->getChildren();
+        for (size_t i = 0; i < children.size(); ++i) {
+            replace(children[i], st, with);
+        }       
+    }
+
+
     ReferencePath getCommonPrefix(
         const ReferencePath& p1,
         const ReferencePath& p2
@@ -194,6 +212,20 @@ namespace ren {
     }
 
 
+    void removeRedundantBlocks(BlockPtr b) {
+        StatementList& children = b->getChildren();
+        for (size_t i = 0; i < children.size(); ++i) {
+            if (REN_DYNAMIC_CAST_PTR(ib, Block, children[i])) {
+                removeRedundantBlocks(ib);
+                StatementList sl = ib->getChildren();
+                children.erase(children.begin() + i);
+                children.insert(children.begin() + i, sl.begin(), sl.end());
+                --i;
+            }
+        }
+    }
+
+
     GLSLShader::GLSLShader()
     : main(new Block)
     , _register(0) {
@@ -201,11 +233,15 @@ namespace ren {
 
 
     void GLSLShader::generate(std::ostream& os) {
-        // First, we need to turn if nodes into separate statements.
-        splitBranches();
-
         // Turn shared expression nodes into precalculated variables.
         share();
+
+        // First, we need to turn If nodes into separate statements.
+        splitBranches();
+
+        // Sharing set up a lot of redundant (and incorrectly
+        // scope-restricting) block nodes.  Let's remove those.
+        removeRedundantBlocks(main);
 
         for (size_t i = 0; i < uniforms.size(); ++i) {
             os << "uniform " << uniforms[i].type
@@ -227,7 +263,9 @@ namespace ren {
     void GLSLShader::splitBranches() {
         // Conversion to StatementPtr overload is ambiguous otherwise.
         StatementPtr main_stmt(main);
-        while (IfCodeNodePtr p = findBranch(main_stmt)) {
+
+        StatementPtr ref;
+        while (IfCodeNodePtr p = findBranch(main_stmt, ref)) {
 
             CodeNodePtr condition = p->getChildren()[0];
             CodeNodePtr truePart  = p->getChildren()[1];
@@ -243,10 +281,7 @@ namespace ren {
 
             replace(main_stmt, p, nameReference);
             
-            // For now, let's just insert the new statements at the
-            // beginning of main.
             DeclarationPtr decl(new Declaration(p->getType(), name));
-            main->statements.insert(main->statements.begin(), decl);
 
             AssignmentPtr assignTrue(new Assignment);
             assignTrue->define = false;
@@ -260,9 +295,15 @@ namespace ren {
 
             IfStatementPtr ifst(new IfStatement);
             ifst->condition = condition;
-            ifst->truePart = assignTrue;
-            ifst->falsePart = assignFalse;
-            main->statements.insert(main->statements.begin() + 1, ifst);
+            ifst->setTrue(assignTrue);
+            ifst->setFalse(assignFalse);
+
+            BlockPtr newBlock(new Block);
+            newBlock->statements.push_back(decl);
+            newBlock->statements.push_back(ifst);
+            newBlock->statements.push_back(ref);
+
+            replace(main_stmt, ref, newBlock);
         }
     }
 
@@ -287,14 +328,21 @@ namespace ren {
                         ValueNode::BUILTIN)); // suitable substitute for local
 
             replace(main_stmt, p, nameReference);
-            
-            // For now, let's just insert the new statement at the
-            // beginning of main.
+
             AssignmentPtr ns(new Assignment);
             ns->define = true;
             ns->lhs = name;
             ns->rhs = p;
-            main->statements.insert(main->statements.begin(), ns);
+
+            assert(!prefix.empty());
+            StatementPtr lastInCommonPrefix(prefix[prefix.size() - 1]);
+
+            // Make a new block.
+            BlockPtr newBlock(new Block);
+            newBlock->statements.push_back(ns);
+            newBlock->statements.push_back(lastInCommonPrefix);
+
+            replace(main_stmt, lastInCommonPrefix, newBlock);
 
             rm.clear();
             countReferences(main, rm);

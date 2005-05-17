@@ -78,3 +78,29 @@ TEST(DoubleSharing) {
     CHECK_EQUAL(cr.vertexShader, VS);
     CHECK_EQUAL(cr.fragmentShader, FS);
 }
+
+
+TEST(SharingOrder) {
+    string source =
+        "a = gl_Vertex.x\n"
+        "va = vec4 a a a a\n"
+        "vb = va + va\n"
+        "gl_Position = va + vb + vb\n"
+        ;
+
+    string VS =
+        "void main()\n"
+        "{\n"
+        "  float _ren_r1 = gl_Vertex.x;\n"
+        "  vec4 _ren_r0 = vec4(_ren_r1, _ren_r1, _ren_r1, _ren_r1);\n"
+        "  vec4 _ren_r2 = (_ren_r0 + _ren_r0);\n"
+        "  gl_Position = ((_ren_r0 + _ren_r2) + _ren_r2);\n"
+        "}\n"
+        ;
+    string FS = "";
+
+    CompileResult cr(compile(source));
+    CHECK(cr.success);
+    CHECK_EQUAL(cr.vertexShader,   VS);
+    CHECK_EQUAL(cr.fragmentShader, FS);
+}

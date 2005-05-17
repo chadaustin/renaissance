@@ -28,13 +28,17 @@ namespace ren {
         virtual CodeNodePtr getExpression() const = 0;
         virtual void setExpression(CodeNodePtr node) = 0;
 
-        virtual StatementList getChildren() const = 0;
+        virtual StatementList& getChildren() = 0;
 
         virtual void write(std::ostream& os, int indent) const = 0;
     };
 
 
     struct IfStatement : public Statement {
+        IfStatement()
+        : children(2) {
+        }
+
         CodeNodePtr getExpression() const {
             return condition;
         }
@@ -43,23 +47,32 @@ namespace ren {
             condition = node;
         }
 
-        StatementList getChildren() const {
-            StatementList rv(2);
-            rv[0] = truePart;
-            rv[1] = falsePart;
-            return rv;
+        void setTrue(StatementPtr st) {
+            assert(children.size() == 2);
+            children[0] = st;
+        }
+
+        void setFalse(StatementPtr st) {
+            assert(children.size() == 2);
+            children[1] = st;
+        }
+
+        StatementList& getChildren() {
+            assert(children.size() == 2);
+            return children;
         }
 
         void write(std::ostream& os, int indent) const {
+            assert(children.size() == 2);
+
             beginline(os, indent) << "if (" << condition->asExpression() << ")\n";
-            truePart->write(os, indent + 1);
+            children[0]->write(os, indent + 1);
             beginline(os, indent) << "else\n";
-            falsePart->write(os, indent + 1);
+            children[1]->write(os, indent + 1);
         }
 
         CodeNodePtr condition;
-        StatementPtr truePart;
-        StatementPtr falsePart;
+        StatementList children;
     };
     REN_SHARED_PTR(IfStatement);
 
@@ -78,8 +91,8 @@ namespace ren {
             assert(!"Declarations don't have expressions.");
         }
 
-        StatementList getChildren() const {
-            return StatementList();
+        StatementList& getChildren() {
+            return children;
         }
 
         void write(std::ostream& os, int indent) const {
@@ -88,6 +101,9 @@ namespace ren {
 
         Type type;
         string name;
+
+    private:
+        StatementList children;
     };
     REN_SHARED_PTR(Declaration);
 
@@ -101,8 +117,8 @@ namespace ren {
             rhs = node;
         }
 
-        StatementList getChildren() const {
-            return StatementList();
+        StatementList& getChildren() {
+            return children;
         }
 
         void write(std::ostream& os, int indent) const {
@@ -116,6 +132,9 @@ namespace ren {
         bool define;
         string lhs;
         CodeNodePtr rhs;
+
+    private:
+        StatementList children;
     };
     REN_SHARED_PTR(Assignment);
 
@@ -129,7 +148,7 @@ namespace ren {
             assert(!"Blocks don't have expressions.");
         }
 
-        StatementList getChildren() const {
+        StatementList& getChildren() {
             return statements;
         }
 
