@@ -16,13 +16,14 @@ namespace ren {
     public:
         CompilationContext(ProgramPtr program);
 
-        ConcreteNodePtr instantiate(const string& name) {
-            return instantiate(name, NullType);
-        }
-
-        ConcreteNodePtr instantiate(const string& name, Type argTypes);
+        ConcreteNodePtr instantiate(
+            const string& name,
+            Type argTypes = NullType);
 
         CodeNodePtr evaluate(ConcreteNodePtr c);
+        CodeNodePtr evaluate(const string& name, Type argTypes = NullType) {
+            return evaluate(instantiate(name, argTypes));
+        }
 
     private:
         ScopePtr _scope;

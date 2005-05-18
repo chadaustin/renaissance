@@ -21,6 +21,7 @@ namespace ren {
         virtual ~CodeNode() { }
 
         virtual Type getType() const = 0;
+        virtual Frequency getFrequency() const = 0;
         virtual string asExpression() const = 0;
 
         /// Don't resize the list returned by this method.
@@ -45,6 +46,13 @@ namespace ren {
 
         Type getType() const {
             return _type;
+        }
+
+        Frequency getFrequency() const {
+            assert(_children.size() == 3);
+            // eh? what should this really be?
+            return std::max(_children[1]->getFrequency(),
+                            _children[2]->getFrequency());
         }
 
         string asExpression() const {
@@ -85,6 +93,15 @@ namespace ren {
 
         Type getType() const {
             return _type;
+        }
+
+        Frequency getFrequency() const {
+            assert(!_arguments.empty());
+            Frequency rv = _arguments[0]->getFrequency();
+            for (size_t i = 1; i < _arguments.size(); ++i) {
+                rv = std::max(rv, _arguments[i]->getFrequency());
+            }
+            return rv;            
         }
 
         string asExpression() const {
@@ -146,14 +163,23 @@ namespace ren {
     public:
         typedef ValueNode::InputType InputType;
 
-        NameCodeNode(const string& name, Type type, InputType inputType)
+        NameCodeNode(
+            const string& name,
+            Type type,
+            Frequency frequency,
+            InputType inputType)
         : _name(name)
         , _type(type)
+        , _frequency(frequency)
         , _inputType(inputType) {
         }
 
         Type getType() const {
             return _type;
+        }
+
+        Frequency getFrequency() const {
+            return _frequency;
         }
 
         string asExpression() const {
@@ -175,6 +201,7 @@ namespace ren {
     private:
         string _name;
         Type _type;
+        Frequency _frequency;
         InputType _inputType;
 
         // We need to return something...  leave it empty.

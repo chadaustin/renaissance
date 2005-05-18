@@ -82,6 +82,7 @@ namespace ren {
             return cache(c, CodeNodePtr(new NameCodeNode(
                                             v->evaluate(),
                                             v->getType(),
+                                            v->getFrequency(),
                                             v->getInputType())));
         } else if (REN_DYNAMIC_CAST_PTR(a, ApplicationNode, c)) {
 

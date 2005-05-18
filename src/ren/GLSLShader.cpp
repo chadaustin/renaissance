@@ -277,6 +277,7 @@ namespace ren {
                     new NameCodeNode(
                         name,
                         p->getType(),
+                        p->getFrequency(),
                         ValueNode::BUILTIN)); // suitable substitute for local
 
             replace(main_stmt, p, nameReference);
@@ -325,6 +326,7 @@ namespace ren {
                     new NameCodeNode(
                         name,
                         p->getType(),
+                        p->getFrequency(),
                         ValueNode::BUILTIN)); // suitable substitute for local
 
             replace(main_stmt, p, nameReference);
