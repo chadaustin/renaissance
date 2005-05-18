@@ -5,6 +5,7 @@
 #include <sstream>
 #include <boost/shared_ptr.hpp>
 #include "Errors.h"
+#include "Frequency.h"
 #include "Types.h"
 
 
@@ -24,7 +25,7 @@ namespace ren {
         virtual string asStringTree() const = 0;
 
         virtual Type getType() const = 0;
-        //virtual Frequency getFrequency() = 0;
+        virtual Frequency getFrequency() const = 0;
     };
 
 
@@ -45,6 +46,15 @@ namespace ren {
 
         Type getType() const {
             return asFunction(_function->getType()).out;
+        }
+
+        Frequency getFrequency() const {
+            assert(!_arguments.empty());
+            Frequency rv = _arguments[0]->getFrequency();
+            for (size_t i = 1; i < _arguments.size(); ++i) {
+                rv = std::max(rv, _arguments[i]->getFrequency());
+            }
+            return rv;
         }
 
         ConcreteNodePtr getFunction() const {
@@ -87,6 +97,10 @@ namespace ren {
             return makeTuple(types) >> _inside->getType();
         }
 
+        Frequency getFrequency() const {
+            return CONSTANT;
+        }
+
         const ConcreteNodeList& getReplacements() const {
             return _replacements;
         }
@@ -118,6 +132,12 @@ namespace ren {
             return _type;
         }
 
+        Frequency getFrequency() const {
+            // Shouldn't matter, since this node gets replaced on
+            // substitution.
+            return CONSTANT;
+        }
+
     private:
         Type _type;
     };
@@ -136,6 +156,10 @@ namespace ren {
 
         Type getType() const {
             return _type;
+        }
+
+        Frequency getFrequency() const {
+            return CONSTANT;
         }
 
     private:
@@ -166,6 +190,10 @@ namespace ren {
             return _type;
         }
 
+        Frequency getFrequency() const {
+            return CONSTANT;
+        }
+
         string getName() const {
             return _name;
         }
@@ -192,10 +220,12 @@ namespace ren {
 
         ValueNode(const string& name,
                   Type type,
+                  Frequency frequency,
                   InputType inputType = BUILTIN,
                   bool isFunction = false)
         : _name(name)
         , _type(type)
+        , _frequency(frequency)
         , _inputType(inputType)
         , _isFunction(isFunction) {
         }
@@ -212,6 +242,10 @@ namespace ren {
             return _type;
         }
 
+        Frequency getFrequency() const {
+            return _frequency;
+        }
+
         InputType getInputType() const {
             return _inputType;
         }
@@ -223,6 +257,7 @@ namespace ren {
     private:
         string _name;
         Type _type;
+        Frequency _frequency;
         InputType _inputType;
         bool _isFunction;
     };

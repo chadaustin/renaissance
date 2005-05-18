@@ -42,6 +42,7 @@ headers = Split("""
     ConcreteNode.h
     Definition.h
     Errors.h
+    Frequency.h
     GLSLShader.h
     GLSLStatement.h
     Program.h

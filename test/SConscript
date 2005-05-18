@@ -15,6 +15,7 @@ sources = Split("""
     ErrorLine.cpp
     Errors.cpp
     Expression.cpp
+    Frequency.cpp
     Functions.cpp
     Literals.cpp
     Prefix.cpp

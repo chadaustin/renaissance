@@ -33,7 +33,7 @@ namespace ren {
         // Boolean constants.
         if (name == "true" || name == "false") {
             if (Type(argTypes) == NullType) {
-                return ConcreteNodePtr(new ValueNode(name, BOOL));
+                return ConcreteNodePtr(new ValueNode(name, BOOL, CONSTANT));
             } else {
                 throw CompileError("Can't call a boolean.");
             }
@@ -42,7 +42,7 @@ namespace ren {
         // Integer constants.
         if (isInteger(name)) {
             if (Type(argTypes) == NullType) {
-                return ConcreteNodePtr(new ValueNode(name, INT));
+                return ConcreteNodePtr(new ValueNode(name, INT, CONSTANT));
             } else {
                 throw CompileError("Can't call an integer.");
             }
@@ -51,7 +51,7 @@ namespace ren {
         // Float constants.
         if (isFloat(name)) {
             if (Type(argTypes) == NullType) {
-                return ConcreteNodePtr(new ValueNode(name, FLOAT));
+                return ConcreteNodePtr(new ValueNode(name, FLOAT, CONSTANT));
             } else {
                 throw CompileError("Can't call a float.");
             }
@@ -101,66 +101,67 @@ namespace ren {
         struct BuiltIn {
             string name;
             Type type;
+            Frequency frequency;
             BuiltInType nodeType;
         };
 
         static const BuiltIn builtIns[] = {
-            { "*",          MAT4 * VEC4 >> VEC4,    INFIX },
-            { "*", MAT3 * VEC3 >> VEC3, INFIX },
-            { "*",          FLOAT * FLOAT >> FLOAT, INFIX },
+            { "*", MAT4 * VEC4 >> VEC4,    CONSTANT, INFIX },
+            { "*", MAT3 * VEC3 >> VEC3,    CONSTANT, INFIX },
+            { "*", FLOAT * FLOAT >> FLOAT, CONSTANT, INFIX },
 
-            { "+",          INT * INT >> INT,       INFIX },
-            { "+",          VEC2 * VEC2 >> VEC2,    INFIX },
-            { "+", FLOAT * FLOAT >> FLOAT, INFIX },
-            { "+", VEC4 * VEC4 >> VEC4, INFIX },
+            { "+", INT * INT >> INT,       CONSTANT, INFIX },
+            { "+", VEC2 * VEC2 >> VEC2,    CONSTANT, INFIX },
+            { "+", FLOAT * FLOAT >> FLOAT, CONSTANT, INFIX },
+            { "+", VEC4 * VEC4 >> VEC4,    CONSTANT, INFIX },
 
-            { "/",          VEC2 * VEC2 >> VEC2,    INFIX },
-            { "/",          FLOAT * FLOAT >> FLOAT, INFIX },
+            { "/", VEC2 * VEC2 >> VEC2,    CONSTANT, INFIX },
+            { "/", FLOAT * FLOAT >> FLOAT, CONSTANT, INFIX },
 
-            { "-",          FLOAT * FLOAT >> FLOAT, INFIX },
-            { "-",          VEC3 * VEC3 >> VEC3,    INFIX },
+            { "-", FLOAT * FLOAT >> FLOAT, CONSTANT, INFIX },
+            { "-", VEC3 * VEC3 >> VEC3,    CONSTANT, INFIX },
 
-            { "+", FLOAT >> FLOAT, PREFIX },
-            { "-", FLOAT >> FLOAT, PREFIX },
-            { "-", VEC3 >> VEC3, PREFIX },
+            { "+", FLOAT >> FLOAT, CONSTANT, PREFIX },
+            { "-", FLOAT >> FLOAT, CONSTANT, PREFIX },
+            { "-", VEC3 >> VEC3,   CONSTANT, PREFIX },
 
-            { ">",          FLOAT * FLOAT >> BOOL,  INFIX },
+            { ">", FLOAT * FLOAT >> BOOL, CONSTANT, INFIX },
 
-            { "ftransform", VEC4,                   NULLARY_FUNCTION },
-            { "gl_Vertex",  VEC4,                   VALUE },
-            { "gl_Color",   VEC4,                   VALUE },
-            { "gl_Normal",  VEC3, VALUE },
+            { "ftransform", VEC4, VERTEX, NULLARY_FUNCTION },
+            { "gl_Vertex",  VEC4, VERTEX, VALUE },
+            { "gl_Color",   VEC4, VERTEX, VALUE },
+            { "gl_Normal",  VEC3, VERTEX, VALUE },
 
-            { "gl_ModelViewMatrix",           MAT4, VALUE },
-            { "gl_NormalMatrix",              MAT3, VALUE },
-            { "gl_ModelViewProjectionMatrix", MAT4, VALUE },
+            { "gl_ModelViewMatrix",           MAT4, UNIFORM, VALUE },
+            { "gl_NormalMatrix",              MAT3, UNIFORM, VALUE },
+            { "gl_ModelViewProjectionMatrix", MAT4, UNIFORM, VALUE },
 
-            { "normalize", VEC3 >> VEC3, FUNCTION },
+            { "normalize", VEC3 >> VEC3, CONSTANT, FUNCTION },
 
-            { "reflect", VEC3 * VEC3 >> VEC3, FUNCTION },
+            { "reflect", VEC3 * VEC3 >> VEC3, CONSTANT, FUNCTION },
 
-            { "pow", FLOAT * FLOAT >> FLOAT, FUNCTION },
+            { "pow", FLOAT * FLOAT >> FLOAT, CONSTANT, FUNCTION },
 
-            { "mix",   VEC3 * VEC3 * FLOAT           >> VEC3, FUNCTION },
-            { "vec2",  FLOAT * FLOAT                 >> VEC2, FUNCTION },
-            { "vec4",  FLOAT * FLOAT * FLOAT * FLOAT >> VEC4, FUNCTION },
+            { "mix",   VEC3 * VEC3 * FLOAT           >> VEC3, CONSTANT, FUNCTION },
+            { "vec2",  FLOAT * FLOAT                 >> VEC2, CONSTANT, FUNCTION },
+            { "vec4",  FLOAT * FLOAT * FLOAT * FLOAT >> VEC4, CONSTANT, FUNCTION },
 
-            { "fract", FLOAT >> FLOAT,                        FUNCTION },
-            { "fract", VEC2  >> VEC2,                         FUNCTION },
+            { "fract", FLOAT >> FLOAT, CONSTANT, FUNCTION },
+            { "fract", VEC2  >> VEC2,  CONSTANT, FUNCTION },
 
-            { "step",  VEC2 * VEC2 >> VEC2, FUNCTION },
+            { "step",  VEC2 * VEC2 >> VEC2, CONSTANT, FUNCTION },
 
-            { "dot", VEC3 * VEC3 >> FLOAT, FUNCTION },
+            { "dot", VEC3 * VEC3 >> FLOAT, CONSTANT, FUNCTION },
 
-            { "max", FLOAT * FLOAT >> FLOAT, FUNCTION },
+            { "max", FLOAT * FLOAT >> FLOAT, CONSTANT, FUNCTION },
 
-            { "y",   VEC2 >> FLOAT,                 SWIZZLE },
-            { "y",   VEC4 >> FLOAT,                 SWIZZLE },
-            { "xyz", VEC4 >> VEC3,                  SWIZZLE },
-            { "xy",  VEC4 >> VEC2,                  SWIZZLE },
-            { "x",   VEC4 >> FLOAT,                 SWIZZLE },
-            { "x",   VEC2 >> FLOAT,                 SWIZZLE },
-            { "wxyz", VEC4 >> VEC4,                 SWIZZLE },
+            { "y",   VEC2 >> FLOAT, CONSTANT, SWIZZLE },
+            { "y",   VEC4 >> FLOAT, CONSTANT, SWIZZLE },
+            { "xyz", VEC4 >> VEC3,  CONSTANT, SWIZZLE },
+            { "xy",  VEC4 >> VEC2,  CONSTANT, SWIZZLE },
+            { "x",   VEC4 >> FLOAT, CONSTANT, SWIZZLE },
+            { "x",   VEC2 >> FLOAT, CONSTANT, SWIZZLE },
+            { "wxyz", VEC4 >> VEC4, CONSTANT, SWIZZLE },
         };
 
 #define REN_ARRAY_SIZE(array) (sizeof(array) / sizeof(*(array)))
@@ -171,26 +172,30 @@ namespace ren {
                 switch (b.nodeType) {
                     case VALUE:
                         return ConcreteNodePtr(
-                            new ValueNode(b.name, b.type));
+                            new ValueNode(b.name, b.type, b.frequency));
                         break;
                     case NULLARY_FUNCTION:
                         return ConcreteNodePtr(
-                            new ValueNode(b.name, b.type,
+                            new ValueNode(b.name, b.type, b.frequency,
                                           ValueNode::BUILTIN, true));
                         break;
                     case FUNCTION:
+                        assert(b.frequency == CONSTANT);
                         return ConcreteNodePtr(
                             new FunctionNode(b.name, b.type, FunctionNode::FUNCTION));
                         break;
                     case PREFIX:
+                        assert(b.frequency == CONSTANT);
                         return ConcreteNodePtr(
                             new FunctionNode(b.name, b.type, FunctionNode::PREFIX));
                         break;
                     case INFIX:
+                        assert(b.frequency == CONSTANT);
                         return ConcreteNodePtr(
                             new FunctionNode(b.name, b.type, FunctionNode::INFIX));
                         break;
                     case SWIZZLE:
+                        assert(b.frequency == CONSTANT);
                         return ConcreteNodePtr(
                             new FunctionNode(b.name, b.type, FunctionNode::SWIZZLE));
                         break;

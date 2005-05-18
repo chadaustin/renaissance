@@ -73,6 +73,7 @@ namespace ren {
                     new ValueNode(
                         name,
                         u->getType(),
+                        UNIFORM,
                         ValueNode::UNIFORM)));
             }
 
@@ -82,6 +83,7 @@ namespace ren {
                     new ValueNode(
                         name,
                         a->getType(),
+                        VERTEX,
                         ValueNode::ATTRIBUTE)));
             }
         }
