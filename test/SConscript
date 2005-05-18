@@ -19,6 +19,7 @@ sources = Split("""
     Literals.cpp
     Prefix.cpp
     Sharing.cpp
+    Stage.cpp
     Swizzle.cpp
     Uniforms.cpp
     VectorConcatenation.cpp
