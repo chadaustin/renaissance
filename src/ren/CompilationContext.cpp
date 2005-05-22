@@ -99,7 +99,8 @@ namespace ren {
                                                 c->getType(),
                                                 f->getCallType(),
                                                 f->getName(),
-                                                args)));
+                                                args,
+                                                f->getLinearity())));
 
             } else if (REN_DYNAMIC_CAST_PTR(ab, AbstractionNode, function)) {
 

@@ -68,7 +68,8 @@ namespace ren {
             ConcreteNodePtr gl_Position = cc.instantiate("gl_Position");
             if (gl_Position) {
                 requireType("gl_Position", gl_Position, VEC4);
-                sg.outputs["gl_Position"] = cc.evaluate(gl_Position);
+                sg.outputs.insert(std::make_pair(ShadeGraph::Output("gl_Position"),
+                                                 cc.evaluate(gl_Position)));
             }
         }
 
@@ -76,7 +77,8 @@ namespace ren {
             ConcreteNodePtr gl_FragColor = cc.instantiate("gl_FragColor");
             if (gl_FragColor) {
                 requireType("gl_FragColor", gl_FragColor, VEC4);
-                sg.outputs["gl_FragColor"] = cc.evaluate(gl_FragColor);
+                sg.outputs.insert(std::make_pair(ShadeGraph::Output("gl_FragColor"),
+                                                 cc.evaluate(gl_FragColor)));
             }
         }
 

@@ -24,6 +24,10 @@ namespace ren {
         virtual Frequency getFrequency() const = 0;
         virtual string asExpression() const = 0;
 
+        // Can this node be lifted across an interpolation boundary?
+        // (Fragment -> Vertex pipeline)
+        virtual bool canInterpolate() const = 0;
+
         /// Don't resize the list returned by this method.
         virtual CodeNodeList& getChildren() = 0;
     };
@@ -63,6 +67,9 @@ namespace ren {
                 " : " + _children[2]->asExpression();
         }
 
+        bool canInterpolate() const {
+            return false;
+        }
 
         CodeNodeList& getChildren() {
             return _children;
@@ -84,11 +91,13 @@ namespace ren {
             Type type,
             CallType callType,
             const string& op,
-            const CodeNodeList& arguments)
+            const CodeNodeList& arguments,
+            Linearity linearity)
         : _type(type)
         , _callType(callType)
         , _op(op)
-        , _arguments(arguments) {
+        , _arguments(arguments)
+        , _linearity(linearity) {
         }
 
         Type getType() const {
@@ -142,6 +151,40 @@ namespace ren {
             }
         }
 
+        bool canInterpolate() const {
+            switch (_linearity) {
+                case LINEAR: {
+                    bool rv = true;
+                    for (size_t i = 0; i < _arguments.size(); ++i) {
+                        rv = rv && _arguments[i]->canInterpolate();
+                    }
+                    return rv;
+                }
+             
+                case PARTIALLY_LINEAR: {
+                    bool rv = true;
+                    unsigned vertexFrequencyCount = 0;
+                    for (size_t i = 0; i < _arguments.size(); ++i) {
+                        rv = rv && _arguments[i]->canInterpolate();
+                        if (_arguments[i]->getFrequency() == VERTEX) {
+                            ++vertexFrequencyCount;
+                        }
+                    }
+                    rv = rv && (vertexFrequencyCount == 1);
+                    return rv;
+                }
+
+                case NONLINEAR: {
+                    return false;
+                }
+
+                default: {
+                    assert(!"Unknown linearity.");
+                    return false;
+                }
+            }
+        }
+
         CodeNodeList& getChildren() {
             return _arguments;
         }
@@ -151,6 +194,7 @@ namespace ren {
         CallType _callType;
         string _op;
         CodeNodeList _arguments;
+        Linearity _linearity;
     };
     REN_SHARED_PTR(CallCodeNode);
 
@@ -184,6 +228,10 @@ namespace ren {
 
         string asExpression() const {
             return _name;
+        }
+
+        bool canInterpolate() const {
+            return _frequency <= VERTEX;
         }
 
         CodeNodeList& getChildren() {

@@ -11,9 +11,24 @@ namespace ren {
 
     class ShadeGraph {
     public:
-        std::map<string, CodeNodePtr> outputs;
+        struct Output {
+            Output(const string& n)
+            : name(n) {
+            }
+
+            string name;
+
+            bool operator<(const Output& rhs) const {
+                return name < rhs.name;
+            }
+        };
+
+        std::map<Output, CodeNodePtr> outputs;
 
         void generate(GLSLShader& vs, GLSLShader& fs);
+
+    private:
+        void lift(GLSLShader& vs, GLSLShader& fs);
     };
 
 }

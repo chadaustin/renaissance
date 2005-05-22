@@ -11,6 +11,14 @@
 
 namespace ren {
 
+
+    enum Linearity {
+        LINEAR,
+        PARTIALLY_LINEAR,  ///< ONE or fewer arguments has vertex frequency.
+        NONLINEAR,
+    };
+
+
     class ConcreteNode;
     REN_SHARED_PTR(ConcreteNode);
     typedef std::vector<ConcreteNodePtr> ConcreteNodeList;
@@ -176,10 +184,15 @@ namespace ren {
             FUNCTION,
         };
 
-        FunctionNode(const string& name, Type type, CallType callType)
+        FunctionNode(
+            const string& name,
+            Type type,
+            CallType callType,
+            Linearity linearity)
         : _name(name)
         , _type(type)
-        , _callType(callType) {
+        , _callType(callType)
+        , _linearity(linearity) {
         }
 
         string asStringTree() const {
@@ -202,10 +215,15 @@ namespace ren {
             return _callType;
         }
 
+        Linearity getLinearity() const {
+            return _linearity;
+        }
+
     private:
         string _name;
         Type _type;
         CallType _callType;
+        Linearity _linearity;
     };
     REN_SHARED_PTR(FunctionNode);
 

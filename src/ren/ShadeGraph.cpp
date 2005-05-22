@@ -47,12 +47,14 @@ namespace {
 namespace ren {
 
     void ShadeGraph::generate(GLSLShader& vs, GLSLShader& fs) {
-        if (outputs.count("gl_Position")) {
+        if (outputs.count(Output("gl_Position"))) {
+            CodeNodePtr cn = outputs[Output("gl_Position")];
+
             typedef std::set<ValueNodePtr> ValueNodeSet;
 
             // Declare referenced uniforms.
             NameCodeNodeSet uniforms;
-            getUniforms(uniforms, outputs["gl_Position"]);
+            getUniforms(uniforms, cn);
             for (NameCodeNodeSet::iterator i = uniforms.begin();
                  i != uniforms.end();
                  ++i
@@ -65,7 +67,7 @@ namespace ren {
 
             // Declare referenced attributes.
             NameCodeNodeSet attributes;
-            getAttributes(attributes, outputs["gl_Position"]);
+            getAttributes(attributes, cn);
             for (NameCodeNodeSet::iterator i = attributes.begin();
                  i != attributes.end();
                  ++i
@@ -80,14 +82,16 @@ namespace ren {
             AssignmentPtr s(new Assignment);
             s->define = false;
             s->lhs = "gl_Position";
-            s->rhs = outputs["gl_Position"];
+            s->rhs = cn;
             vs.main->statements.push_back(s);
         }
 
-        if (outputs.count("gl_FragColor")) {
+        if (outputs.count(Output("gl_FragColor"))) {
+            CodeNodePtr cn = outputs[Output("gl_FragColor")];
+
             // Declare referenced uniforms.
             NameCodeNodeSet uniforms;
-            getUniforms(uniforms, outputs["gl_FragColor"]);
+            getUniforms(uniforms, cn);
             for (NameCodeNodeSet::iterator i = uniforms.begin();
                  i != uniforms.end();
                  ++i
@@ -100,7 +104,7 @@ namespace ren {
 
             // Declare referenced attributes.
             NameCodeNodeSet attributes;
-            getAttributes(attributes, outputs["gl_FragColor"]);
+            getAttributes(attributes, cn);
             for (NameCodeNodeSet::iterator i = attributes.begin();
                  i != attributes.end();
                  ++i
@@ -115,8 +119,57 @@ namespace ren {
             AssignmentPtr s(new Assignment);
             s->define = false;
             s->lhs = "gl_FragColor";
-            s->rhs = outputs["gl_FragColor"];
+            s->rhs = cn;
             fs.main->statements.push_back(s);
+        }
+
+        lift(vs, fs);
+    }
+
+
+    void ShadeGraph::lift(GLSLShader& vs, GLSLShader& fs) {
+        StatementPtr main_stmt(fs.main);
+
+/*
+        std::cout << "########\n";
+        vs.output(std::cout);
+        std::cout << "--------\n";
+        fs.output(std::cout);
+*/
+
+        while (CodeNodePtr varying = findInterpolatable(main_stmt)) {
+            string name = fs.newVaryingName();
+
+            GLSLShader::Varying v;
+            v.name = name;
+            v.type = varying->getType().getName();
+
+            // Link shaders through a varying.
+            vs.varyings.push_back(v);
+            fs.varyings.push_back(v);
+
+            // Define the varying in the vertex shader.
+            AssignmentPtr assignVarying(new Assignment);
+            assignVarying->define = false;
+            assignVarying->lhs = name;
+            assignVarying->rhs = varying;
+            vs.main->statements.push_back(assignVarying);
+
+            // Reference the varying from the fragment shader.
+            CodeNodePtr varyingReference(
+                    new NameCodeNode(
+                        name,
+                        varying->getType(),
+                        varying->getFrequency(),
+                        ValueNode::BUILTIN)); // suitable substitute for local
+            replace(main_stmt, varying, varyingReference);
+
+/*
+            std::cout << "########\n";
+            vs.output(std::cout);
+            std::cout << "--------\n";
+            fs.output(std::cout);
+*/
         }
     }
 

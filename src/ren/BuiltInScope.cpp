@@ -72,6 +72,8 @@ namespace ren {
             return ConcreteNodePtr(new IfNode(argTypes >> tl[1]));
         }
 
+        const Linearity PUNT = NONLINEAR;
+
         // Vector concatenation.
         if (name == "++") {
             TypeList tl(asTuple(argTypes));
@@ -84,7 +86,7 @@ namespace ren {
                     Type vec = getVectorType(el1, length1 + length2);
                     return ConcreteNodePtr(
                         new FunctionNode(vec.getName(), el1 * el2 >> vec,
-                                         FunctionNode::FUNCTION));
+                                         FunctionNode::FUNCTION, PUNT));
                 }
             }
         }
@@ -103,29 +105,30 @@ namespace ren {
             Type type;
             Frequency frequency;
             BuiltInType nodeType;
+            Linearity linearity;
         };
 
         static const BuiltIn builtIns[] = {
-            { "*", MAT4 * VEC4 >> VEC4,    CONSTANT, INFIX },
-            { "*", MAT3 * VEC3 >> VEC3,    CONSTANT, INFIX },
-            { "*", FLOAT * FLOAT >> FLOAT, CONSTANT, INFIX },
+            { "*", MAT4 * VEC4 >> VEC4,    CONSTANT, INFIX, PARTIALLY_LINEAR },
+            { "*", MAT3 * VEC3 >> VEC3,    CONSTANT, INFIX, PARTIALLY_LINEAR },
+            { "*", FLOAT * FLOAT >> FLOAT, CONSTANT, INFIX, PARTIALLY_LINEAR },
+            { "*", VEC4 * VEC4 >> VEC4,    CONSTANT, INFIX, PARTIALLY_LINEAR },
 
-            { "+", INT * INT >> INT,       CONSTANT, INFIX },
-            { "+", VEC2 * VEC2 >> VEC2,    CONSTANT, INFIX },
-            { "+", FLOAT * FLOAT >> FLOAT, CONSTANT, INFIX },
-            { "+", VEC4 * VEC4 >> VEC4,    CONSTANT, INFIX },
+            { "+", INT * INT >> INT,       CONSTANT, INFIX, LINEAR },
+            { "+", VEC2 * VEC2 >> VEC2,    CONSTANT, INFIX, LINEAR },
+            { "+", FLOAT * FLOAT >> FLOAT, CONSTANT, INFIX, LINEAR },
+            { "+", VEC4 * VEC4 >> VEC4,    CONSTANT, INFIX, LINEAR },
 
-            { "/", VEC2 * VEC2 >> VEC2,    CONSTANT, INFIX },
-            { "/", FLOAT * FLOAT >> FLOAT, CONSTANT, INFIX },
+            { "/", VEC2 * VEC2 >> VEC2,    CONSTANT, INFIX, NONLINEAR },
+            { "/", FLOAT * FLOAT >> FLOAT, CONSTANT, INFIX, NONLINEAR },
+            { "-", FLOAT * FLOAT >> FLOAT, CONSTANT, INFIX, LINEAR },
+            { "-", VEC3 * VEC3 >> VEC3,    CONSTANT, INFIX, LINEAR },
 
-            { "-", FLOAT * FLOAT >> FLOAT, CONSTANT, INFIX },
-            { "-", VEC3 * VEC3 >> VEC3,    CONSTANT, INFIX },
+            { "+", FLOAT >> FLOAT, CONSTANT, PREFIX, LINEAR },
+            { "-", FLOAT >> FLOAT, CONSTANT, PREFIX, LINEAR },
+            { "-", VEC3 >> VEC3,   CONSTANT, PREFIX, LINEAR },
 
-            { "+", FLOAT >> FLOAT, CONSTANT, PREFIX },
-            { "-", FLOAT >> FLOAT, CONSTANT, PREFIX },
-            { "-", VEC3 >> VEC3,   CONSTANT, PREFIX },
-
-            { ">", FLOAT * FLOAT >> BOOL, CONSTANT, INFIX },
+            { ">", FLOAT * FLOAT >> BOOL, CONSTANT, INFIX, NONLINEAR },
 
             { "ftransform", VEC4, VERTEX, NULLARY_FUNCTION },
             { "gl_Vertex",  VEC4, VERTEX, VALUE },
@@ -136,32 +139,34 @@ namespace ren {
             { "gl_NormalMatrix",              MAT3, UNIFORM, VALUE },
             { "gl_ModelViewProjectionMatrix", MAT4, UNIFORM, VALUE },
 
-            { "normalize", VEC3 >> VEC3, CONSTANT, FUNCTION },
+            { "gl_FragCoord",                 VEC2, FRAGMENT, VALUE },
 
-            { "reflect", VEC3 * VEC3 >> VEC3, CONSTANT, FUNCTION },
+            { "normalize", VEC3 >> VEC3, CONSTANT, FUNCTION, PUNT },
 
-            { "pow", FLOAT * FLOAT >> FLOAT, CONSTANT, FUNCTION },
+            { "reflect", VEC3 * VEC3 >> VEC3, CONSTANT, FUNCTION, PUNT },
 
-            { "mix",   VEC3 * VEC3 * FLOAT           >> VEC3, CONSTANT, FUNCTION },
-            { "vec2",  FLOAT * FLOAT                 >> VEC2, CONSTANT, FUNCTION },
-            { "vec4",  FLOAT * FLOAT * FLOAT * FLOAT >> VEC4, CONSTANT, FUNCTION },
+            { "pow", FLOAT * FLOAT >> FLOAT, CONSTANT, FUNCTION, PUNT },
 
-            { "fract", FLOAT >> FLOAT, CONSTANT, FUNCTION },
-            { "fract", VEC2  >> VEC2,  CONSTANT, FUNCTION },
+            { "mix",   VEC3 * VEC3 * FLOAT           >> VEC3, CONSTANT, FUNCTION, PUNT },
+            { "vec2",  FLOAT * FLOAT                 >> VEC2, CONSTANT, FUNCTION, LINEAR },
+            { "vec4",  FLOAT * FLOAT * FLOAT * FLOAT >> VEC4, CONSTANT, FUNCTION, LINEAR },
 
-            { "step",  VEC2 * VEC2 >> VEC2, CONSTANT, FUNCTION },
+            { "fract", FLOAT >> FLOAT, CONSTANT, FUNCTION, PUNT },
+            { "fract", VEC2  >> VEC2,  CONSTANT, FUNCTION, PUNT },
 
-            { "dot", VEC3 * VEC3 >> FLOAT, CONSTANT, FUNCTION },
+            { "step",  VEC2 * VEC2 >> VEC2, CONSTANT, FUNCTION, PUNT },
 
-            { "max", FLOAT * FLOAT >> FLOAT, CONSTANT, FUNCTION },
+            { "dot", VEC3 * VEC3 >> FLOAT, CONSTANT, FUNCTION, PUNT },
 
-            { "y",   VEC2 >> FLOAT, CONSTANT, SWIZZLE },
-            { "y",   VEC4 >> FLOAT, CONSTANT, SWIZZLE },
-            { "xyz", VEC4 >> VEC3,  CONSTANT, SWIZZLE },
-            { "xy",  VEC4 >> VEC2,  CONSTANT, SWIZZLE },
-            { "x",   VEC4 >> FLOAT, CONSTANT, SWIZZLE },
-            { "x",   VEC2 >> FLOAT, CONSTANT, SWIZZLE },
-            { "wxyz", VEC4 >> VEC4, CONSTANT, SWIZZLE },
+            { "max", FLOAT * FLOAT >> FLOAT, CONSTANT, FUNCTION, PUNT },
+
+            { "y",   VEC2 >> FLOAT, CONSTANT, SWIZZLE, LINEAR },
+            { "y",   VEC4 >> FLOAT, CONSTANT, SWIZZLE, LINEAR },
+            { "xyz", VEC4 >> VEC3,  CONSTANT, SWIZZLE, LINEAR },
+            { "xy",  VEC4 >> VEC2,  CONSTANT, SWIZZLE, LINEAR },
+            { "x",   VEC4 >> FLOAT, CONSTANT, SWIZZLE, LINEAR },
+            { "x",   VEC2 >> FLOAT, CONSTANT, SWIZZLE, LINEAR },
+            { "wxyz", VEC4 >> VEC4, CONSTANT, SWIZZLE, LINEAR },
         };
 
 #define REN_ARRAY_SIZE(array) (sizeof(array) / sizeof(*(array)))
@@ -182,22 +187,22 @@ namespace ren {
                     case FUNCTION:
                         assert(b.frequency == CONSTANT);
                         return ConcreteNodePtr(
-                            new FunctionNode(b.name, b.type, FunctionNode::FUNCTION));
+                            new FunctionNode(b.name, b.type, FunctionNode::FUNCTION, b.linearity));
                         break;
                     case PREFIX:
                         assert(b.frequency == CONSTANT);
                         return ConcreteNodePtr(
-                            new FunctionNode(b.name, b.type, FunctionNode::PREFIX));
+                            new FunctionNode(b.name, b.type, FunctionNode::PREFIX, b.linearity));
                         break;
                     case INFIX:
                         assert(b.frequency == CONSTANT);
                         return ConcreteNodePtr(
-                            new FunctionNode(b.name, b.type, FunctionNode::INFIX));
+                            new FunctionNode(b.name, b.type, FunctionNode::INFIX, b.linearity));
                         break;
                     case SWIZZLE:
                         assert(b.frequency == CONSTANT);
                         return ConcreteNodePtr(
-                            new FunctionNode(b.name, b.type, FunctionNode::SWIZZLE));
+                            new FunctionNode(b.name, b.type, FunctionNode::SWIZZLE, b.linearity));
                         break;
                     default:
                         assert(!"Unknown Built-In Node Type");

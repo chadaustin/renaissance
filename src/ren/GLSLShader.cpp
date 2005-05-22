@@ -97,6 +97,43 @@ namespace ren {
     }
 
 
+    CodeNodePtr findInterpolatable(CodeNodePtr node) {
+        if (REN_DYNAMIC_CAST_PTR(p, CallCodeNode, node)) {
+            if (p->canInterpolate()) {
+                return p;
+            }
+        }
+
+        CodeNodeList args = node->getChildren();
+        for (size_t i = 0; i < args.size(); ++i) {
+            CodeNodePtr c = findInterpolatable(args[i]);
+            if (c) {
+                return c;
+            }
+        }
+
+        return CodeNodePtr();
+    }
+
+
+    CodeNodePtr findInterpolatable(StatementPtr stmt) {
+        if (CodeNodePtr e = stmt->getExpression()) {
+            if (CodeNodePtr f = findInterpolatable(e)) {
+                return f;
+            }
+        }
+
+        StatementList children = stmt->getChildren();
+        for (size_t i = 0; i < children.size(); ++i) {
+            if (CodeNodePtr f = findInterpolatable(children[i])) {
+                return f;
+            }
+        }
+
+        return CodeNodePtr();        
+    }
+
+
     IfCodeNodePtr findBranch(CodeNodePtr node) {
         assert(node);
 
@@ -228,7 +265,15 @@ namespace ren {
 
     GLSLShader::GLSLShader()
     : main(new Block)
+    , _varying(0)
     , _register(0) {
+    }
+
+    template<typename VecType>
+    void writeGlobalArray(std::ostream& os, const string& prefix, const VecType& g) {
+        for (size_t i = 0; i < g.size(); ++i) {
+            os << prefix << " " << g[i].type << " " << g[i].name << ";\n";
+        }
     }
 
 
@@ -243,15 +288,14 @@ namespace ren {
         // scope-restricting) block nodes.  Let's remove those.
         removeRedundantBlocks(main);
 
-        for (size_t i = 0; i < uniforms.size(); ++i) {
-            os << "uniform " << uniforms[i].type
-               << " " << uniforms[i].name << ";\n";
-        }
+        output(os);
+    }
 
-        for (size_t i = 0; i < attributes.size(); ++i) {
-            os << "attribute " << attributes[i].type
-               << " " << attributes[i].name << ";\n";
-        }
+
+    void GLSLShader::output(std::ostream& os) {
+        writeGlobalArray(os, "uniform", uniforms);
+        writeGlobalArray(os, "attribute", attributes);
+        writeGlobalArray(os, "varying", varyings);
 
         if (!main->statements.empty()) {
             os << "void main()\n";
@@ -304,7 +348,13 @@ namespace ren {
             newBlock->statements.push_back(ifst);
             newBlock->statements.push_back(ref);
 
-            replace(main_stmt, ref, newBlock);
+            if (main_stmt == ref) {
+                REN_DYNAMIC_CAST_PTR(main, Block, ref);
+                assert(main);
+                main_stmt = main;
+            } else {
+                replace(main_stmt, ref, newBlock);
+            }
         }
     }
 
@@ -312,6 +362,9 @@ namespace ren {
     void GLSLShader::share() {
         ReferenceMap rm;
         countReferences(main, rm);
+
+//        std::cout << "++++\n";
+//        output(std::cout);
 
         // Conversion to StatementPtr overload is ambiguous otherwise.
         StatementPtr main_stmt(main);
@@ -344,11 +397,26 @@ namespace ren {
             newBlock->statements.push_back(ns);
             newBlock->statements.push_back(lastInCommonPrefix);
 
-            replace(main_stmt, lastInCommonPrefix, newBlock);
+            if (main_stmt == lastInCommonPrefix) {
+                main = newBlock;
+                main_stmt = main;
+            } else {
+                replace(main_stmt, lastInCommonPrefix, newBlock);
+            }
 
             rm.clear();
             countReferences(main, rm);
+
+//            std::cout << "++++\n";
+//            output(std::cout);
         }
+    }
+
+
+    string GLSLShader::newVaryingName() {
+        std::ostringstream os;
+        os << "_ren_v" << _varying++;
+        return os.str();
     }
 
 
