@@ -35,6 +35,8 @@ namespace ren {
             return value;
         }
 
+        std::map<string, Value> _constantValues;
+
         typedef std::map<ConcreteNodePtr, CodeNodePtr> EvaluationCache;
         EvaluationCache _evaluationCache;
     };

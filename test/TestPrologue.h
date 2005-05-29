@@ -10,6 +10,15 @@
 using namespace ren;
 
 
+#define CHECK_COMPILE(source, VS, FS)           \
+    {                                           \
+        CompileResult cr(compile(source));      \
+        CHECK(cr.success);                      \
+        CHECK_EQUAL(VS, cr.vertexShader);       \
+        CHECK_EQUAL(FS, cr.fragmentShader);     \
+    }
+
+
 // Work around a bug in gcc?
 namespace boost {
     namespace test_tools {

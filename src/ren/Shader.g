@@ -158,6 +158,12 @@ program returns [ProgramPtr p] {
     DefinitionPtr def;
 }
     : (
+            #(CONSTANT ctype:ID cname:ID) {
+                p->constants.push_back(Constant(
+                        getTypeFromString(ctype->getText()),
+                        cname->getText()));
+            }
+        |
             #(UNIFORM utype:ID uname:ID) {
                 p->uniforms.push_back(Uniform(
                         getTypeFromString(utype->getText()),

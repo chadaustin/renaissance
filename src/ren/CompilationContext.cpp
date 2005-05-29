@@ -83,6 +83,7 @@ namespace ren {
                                             v->evaluate(),
                                             v->getType(),
                                             v->getFrequency(),
+                                            v->getValue(),
                                             v->getInputType())));
         } else if (REN_DYNAMIC_CAST_PTR(a, ApplicationNode, c)) {
 

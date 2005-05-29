@@ -33,6 +33,10 @@ namespace {
         }
     }
 
+    void getConstants(NameCodeNodeSet& constants, CodeNodePtr node) {
+        getReferencesOfType(constants, node, ValueNode::CONSTANT);
+    }
+
     void getUniforms(NameCodeNodeSet& uniforms, CodeNodePtr node) {
         getReferencesOfType(uniforms, node, ValueNode::UNIFORM);
     }
@@ -41,16 +45,72 @@ namespace {
         getReferencesOfType(attributes, node, ValueNode::ATTRIBUTE);
     }
 
+    CodeNodePtr findEvaluatable(CodeNodePtr node) {
+        assert(node);
+
+        if (REN_DYNAMIC_CAST_PTR(p, IfCodeNode, node)) {
+            if (p->getChildren()[0]->getFrequency() == CONSTANT) {
+                return p;
+            }
+        }
+
+        CodeNodeList args = node->getChildren();
+        for (size_t i = 0; i < args.size(); ++i) {
+            if (CodeNodePtr c = findEvaluatable(args[i])) {
+                return c;
+            }
+        }
+        return CodeNodePtr();        
+    }
 }
 
 
 namespace ren {
 
+    void ShadeGraph::specialize() {
+        // This needs access to the constants defined outside of the
+        // compiler.
+
+        while (CodeNodePtr eval = findEvaluatable()) {
+            REN_DYNAMIC_CAST_PTR(p, IfCodeNode, eval);
+            assert(p);
+
+            CodeNodePtr condition = p->getChildren()[0];
+            assert(condition->getFrequency() == CONSTANT);
+            assert(condition->getType() == BOOL);
+            
+            /// @todo  The condition may not always be a name.
+            REN_DYNAMIC_CAST_PTR(n, NameCodeNode, condition);
+            assert(n);
+
+            bool value = n->getValue()->asBool();
+            if (value) {
+                replace(eval, p->getChildren()[1]);
+            } else {
+                replace(eval, p->getChildren()[2]);
+            }
+        }
+    }
+
     void ShadeGraph::generate(GLSLShader& vs, GLSLShader& fs) {
-        if (outputs.count(Output("gl_Position"))) {
-            CodeNodePtr cn = outputs[Output("gl_Position")];
+        if (outputs.count("gl_Position")) {
+            CodeNodePtr cn = outputs["gl_Position"];
 
             typedef std::set<ValueNodePtr> ValueNodeSet;
+
+            // Declare referenced constants.
+            NameCodeNodeSet constants;
+            getConstants(constants, cn);
+            for (NameCodeNodeSet::iterator i = constants.begin();
+                 i != constants.end();
+                 ++i
+            ) {
+                GLSLShader::Constant c;
+                c.name  = (*i)->getName();
+                c.type  = (*i)->getType().getName();
+                c.value = (*i)->getValue();
+                vs.constants.push_back(c);
+            }
 
             // Declare referenced uniforms.
             NameCodeNodeSet uniforms;
@@ -86,8 +146,8 @@ namespace ren {
             vs.main->statements.push_back(s);
         }
 
-        if (outputs.count(Output("gl_FragColor"))) {
-            CodeNodePtr cn = outputs[Output("gl_FragColor")];
+        if (outputs.count("gl_FragColor")) {
+            CodeNodePtr cn = outputs["gl_FragColor"];
 
             // Declare referenced uniforms.
             NameCodeNodeSet uniforms;
@@ -127,6 +187,29 @@ namespace ren {
     }
 
 
+    CodeNodePtr ShadeGraph::findEvaluatable() {
+        OutputMap::const_iterator i = outputs.begin();
+        for (; i != outputs.end(); ++i) {
+            if (CodeNodePtr cn = ::findEvaluatable(i->second)) {
+                return cn;
+            }
+        }
+        return CodeNodePtr();
+    }
+
+
+    void ShadeGraph::replace(CodeNodePtr node, CodeNodePtr with) {
+        OutputMap::iterator i = outputs.begin();
+        for (; i != outputs.end(); ++i) {
+            if (i->second == node) {
+                i->second = with;
+            } else {
+                ren::replace(i->second, node, with);
+            }
+        }        
+    }
+
+
     void ShadeGraph::lift(GLSLShader& vs, GLSLShader& fs) {
         StatementPtr main_stmt(fs.main);
 
@@ -161,8 +244,9 @@ namespace ren {
                         name,
                         varying->getType(),
                         varying->getFrequency(),
+                        NullValue,
                         ValueNode::BUILTIN)); // suitable substitute for local
-            replace(main_stmt, varying, varyingReference);
+            ren::replace(main_stmt, varying, varyingReference);
 
 /*
             std::cout << "########\n";

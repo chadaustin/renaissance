@@ -29,11 +29,20 @@ namespace ren {
     }
 
 
+#define RETURN_PTR(ptr) return ConcreteNodePtr(ptr)
+
+
     ConcreteNodePtr BuiltInScope::lookup(const string& name, Type argTypes) {
         // Boolean constants.
         if (name == "true" || name == "false") {
             if (Type(argTypes) == NullType) {
-                return ConcreteNodePtr(new ValueNode(name, BOOL, CONSTANT));
+                bool value = (name == "true");
+                RETURN_PTR(
+                    new ValueNode(
+                        name,
+                        BOOL,
+                        CONSTANT,
+                        Value::create(BOOL, &value)));
             } else {
                 throw CompileError("Can't call a boolean.");
             }
@@ -42,7 +51,13 @@ namespace ren {
         // Integer constants.
         if (isInteger(name)) {
             if (Type(argTypes) == NullType) {
-                return ConcreteNodePtr(new ValueNode(name, INT, CONSTANT));
+                int value = atoi(name.c_str());
+                RETURN_PTR(
+                    new ValueNode(
+                        name,
+                        INT,
+                        CONSTANT,
+                        Value::create(INT, &value)));
             } else {
                 throw CompileError("Can't call an integer.");
             }
@@ -51,7 +66,13 @@ namespace ren {
         // Float constants.
         if (isFloat(name)) {
             if (Type(argTypes) == NullType) {
-                return ConcreteNodePtr(new ValueNode(name, FLOAT, CONSTANT));
+                float value = atof(name.c_str());
+                RETURN_PTR(
+                    new ValueNode(
+                        name,
+                        FLOAT,
+                        CONSTANT,
+                        Value::create(FLOAT, &value)));
             } else {
                 throw CompileError("Can't call a float.");
             }
@@ -69,7 +90,7 @@ namespace ren {
             if (tl[1] != tl[2]) {
                 throw CompileError("if true-part and false-part must have same type.");
             }
-            return ConcreteNodePtr(new IfNode(argTypes >> tl[1]));
+            RETURN_PTR(new IfNode(argTypes >> tl[1]));
         }
 
         const Linearity PUNT = NONLINEAR;
@@ -84,9 +105,10 @@ namespace ren {
                     int length1 = getVectorLength(tl[0]);
                     int length2 = getVectorLength(tl[1]);
                     Type vec = getVectorType(el1, length1 + length2);
-                    return ConcreteNodePtr(
-                        new FunctionNode(vec.getName(), el1 * el2 >> vec,
-                                         FunctionNode::FUNCTION, PUNT));
+                    RETURN_PTR(
+                        new FunctionNode(
+                            vec.getName(), el1 * el2 >> vec,
+                            FunctionNode::FUNCTION, PUNT));
                 }
             }
         }
@@ -176,33 +198,43 @@ namespace ren {
             if (name == b.name && argTypes == asFunction(b.type).in) {
                 switch (b.nodeType) {
                     case VALUE:
-                        return ConcreteNodePtr(
-                            new ValueNode(b.name, b.type, b.frequency));
+                        RETURN_PTR(
+                            new ValueNode(
+                                b.name, b.type, b.frequency, NullValue));
                         break;
                     case NULLARY_FUNCTION:
-                        return ConcreteNodePtr(
-                            new ValueNode(b.name, b.type, b.frequency,
-                                          ValueNode::BUILTIN, true));
+                        RETURN_PTR(
+                            new ValueNode(
+                                b.name, b.type, b.frequency,
+                                NullValue, ValueNode::BUILTIN, true));
                         break;
                     case FUNCTION:
                         assert(b.frequency == CONSTANT);
-                        return ConcreteNodePtr(
-                            new FunctionNode(b.name, b.type, FunctionNode::FUNCTION, b.linearity));
+                        RETURN_PTR(
+                            new FunctionNode(
+                                b.name, b.type,
+                                FunctionNode::FUNCTION, b.linearity));
                         break;
                     case PREFIX:
                         assert(b.frequency == CONSTANT);
-                        return ConcreteNodePtr(
-                            new FunctionNode(b.name, b.type, FunctionNode::PREFIX, b.linearity));
+                        RETURN_PTR(
+                            new FunctionNode(
+                                b.name, b.type,
+                                FunctionNode::PREFIX, b.linearity));
                         break;
                     case INFIX:
                         assert(b.frequency == CONSTANT);
-                        return ConcreteNodePtr(
-                            new FunctionNode(b.name, b.type, FunctionNode::INFIX, b.linearity));
+                        RETURN_PTR(
+                            new FunctionNode(
+                                b.name, b.type,
+                                FunctionNode::INFIX, b.linearity));
                         break;
                     case SWIZZLE:
                         assert(b.frequency == CONSTANT);
-                        return ConcreteNodePtr(
-                            new FunctionNode(b.name, b.type, FunctionNode::SWIZZLE, b.linearity));
+                        RETURN_PTR(
+                            new FunctionNode(
+                                b.name, b.type,
+                                FunctionNode::SWIZZLE, b.linearity));
                         break;
                     default:
                         assert(!"Unknown Built-In Node Type");

@@ -11,6 +11,7 @@ sources = Split("""
     CodeGeneration.cpp
     Comments.cpp
     ConstantProgram.cpp
+    Constants.cpp
     EmptyProgram.cpp
     ErrorLine.cpp
     Errors.cpp
@@ -20,6 +21,7 @@ sources = Split("""
     Literals.cpp
     Prefix.cpp
     Sharing.cpp
+    Specialize.cpp
     Stage.cpp
     Swizzle.cpp
     Uniforms.cpp

@@ -67,6 +67,17 @@ namespace ren {
 
         if (argTypes == NullType) {
 
+            // Is it a constant?
+            if (const Constant* c = _program->getConstant(name)) {
+                return cache(sig, ConcreteNodePtr(
+                    new ValueNode(
+                        name,
+                        c->getType(),
+                        CONSTANT,
+                        _program->getConstantValue(name, c->getType()),
+                        ValueNode::CONSTANT)));
+            }
+
             // Is it a uniform?
             if (const Uniform* u = _program->getUniform(name)) {
                 return cache(sig, ConcreteNodePtr(
@@ -74,6 +85,7 @@ namespace ren {
                         name,
                         u->getType(),
                         UNIFORM,
+                        NullValue,
                         ValueNode::UNIFORM)));
             }
 
@@ -84,6 +96,7 @@ namespace ren {
                         name,
                         a->getType(),
                         VERTEX,
+                        NullValue,
                         ValueNode::ATTRIBUTE)));
             }
         }

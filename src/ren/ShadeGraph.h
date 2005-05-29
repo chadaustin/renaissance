@@ -11,23 +11,18 @@ namespace ren {
 
     class ShadeGraph {
     public:
-        struct Output {
-            Output(const string& n)
-            : name(n) {
-            }
+        typedef std::map<string, CodeNodePtr> OutputMap;
+        OutputMap outputs;
 
-            string name;
-
-            bool operator<(const Output& rhs) const {
-                return name < rhs.name;
-            }
-        };
-
-        std::map<Output, CodeNodePtr> outputs;
+        /// Evaluate constant-frequency computations.
+        void specialize();
 
         void generate(GLSLShader& vs, GLSLShader& fs);
 
     private:
+        CodeNodePtr findEvaluatable();
+        void replace(CodeNodePtr node, CodeNodePtr with);
+
         void lift(GLSLShader& vs, GLSLShader& fs);
     };
 

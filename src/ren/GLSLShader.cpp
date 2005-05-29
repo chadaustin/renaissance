@@ -272,7 +272,7 @@ namespace ren {
     template<typename VecType>
     void writeGlobalArray(std::ostream& os, const string& prefix, const VecType& g) {
         for (size_t i = 0; i < g.size(); ++i) {
-            os << prefix << " " << g[i].type << " " << g[i].name << ";\n";
+            os << prefix << g[i].type << " " << g[i].name << ";\n";
         }
     }
 
@@ -293,9 +293,17 @@ namespace ren {
 
 
     void GLSLShader::output(std::ostream& os) {
-        writeGlobalArray(os, "uniform", uniforms);
-        writeGlobalArray(os, "attribute", attributes);
-        writeGlobalArray(os, "varying", varyings);
+        // Write constants with initializers.
+        for (size_t i = 0; i < constants.size(); ++i) {
+            Constant& c = constants[i];
+            string init = c.value->asString();
+            os << "const " << c.type << " " << c.name << " = "
+               << init << ";\n";
+        }
+
+        writeGlobalArray(os, "uniform ", uniforms);
+        writeGlobalArray(os, "attribute ", attributes);
+        writeGlobalArray(os, "varying ", varyings);
 
         if (!main->statements.empty()) {
             os << "void main()\n";
@@ -322,6 +330,7 @@ namespace ren {
                         name,
                         p->getType(),
                         p->getFrequency(),
+                        NullValue,
                         ValueNode::BUILTIN)); // suitable substitute for local
 
             replace(main_stmt, p, nameReference);
@@ -380,6 +389,7 @@ namespace ren {
                         name,
                         p->getType(),
                         p->getFrequency(),
+                        NullValue,
                         ValueNode::BUILTIN)); // suitable substitute for local
 
             replace(main_stmt, p, nameReference);

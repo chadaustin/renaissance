@@ -69,7 +69,9 @@ namespace ren {
 
     Type getElementType(Type t);
     unsigned getVectorLength(Type t);
-    Type getVectorType(Type element, int length);
+    Type getVectorType(Type element, unsigned length);
+    unsigned getMatrixLength(Type t);
+    Type getMatrixType(Type t, unsigned length);
 
 
     extern const Type NullType;

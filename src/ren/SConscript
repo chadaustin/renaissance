@@ -51,6 +51,7 @@ headers = Split("""
     ShadeGraph.h
     SyntaxNode.h
     Types.h
+    Value.h
 
     ShaderLexer.hpp
     ShaderLexerTokenTypes.hpp

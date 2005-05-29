@@ -32,6 +32,7 @@ namespace ren {
     extern CodeNodePtr findInterpolatable(CodeNodePtr node);
     extern CodeNodePtr findInterpolatable(StatementPtr statement);
 
+    extern void replace(CodeNodePtr in, CodeNodePtr node, CodeNodePtr with);
     extern void replace(StatementPtr st, CodeNodePtr node, CodeNodePtr with);
 
 
@@ -42,10 +43,14 @@ namespace ren {
             string type;
         };
 
+        struct Constant : Global {
+            ValuePtr value;
+        };
         struct Uniform   : Global { };
         struct Attribute : Global { };
         struct Varying   : Global { };
 
+        std::vector<Constant>  constants;
         std::vector<Uniform>   uniforms;
         std::vector<Attribute> attributes;
         std::vector<Varying>   varyings;

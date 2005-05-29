@@ -211,19 +211,26 @@ namespace ren {
             const string& name,
             Type type,
             Frequency frequency,
+            ValuePtr value,
             InputType inputType)
         : _name(name)
         , _type(type)
         , _frequency(frequency)
+        , _value(value)
         , _inputType(inputType) {
+            assert(_frequency > CONSTANT || _value);
         }
 
         Type getType() const {
             return _type;
         }
-
+        ;
         Frequency getFrequency() const {
             return _frequency;
+        }
+
+        ValuePtr getValue() const {
+            return _value;
         }
 
         string asExpression() const {
@@ -250,6 +257,7 @@ namespace ren {
         string _name;
         Type _type;
         Frequency _frequency;
+        ValuePtr _value;
         InputType _inputType;
 
         // We need to return something...  leave it empty.

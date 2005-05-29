@@ -7,10 +7,10 @@
 #include "Errors.h"
 #include "Frequency.h"
 #include "Types.h"
+#include "Value.h"
 
 
 namespace ren {
-
 
     enum Linearity {
         LINEAR,
@@ -232,6 +232,7 @@ namespace ren {
     public:
         enum InputType {
             BUILTIN,
+            CONSTANT,
             UNIFORM,
             ATTRIBUTE,
         };
@@ -239,11 +240,13 @@ namespace ren {
         ValueNode(const string& name,
                   Type type,
                   Frequency frequency,
+                  ValuePtr value,
                   InputType inputType = BUILTIN,
                   bool isFunction = false)
         : _name(name)
         , _type(type)
         , _frequency(frequency)
+        , _value(value)
         , _inputType(inputType)
         , _isFunction(isFunction) {
         }
@@ -264,6 +267,10 @@ namespace ren {
             return _frequency;
         }
 
+        ValuePtr getValue() const {
+            return _value;
+        }
+
         InputType getInputType() const {
             return _inputType;
         }
@@ -276,6 +283,7 @@ namespace ren {
         string _name;
         Type _type;
         Frequency _frequency;
+        ValuePtr _value;
         InputType _inputType;
         bool _isFunction;
     };

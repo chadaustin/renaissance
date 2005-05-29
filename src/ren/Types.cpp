@@ -309,6 +309,9 @@ namespace ren {
         if (t == VEC2)  return FLOAT;
         if (t == VEC3)  return FLOAT;
         if (t == VEC4)  return FLOAT;
+        if (t == MAT2)  return FLOAT;
+        if (t == MAT3)  return FLOAT;
+        if (t == MAT4)  return FLOAT;
 
         if (t == INT)   return INT;
         if (t == VEC2I) return INT;
@@ -343,7 +346,7 @@ namespace ren {
         return 0;
     }
 
-    Type getVectorType(Type element, int length) {
+    Type getVectorType(Type element, unsigned length) {
         if (element == FLOAT) {
             if (length == 1) return FLOAT;
             if (length == 2) return VEC2;
@@ -361,6 +364,22 @@ namespace ren {
             if (length == 2) return VEC2I;
             if (length == 3) return VEC3I;
             if (length == 4) return VEC4I;
+        }
+        return NullType;
+    }
+
+    unsigned getMatrixLength(Type t) {
+        if (t == MAT2) return 4;
+        if (t == MAT3) return 9;
+        if (t == MAT4) return 16;
+        return 0;
+    }
+
+    Type getMatrixType(Type element, unsigned length) {
+        if (element == FLOAT) {
+            if (length == 4)  return MAT2;
+            if (length == 9)  return MAT3;
+            if (length == 16) return MAT4;
         }
         return NullType;
     }

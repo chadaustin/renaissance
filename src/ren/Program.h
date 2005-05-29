@@ -2,11 +2,13 @@
 #define REN_PROGRAM_H
 
 
+#include <map>
 #include <stdexcept>
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include "Definition.h"
 #include "Types.h"
+#include "Value.h"
 
 
 namespace ren {
@@ -32,6 +34,7 @@ namespace ren {
     };
 
 
+    typedef Input Constant;
     typedef Input Uniform;
     typedef Input Attribute;
 
@@ -39,22 +42,13 @@ namespace ren {
     struct Program {
         void print();
 
-        DefinitionPtr getDefinition(
-            const string& name,
-            size_t args = 0
-        ) const {
-            for (size_t i = 0; i < definitions.size(); ++i) {
-                if (definitions[i]->name == name &&
-                    definitions[i]->arguments.size() == args
-                ) {
-                    return definitions[i];
+        const Constant* getConstant(const string& name) const {
+            for (size_t i = 0; i < constants.size(); ++i) {
+                if (constants[i].getName() == name) {
+                    return &constants[i];
                 }
             }
-            return DefinitionPtr();
-        }
-
-        bool hasDefinition(const string& name) const {
-            return getDefinition(name);
+            return 0;
         }
 
         const Uniform* getUniform(const string& name) const {
@@ -75,9 +69,41 @@ namespace ren {
             return 0;
         }
 
+        DefinitionPtr getDefinition(
+            const string& name,
+            size_t args = 0
+        ) const {
+            for (size_t i = 0; i < definitions.size(); ++i) {
+                if (definitions[i]->name == name &&
+                    definitions[i]->arguments.size() == args
+                ) {
+                    return definitions[i];
+                }
+            }
+            return DefinitionPtr();
+        }
+
+        bool hasDefinition(const string& name) const {
+            return getDefinition(name);
+        }
+
+        ValuePtr getConstantValue(const string& name, Type type) {
+            if (_constantValues[name]) {
+                return _constantValues[name];
+            } else {
+                ValuePtr v = Value::create(type);
+                _constantValues[name] = v;
+                return v;
+            }
+        }
+
+        std::vector<Constant> constants;
         std::vector<Uniform> uniforms;
         std::vector<Attribute> attributes;
         std::vector<DefinitionPtr> definitions;
+
+    private:
+        std::map<string, ValuePtr> _constantValues;
     };
     typedef boost::shared_ptr<Program> ProgramPtr;
 
