@@ -97,6 +97,10 @@ namespace ren {
             }
         }
 
+        void setConstantValue(const string& name, ValuePtr v) {
+            _constantValues[name] = v;
+        }
+
         std::vector<Constant> constants;
         std::vector<Uniform> uniforms;
         std::vector<Attribute> attributes;

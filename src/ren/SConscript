@@ -45,6 +45,7 @@ headers = Split("""
     Frequency.h
     GLSLShader.h
     GLSLStatement.h
+    Input.h
     Program.h
     ProgramScope.h
     Scope.h

@@ -6,6 +6,7 @@
 #include <ren/Program.h>
 #include <ren/Compiler.h>
 #include <ren/CompilationContext.h>
+#include <ren/Input.h>
 #include "TestFramework.h"
 using namespace ren;
 

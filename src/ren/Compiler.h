@@ -23,6 +23,8 @@ namespace ren {
         string fragmentShader;
     };
 
+    CompileResult compile(ProgramPtr program,
+                          std::ostream& output = std::cerr);
     CompileResult compile(const string& source,
                           std::ostream& output = std::cerr);
 

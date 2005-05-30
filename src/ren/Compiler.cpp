@@ -49,15 +49,9 @@ namespace ren {
 
 
     static CompileResult doCompile(
-        const string& source,
+        ProgramPtr program,
         std::ostream& output
     ) {
-        ProgramPtr program = parse(source);
-        if (!program) {
-            // No exceptions thrown, but no program generated.  Must be empty.
-            return CompileResult(true);
-        }
-
         CompilationContext cc(program);
 
         // Build shader output graph.
@@ -99,6 +93,37 @@ namespace ren {
     }
 
 
+    static CompileResult doCompile(
+        const string& source,
+        std::ostream& output
+    ) {
+        ProgramPtr program = parse(source);
+        if (!program) {
+            // No exceptions thrown, but no program generated.  Must be empty.
+            return CompileResult(true);
+        }
+        return doCompile(program, output);
+    }
+
+
+    CompileResult compile(ProgramPtr program, std::ostream& output) {
+        static CompileResult FAILURE(false);
+
+        try {
+            return doCompile(program, output);
+        }
+        catch (const antlr::ANTLRException& e) {
+            output << "ANTLR Exception: " << e.toString() << std::endl;
+            return FAILURE;
+        }
+        catch (const std::exception& e) {
+            output << "Exception: " << e.what() << std::endl;
+            return FAILURE;
+        }
+
+    }
+
+
     CompileResult compile(const string& source, std::ostream& output) {
         static CompileResult FAILURE(false);
 
@@ -113,7 +138,6 @@ namespace ren {
             output << "Exception: " << e.what() << std::endl;
             return FAILURE;
         }
-
     }
 
 }
