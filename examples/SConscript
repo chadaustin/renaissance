@@ -1,0 +1,10 @@
+Import('*')
+
+env = env.Copy(tools=['SDL', 'OpenGL', 'Renaissance', 'Boost'])
+
+sources = Split("""
+    glew.c
+    temperature.cpp
+""")
+
+env.Program('temperature', sources)

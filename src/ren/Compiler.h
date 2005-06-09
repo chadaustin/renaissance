@@ -9,6 +9,7 @@
 
 namespace ren {
 
+    ProgramPtr parse(std::istream& is);
     ProgramPtr parse(const string& source);
 
     struct CompileResult {
@@ -26,6 +27,8 @@ namespace ren {
     CompileResult compile(ProgramPtr program,
                           std::ostream& output = std::cerr);
     CompileResult compile(const string& source,
+                          std::ostream& output = std::cerr);
+    CompileResult compile(std::istream& is,
                           std::ostream& output = std::cerr);
 
 }

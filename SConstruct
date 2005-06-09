@@ -15,5 +15,6 @@ if env.subst('$CC') == 'gcc':
 
 Export('env')
 BuildDir('build', '.', duplicate=0)
-SConscript(dirs=['build/src',
+SConscript(dirs=['build/examples',
+                 'build/src',
                  'build/test'])

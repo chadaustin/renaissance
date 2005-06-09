@@ -13,9 +13,7 @@
 
 namespace ren {
 
-    ProgramPtr parse(const string& source) {
-        std::istringstream is(source);
-
+    ProgramPtr parse(std::istream& is) {
         antlr::ASTFactory parserFactory;
         ShaderLexer lexer(is);
         ShaderParser parser(lexer);
@@ -31,7 +29,11 @@ namespace ren {
             // the program is empty.
             return ProgramPtr(new Program);
         }
+    }
 
+    ProgramPtr parse(const string& source) {
+        std::istringstream is(source);
+        return parse(is);
     }
 
 
