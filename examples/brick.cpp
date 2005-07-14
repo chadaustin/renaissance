@@ -3,12 +3,21 @@
 #include "example.h"
 
 
-class TemperatureApp : public ExampleApp {
+class BrickApp : public ExampleApp {
 public:
-    TemperatureApp() {
-        _shader = loadShader("temperature.rs");
-        ren::Vec3 CoolestColor(_shader->getProgram(), "CoolestColor");
-        CoolestColor.set(0, 0, 1);
+    BrickApp() {
+        _shader = loadShader("brick.rs");
+
+        ren::Vec3 LightPosition(_shader->getProgram(), "LightPosition");
+        ren::Vec3 BrickColor   (_shader->getProgram(), "BrickColor");
+        ren::Vec3 MortarColor  (_shader->getProgram(), "MortarColor");
+        ren::Vec2 BrickSize    (_shader->getProgram(), "BrickSize");
+        ren::Vec2 BrickPct     (_shader->getProgram(), "BrickPct");
+        
+        BrickColor.set(1.0f, 0.3f, 0.2f);
+        MortarColor.set(0.85f, 0.86f, 0.84f);
+        BrickSize.set(1.0f, 0.5f);
+        BrickPct.set(0.9f, 0.85f);
     }
 
     void onKeyPress(SDLKey key, bool down) {
@@ -53,5 +62,5 @@ private:
 
 
 int main() {
-    return run<TemperatureApp>();
+    return run<BrickApp>();
 }

@@ -171,6 +171,7 @@ namespace ren {
 
             { "mix",   VEC3 * VEC3 * FLOAT           >> VEC3, CONSTANT, FUNCTION, PUNT },
             { "vec2",  FLOAT * FLOAT                 >> VEC2, CONSTANT, FUNCTION, LINEAR },
+            { "vec3",  FLOAT * FLOAT * FLOAT         >> VEC3, CONSTANT, FUNCTION, LINEAR },
             { "vec4",  FLOAT * FLOAT * FLOAT * FLOAT >> VEC4, CONSTANT, FUNCTION, LINEAR },
 
             { "fract", FLOAT >> FLOAT, CONSTANT, FUNCTION, PUNT },

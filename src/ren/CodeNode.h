@@ -218,7 +218,8 @@ namespace ren {
         , _frequency(frequency)
         , _value(value)
         , _inputType(inputType) {
-            assert(_frequency > CONSTANT || _value);
+            //std::cout << name << std::endl;
+            //assert(_frequency > CONSTANT || _value);
         }
 
         Type getType() const {

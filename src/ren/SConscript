@@ -19,6 +19,7 @@ libenv.Command(
 
 sources = Split("""
     BuiltInScope.cpp
+    CodeNode.cpp
     CompilationContext.cpp
     Compiler.cpp
     Definition.cpp

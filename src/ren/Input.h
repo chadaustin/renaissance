@@ -63,6 +63,19 @@ namespace ren {
     };
 
 
+    class Vec2 : public InputVariable {
+    public:
+        Vec2(ProgramPtr program, const string& name)
+        : InputVariable(program, name, VEC2) {
+        }
+
+        void set(float x, float y) {
+            const float values[] = {x, y};
+            setValue(Value::create(VEC2, values));
+        }
+    };
+
+
     class Vec3 : public InputVariable {
     public:
         Vec3(ProgramPtr program, const string& name)
@@ -70,7 +83,7 @@ namespace ren {
         }
 
         void set(float x, float y, float z) {
-            const float values[3] = {x, y, z};
+            const float values[] = {x, y, z};
             setValue(Value::create(VEC3, values));
         }
     };

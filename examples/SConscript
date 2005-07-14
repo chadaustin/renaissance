@@ -4,7 +4,7 @@ env = env.Copy(tools=['SDL', 'OpenGL', 'Renaissance', 'Boost'])
 
 sources = Split("""
     glew.c
-    temperature.cpp
 """)
 
-env.Program('temperature', sources)
+env.Program('temperature', ['temperature.cpp'] + sources)
+env.Program('brick',       ['brick.cpp']       + sources)

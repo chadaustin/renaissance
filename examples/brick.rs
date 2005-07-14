@@ -16,6 +16,7 @@ DiffuseContribution = 1.0 - SpecularContribution
 # Transform.
 
 gl_Position = ftransform
+
 ecPosition = (gl_ModelViewMatrix * gl_Vertex).xyz
 tnorm = normalize (gl_NormalMatrix * gl_Normal)
 
@@ -44,3 +45,4 @@ amount = useBrick.x * useBrick.y * LightIntensity
 color = mix MortarColor BrickColor amount
 
 gl_FragColor = color ++ 1.0
+#gl_FragColor = BrickPct ++ 0.0 ++ 1.0
