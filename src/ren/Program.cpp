@@ -6,9 +6,9 @@
 namespace ren {
 
     void Program::print() {
-        for (size_t i = 0; i < uniforms.size(); ++i) {
-            std::cout << "Uniform: " << uniforms[i].getType()
-                      << " " << uniforms[i].getName() << std::endl;
+        for (size_t i = 0; i < _uniforms.size(); ++i) {
+            std::cout << "Uniform: " << _uniforms[i].getType()
+                      << " " << _uniforms[i].getName() << std::endl;
         }
 
         for (size_t i = 0; i < attributes.size(); ++i) {

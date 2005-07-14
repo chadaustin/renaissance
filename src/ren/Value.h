@@ -116,20 +116,38 @@ namespace ren {
 
         string asString() const {
             Type elementType = getElementType(_type);
+            int arity = getArity(_type);
             if (elementType == FLOAT) {
                 return _type.getName() + "(" +
-                    asString(asFloatVec(), getArity(_type)) + ")";
+                    asString(asFloatVec(), arity) + ")";
             }
             if (elementType == INT) {
                 return _type.getName() + "(" +
-                    asString(asIntVec(), getArity(_type)) + ")";
+                    asString(asIntVec(), arity) + ")";
             }
             if (elementType == BOOL) {
                 return _type.getName() + "(" +
-                    asString(asBoolVec(), getArity(_type)) + ")";
+                    asString(asBoolVec(), arity) + ")";
             }
             assert(!"Cannot convert unknown type to expression.");
             return "Cannot convert unknown type to expression.";
+        }
+
+        bool operator<(const Value& rhs) const {
+            assert(_type == rhs._type);
+            Type elementType = getElementType(_type);
+            int arity = getArity(_type);
+            if (elementType == FLOAT) {
+                return lessThan(arity, asFloatVec(), rhs.asFloatVec());
+            }
+            if (elementType == INT) {
+                return lessThan(arity, asIntVec(), rhs.asIntVec());
+            }
+            if (elementType == BOOL) {
+                return lessThan(arity, asBoolVec(), rhs.asBoolVec());
+            }
+            assert(!"Unknown element type -- can't compare.");
+            return false;
         }
 
     private:
@@ -162,6 +180,16 @@ namespace ren {
         static string asString(bool b) {
             return b ? "true" : "false";
         }
+
+        template<typename T>
+        static bool lessThan(int arity, const T* lhs, const T* rhs) {
+            for (int i = 0; i < arity; ++i) {
+                if (lhs[i] < rhs[i]) return true;
+                if (rhs[i] < lhs[i]) return false;
+            }
+            return false;
+        }
+
 
         template<typename T>
         struct Type2Type {

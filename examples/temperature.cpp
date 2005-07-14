@@ -6,6 +6,7 @@
 #include <SDL.h>
 #include "glew.h"
 #include <ren/Compiler.h>
+#include <ren/Input.h>
 
 
 inline void throwSDLError(const std::string& prefix) {
@@ -63,11 +64,46 @@ public:
     : _program(program) {
     }
 
+    ren::ProgramPtr getProgram() const {
+        return _program;
+    }
+
     void bind() {
         if (!_program) {
             unbind();
         }
 
+        const ren::Program::ValueList& constants = _program->getConstantValues();
+        const ren::Program::ValueList& uniforms  = _program->getUniformValues();
+        if (!_cache.count(constants)) {
+            _cache[constants].program = compile();
+        }
+        _cache[constants].uniforms = uniforms;
+
+        GLhandleARB programObject = _cache[constants].program;
+        glUseProgramObjectARB(programObject);
+
+        for (size_t i = 0; i < _program->getUniforms().size(); ++i) {
+            const ren::Input& u = _program->getUniforms()[i];
+
+            GLint location = glGetUniformLocationARB(
+                programObject,
+                u.getName().c_str());
+            ren::ValuePtr uniformValue = _program->getUniformValue(
+                u.getName());
+
+            if (u.getType() == ren::VEC3) {
+                glUniform3fvARB(location, 1, uniformValue->asFloatVec());
+            }
+        }
+    }
+
+    static void unbind() {
+        glUseProgramObjectARB(0);
+    }
+
+private:
+    GLhandleARB compile() {
         std::ostringstream log;
         ren::CompileResult cr(ren::compile(_program, log));
         if (!cr.success) {
@@ -106,14 +142,51 @@ public:
         }
 
         checkOpenGLErrors();
+
+        return program;
     }
 
-    static void unbind() {
-        glUseProgramObjectARB(0);
-    }
-
-private:
     ren::ProgramPtr _program;
+
+    /**
+     * A compiled and linked program and its set of current uniforms.
+     */
+    struct CacheEntry {
+        CacheEntry()
+        : program(0) {
+        }
+
+        GLhandleARB program;
+        ren::Program::ValueList uniforms;
+    };
+
+    /**
+     * Compare the *values* of the constants, not the pointers.
+     */
+    struct ValueListComparator {
+        bool operator()(const ren::Program::ValueList& a,
+                        const ren::Program::ValueList& b) const {
+            // The Program shouldn't have any new constants added as
+            // this is running...  This would be better enforced in
+            // the type system somewhere.
+            assert(a.size() == b.size());
+
+            /*
+            if (a.size() < b.size()) { return true;  }
+            if (b.size() < a.size()) { return false; }
+            */
+            
+            for (size_t i = 0; i < a.size(); ++i) {
+                if (*a[i] < *b[i]) { return true;  }
+                if (*b[i] < *a[i]) { return false; }
+            }
+            return false;
+        }
+    };
+
+    typedef std::map<ren::Program::ValueList, CacheEntry,
+                     ValueListComparator> ShaderCache;
+    ShaderCache _cache;
 };
 typedef boost::shared_ptr<Shader> ShaderPtr;
 
@@ -173,6 +246,8 @@ public:
         }
 
         _shader = loadShader("temperature.rs");
+        ren::Vec3 CoolestColor(_shader->getProgram(), "CoolestColor");
+        CoolestColor.set(0, 0, 1);
     }
 
     ~TemperatureApp() {
@@ -225,6 +300,22 @@ public:
 
 
 
+        glColor3f(1.0f, 0, 0);
+
+        float array[] = {
+            1.0f, 2.0f, -2,
+            3, 4, -1,
+            7, 1, 7,
+            8, 2, -4,
+            2, 3, 7 };
+            
+
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glVertexPointer(3, GL_FLOAT, 0, array);
+        glDrawArrays(GL_LINE_STRIP, 0, 5);
+        glDisableClientState(GL_VERTEX_ARRAY);
+
+#if 0
         GLUquadricObj* quadric = gluNewQuadric();
 
         _shader->bind();
@@ -232,6 +323,7 @@ public:
         _shader->unbind();
 
         gluDeleteQuadric(quadric);
+#endif
     }
 
 private:

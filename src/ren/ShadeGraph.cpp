@@ -33,16 +33,18 @@ namespace {
         }
     }
 
-    void getConstants(NameCodeNodeSet& constants, CodeNodePtr node) {
-        getReferencesOfType(constants, node, ValueNode::CONSTANT);
-    }
-
-    void getUniforms(NameCodeNodeSet& uniforms, CodeNodePtr node) {
-        getReferencesOfType(uniforms, node, ValueNode::UNIFORM);
-    }
-
-    void getAttributes(NameCodeNodeSet& attributes, CodeNodePtr node) {
-        getReferencesOfType(attributes, node, ValueNode::ATTRIBUTE);
+    void getReferencesOfType(
+        NameCodeNodeSet& result,
+        StatementPtr statement,
+        ValueNode::InputType type
+    ) {
+        if (CodeNodePtr cn = statement->getExpression()) {
+            getReferencesOfType(result, cn, type);
+        }
+        const StatementList& children = statement->getChildren();
+        for (size_t i = 0; i < children.size(); ++i) {
+            getReferencesOfType(result, children[i], type);
+        }
     }
 
     CodeNodePtr findEvaluatable(CodeNodePtr node) {
@@ -92,51 +94,55 @@ namespace ren {
         }
     }
 
+    void declareInputs(GLSLShader& sh) {
+        StatementPtr main_stmt(sh.main);
+
+        // Declare referenced constants.
+        NameCodeNodeSet constants;
+        getReferencesOfType(constants, main_stmt, ValueNode::CONSTANT);
+        for (NameCodeNodeSet::iterator i = constants.begin();
+             i != constants.end();
+             ++i
+        ) {
+            GLSLShader::Constant c;
+            c.name  = (*i)->getName();
+            c.type  = (*i)->getType().getName();
+            c.value = (*i)->getValue();
+            sh.constants.push_back(c);
+        }
+
+        // Declare referenced uniforms.
+        NameCodeNodeSet uniforms;
+        getReferencesOfType(uniforms, main_stmt, ValueNode::UNIFORM);
+        for (NameCodeNodeSet::iterator i = uniforms.begin();
+             i != uniforms.end();
+             ++i
+        ) {
+            GLSLShader::Uniform u;
+            u.name = (*i)->getName();
+            u.type = (*i)->getType().getName();
+            sh.uniforms.push_back(u);
+        }
+
+        // Declare referenced attributes.
+        NameCodeNodeSet attributes;
+        getReferencesOfType(attributes, main_stmt, ValueNode::ATTRIBUTE);
+        for (NameCodeNodeSet::iterator i = attributes.begin();
+             i != attributes.end();
+             ++i
+        ) {
+            GLSLShader::Attribute a;
+            a.name = (*i)->getName();
+            a.type = (*i)->getType().getName();
+            sh.attributes.push_back(a);
+        }
+    }
+
     void ShadeGraph::generate(GLSLShader& vs, GLSLShader& fs) {
         if (outputs.count("gl_Position")) {
             CodeNodePtr cn = outputs["gl_Position"];
 
             typedef std::set<ValueNodePtr> ValueNodeSet;
-
-            // Declare referenced constants.
-            NameCodeNodeSet constants;
-            getConstants(constants, cn);
-            for (NameCodeNodeSet::iterator i = constants.begin();
-                 i != constants.end();
-                 ++i
-            ) {
-                GLSLShader::Constant c;
-                c.name  = (*i)->getName();
-                c.type  = (*i)->getType().getName();
-                c.value = (*i)->getValue();
-                vs.constants.push_back(c);
-            }
-
-            // Declare referenced uniforms.
-            NameCodeNodeSet uniforms;
-            getUniforms(uniforms, cn);
-            for (NameCodeNodeSet::iterator i = uniforms.begin();
-                 i != uniforms.end();
-                 ++i
-            ) {
-                GLSLShader::Uniform u;
-                u.name = (*i)->getName();
-                u.type = (*i)->getType().getName();
-                vs.uniforms.push_back(u);
-            }
-
-            // Declare referenced attributes.
-            NameCodeNodeSet attributes;
-            getAttributes(attributes, cn);
-            for (NameCodeNodeSet::iterator i = attributes.begin();
-                 i != attributes.end();
-                 ++i
-            ) {
-                GLSLShader::Attribute a;
-                a.name = (*i)->getName();
-                a.type = (*i)->getType().getName();
-                vs.attributes.push_back(a);
-            }
 
             // Add statements.
             AssignmentPtr s(new Assignment);
@@ -149,32 +155,6 @@ namespace ren {
         if (outputs.count("gl_FragColor")) {
             CodeNodePtr cn = outputs["gl_FragColor"];
 
-            // Declare referenced uniforms.
-            NameCodeNodeSet uniforms;
-            getUniforms(uniforms, cn);
-            for (NameCodeNodeSet::iterator i = uniforms.begin();
-                 i != uniforms.end();
-                 ++i
-            ) {
-                GLSLShader::Uniform u;
-                u.name = (*i)->getName();
-                u.type = (*i)->getType().getName();
-                fs.uniforms.push_back(u);
-            }
-
-            // Declare referenced attributes.
-            NameCodeNodeSet attributes;
-            getAttributes(attributes, cn);
-            for (NameCodeNodeSet::iterator i = attributes.begin();
-                 i != attributes.end();
-                 ++i
-            ) {
-                GLSLShader::Attribute a;
-                a.name = (*i)->getName();
-                a.type = (*i)->getType().getName();
-                fs.attributes.push_back(a);
-            }
-
             // Add statements.
             AssignmentPtr s(new Assignment);
             s->define = false;
@@ -184,6 +164,8 @@ namespace ren {
         }
 
         lift(vs, fs);
+        declareInputs(vs);
+        declareInputs(fs);
     }
 
 

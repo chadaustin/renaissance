@@ -159,19 +159,19 @@ program returns [ProgramPtr p] {
 }
     : (
             #(CONSTANT ctype:ID cname:ID) {
-                p->constants.push_back(Constant(
+                p->addConstant(Input(
                         getTypeFromString(ctype->getText()),
                         cname->getText()));
             }
         |
             #(UNIFORM utype:ID uname:ID) {
-                p->uniforms.push_back(Uniform(
+                p->addUniform(Input(
                         getTypeFromString(utype->getText()),
                         uname->getText()));
             }
         |
             #(ATTRIBUTE atype:ID aname:ID) {
-                p->attributes.push_back(Attribute(
+                p->attributes.push_back(Input(
                         getTypeFromString(atype->getText()),
                         aname->getText()));
             }

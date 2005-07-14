@@ -7,29 +7,72 @@
 
 namespace ren {
 
-    class Bool {
-    public:
-        Bool(ProgramPtr program, const string& name)
+    class InputVariable {
+    protected:
+        InputVariable(ProgramPtr program, const string& name, Type type)
         : _program(program)
         , _name(name) {
-            const Constant* c = _program->getConstant(name);
+            const Input* c = getProgram()->getConstant(name);
             if (!c) {
-                throw std::runtime_error("Program has no constant named " + name);
+                c = getProgram()->getUniform(name);
+                _uniform = true;
+            } else {
+                _uniform = false;
             }
-            if (c->getType() != BOOL) {
-                throw std::runtime_error("Program has no constant named " + name + " of type bool");
+            checkType(name, c, type);
+        }
+
+        ProgramPtr getProgram() const {
+            return _program;
+        }
+
+        void setValue(ValuePtr v) {
+            if (_uniform) {
+                getProgram()->setUniformValue(_name, v);
+            } else {
+                getProgram()->setConstantValue(_name, v);
             }
         }
 
-        Bool& operator=(bool value) {
-            ValuePtr v = Value::create(BOOL, &value);
-            _program->setConstantValue(_name, v);
-            return *this;
+        static void checkType(const string& name, const Input* i, Type type) {
+            if (!i) {
+                throw std::runtime_error("Program has no constant or uniform named " + name);
+            }
+            if (i->getType() != type) {
+                throw std::runtime_error("Program constant or uniform named " + name + ", but it does not have type " + type.getName());
+            }
         }
 
     private:
         ProgramPtr _program;
         string _name;
+        bool _uniform;
+    };
+
+
+    class Bool : public InputVariable {
+    public:
+        Bool(ProgramPtr program, const string& name)
+        : InputVariable(program, name, BOOL) {
+        }
+
+        Bool& operator=(bool value) {
+            setValue(Value::create(BOOL, &value));
+            return *this;
+        }
+    };
+
+
+    class Vec3 : public InputVariable {
+    public:
+        Vec3(ProgramPtr program, const string& name)
+        : InputVariable(program, name, VEC3) {
+        }
+
+        void set(float x, float y, float z) {
+            const float values[3] = {x, y, z};
+            setValue(Value::create(VEC3, values));
+        }
     };
 
 }

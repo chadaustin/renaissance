@@ -292,7 +292,17 @@ namespace ren {
     }
 
 
+    bool compare(const GLSLShader::Global& a, const GLSLShader::Global& b) {
+        return a.name < b.name;
+    }
+
+
     void GLSLShader::output(std::ostream& os) {
+        std::sort(constants .begin(), constants .end(), compare);
+        std::sort(uniforms  .begin(), uniforms  .end(), compare);
+        std::sort(attributes.begin(), attributes.end(), compare);
+        std::sort(varyings  .begin(), varyings  .end(), compare);
+
         // Write constants with initializers.
         for (size_t i = 0; i < constants.size(); ++i) {
             Constant& c = constants[i];

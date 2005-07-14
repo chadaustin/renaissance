@@ -68,18 +68,18 @@ namespace ren {
         if (argTypes == NullType) {
 
             // Is it a constant?
-            if (const Constant* c = _program->getConstant(name)) {
+            if (const Input* c = _program->getConstant(name)) {
                 return cache(sig, ConcreteNodePtr(
                     new ValueNode(
                         name,
                         c->getType(),
                         CONSTANT,
-                        _program->getConstantValue(name, c->getType()),
+                        _program->getConstantValue(name),
                         ValueNode::CONSTANT)));
             }
 
             // Is it a uniform?
-            if (const Uniform* u = _program->getUniform(name)) {
+            if (const Input* u = _program->getUniform(name)) {
                 return cache(sig, ConcreteNodePtr(
                     new ValueNode(
                         name,
@@ -90,7 +90,7 @@ namespace ren {
             }
 
             // Is it an attribute?
-            if (const Attribute* a = _program->getAttribute(name)) {
+            if (const Input* a = _program->getAttribute(name)) {
                 return cache(sig, ConcreteNodePtr(
                     new ValueNode(
                         name,

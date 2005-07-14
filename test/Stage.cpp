@@ -57,8 +57,34 @@ TEST(Stage) {
         "}\n"
         ;
 
-    CompileResult cr(compile(source));
-    CHECK(cr.success);
-    CHECK_EQUAL(cr.vertexShader, VS);
-    CHECK_EQUAL(cr.fragmentShader, FS);
+    CHECK_COMPILE(source, VS, FS);
+}
+
+
+TEST(AttributeLifting) {
+    string source =
+        "attribute vec4 v1\n"
+        "attribute vec4 v2\n"
+        "gl_FragColor = v1 + v2\n"
+        ;
+
+    string VS =
+        "attribute vec4 v1;\n"
+        "attribute vec4 v2;\n"
+        "varying vec4 _ren_v0;\n"
+        "void main()\n"
+        "{\n"
+        "  _ren_v0 = (v1 + v2);\n"
+        "}\n"
+        ;
+
+    string FS =
+        "varying vec4 _ren_v0;\n"
+        "void main()\n"
+        "{\n"
+        "  gl_FragColor = _ren_v0;\n"
+        "}\n"
+        ;
+
+    CHECK_COMPILE(source, VS, FS);
 }
