@@ -101,6 +101,8 @@ public:
                 glUniform3fvARB(location, 1, uniformValue->asFloatVec());
             } else if (u.getType() == ren::VEC2) {
                 glUniform2fvARB(location, 1, uniformValue->asFloatVec());
+            } else if (u.getType() == ren::FLOAT) {
+                glUniform1fARB(location, uniformValue->asFloat());
             } else if (u.getType() == ren::SAMPLER2D) {
                 glUniform1iARB(location, uniformValue->asInt());
             } else {
@@ -297,6 +299,9 @@ public:
     }
 
     virtual void onKeyPress(SDLKey key, bool down) { }
+    virtual void onMouseDown(float x, float y) { }
+    virtual void onMouseUp(float x, float y) { }
+    virtual void onMouseMove(float x, float y) { }
     virtual void update(float dt) { }
     virtual void draw() { }
 
@@ -326,6 +331,21 @@ private:
                     onKeyPress(
                         event.key.keysym.sym,
                         event.key.state == SDL_PRESSED);
+                    break;
+
+                case SDL_MOUSEBUTTONDOWN:
+                case SDL_MOUSEBUTTONUP:
+                    if (event.button.button == SDL_BUTTON_LEFT) {
+                        if (event.button.state == SDL_PRESSED) {
+                            onMouseDown(event.button.x, event.button.y);
+                        } else {
+                            onMouseUp(event.button.x, event.button.y);
+                        }
+                    }
+                    break;
+
+                case SDL_MOUSEMOTION:
+                    onMouseMove(event.motion.x, event.motion.y);
                     break;
 
                 case SDL_QUIT:

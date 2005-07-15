@@ -1,3 +1,7 @@
+# Switches.
+
+constant bool EnableLighting
+
 # Uniforms.
 
 uniform vec3 LightPosition
@@ -41,7 +45,8 @@ position = origposition + vec2 xoffset 0.0
 
 useBrick = step (fract position) BrickPct
 
-amount = useBrick.x * useBrick.y * LightIntensity
+lightFactor = if EnableLighting then LightIntensity else 1.0
+amount = useBrick.x * useBrick.y * lightFactor
 color = mix MortarColor BrickColor amount
 
 gl_FragColor = color ++ 1.0
