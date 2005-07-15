@@ -157,6 +157,17 @@ namespace ren {
             { "gl_Color",   VEC4, VERTEX, VALUE },
             { "gl_Normal",  VEC3, VERTEX, VALUE },
 
+            { "gl_MultiTexCoord0", VEC4, VERTEX, VALUE },
+            { "gl_MultiTexCoord1", VEC4, VERTEX, VALUE },
+            { "gl_MultiTexCoord2", VEC4, VERTEX, VALUE },
+            { "gl_MultiTexCoord3", VEC4, VERTEX, VALUE },
+            { "gl_MultiTexCoord4", VEC4, VERTEX, VALUE },
+            { "gl_MultiTexCoord5", VEC4, VERTEX, VALUE },
+            { "gl_MultiTexCoord6", VEC4, VERTEX, VALUE },
+            { "gl_MultiTexCoord7", VEC4, VERTEX, VALUE },
+
+            { "texture2D", SAMPLER2D * VEC2 >> VEC4, CONSTANT, FUNCTION, NONLINEAR },
+
             { "gl_ModelViewMatrix",           MAT4, UNIFORM, VALUE },
             { "gl_NormalMatrix",              MAT3, UNIFORM, VALUE },
             { "gl_ModelViewProjectionMatrix", MAT4, UNIFORM, VALUE },

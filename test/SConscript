@@ -21,6 +21,7 @@ sources = Split("""
     Liftable.cpp
     Literals.cpp
     Prefix.cpp
+    Sampler.cpp
     Sharing.cpp
     Specialize.cpp
     Stage.cpp

@@ -33,6 +33,13 @@ namespace ren {
         if (t == MAT3)  return 9;
         if (t == MAT4)  return 16;
 
+        if (t == SAMPLER1D)       return 1;
+        if (t == SAMPLER2D)       return 1;
+        if (t == SAMPLER3D)       return 1;
+        if (t == SAMPLERCUBE)     return 1;
+        if (t == SAMPLER1DSHADOW) return 1;
+        if (t == SAMPLER2DSHADOW) return 1;
+
         assert(!"Compound type has no arity");
         return 0;
     }
@@ -52,7 +59,10 @@ namespace ren {
     template<>
     struct TypeChecker<int> {
         static void check(Type t) {
-            assert(t == INT || t == VEC2I || t == VEC3I || t == VEC4I);
+            assert(t == INT || t == VEC2I || t == VEC3I || t == VEC4I ||
+                   t == SAMPLER1D || t == SAMPLER2D || t == SAMPLER3D ||
+                   t == SAMPLERCUBE || t == SAMPLER1DSHADOW ||
+                   t == SAMPLER2DSHADOW);
         }
     };
 
@@ -85,6 +95,13 @@ namespace ren {
             if (type == VEC3B) return create<bool>(type, 0);
             if (type == VEC4B) return create<bool>(type, 0);
 
+            if (type == SAMPLER1D)       return create<int>(type, 0);
+            if (type == SAMPLER2D)       return create<int>(type, 0);
+            if (type == SAMPLER3D)       return create<int>(type, 0);
+            if (type == SAMPLERCUBE)     return create<int>(type, 0);
+            if (type == SAMPLER1DSHADOW) return create<int>(type, 0);
+            if (type == SAMPLER2DSHADOW) return create<int>(type, 0);
+          
             assert(!"Invalid Value type");
             return ValuePtr();
         }
