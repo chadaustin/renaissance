@@ -94,6 +94,9 @@ public:
             GLint location = glGetUniformLocationARB(
                 programObject,
                 u.getName().c_str());
+            if (location == -1) {
+                continue;
+            }
             ren::ValuePtr uniformValue = _program->getUniformValue(
                 u.getName());
 
