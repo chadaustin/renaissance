@@ -227,7 +227,7 @@ namespace ren {
                         varying->getType(),
                         varying->getFrequency(),
                         NullValue,
-                        ValueNode::BUILTIN)); // suitable substitute for local
+                        ValueNode::VARYING));
             ren::replace(main_stmt, varying, varyingReference);
 
 /*

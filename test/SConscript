@@ -18,6 +18,7 @@ sources = Split("""
     Expression.cpp
     Frequency.cpp
     Functions.cpp
+    Liftable.cpp
     Literals.cpp
     Prefix.cpp
     Sharing.cpp

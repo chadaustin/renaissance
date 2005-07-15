@@ -8,3 +8,4 @@ sources = Split("""
 
 env.Program('temperature', ['temperature.cpp'] + sources)
 env.Program('brick',       ['brick.cpp']       + sources)
+env.Program('demo',        ['demo.cpp']        + sources)

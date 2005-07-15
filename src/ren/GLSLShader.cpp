@@ -102,6 +102,12 @@ namespace ren {
             if (p->canInterpolate()) {
                 return p;
             }
+        } else if (REN_DYNAMIC_CAST_PTR(p, NameCodeNode, node)) {
+            if (p->getInputType() == ValueNode::BUILTIN &&
+                p->getFrequency() == VERTEX
+            ) {
+                return p;
+            }
         }
 
         CodeNodeList args = node->getChildren();

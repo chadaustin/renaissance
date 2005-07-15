@@ -235,6 +235,7 @@ namespace ren {
             CONSTANT,
             UNIFORM,
             ATTRIBUTE,
+            VARYING,
         };
 
         ValueNode(const string& name,

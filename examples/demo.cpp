@@ -6,8 +6,9 @@
 class BrickApp : public ExampleApp {
 public:
     BrickApp() {
-        _shader = loadShader("brick.rs");
+        _shader = loadShader("demo.rs");
 
+        /*
         ren::Vec3 LightPosition(_shader->getProgram(), "LightPosition");
         ren::Vec3 BrickColor   (_shader->getProgram(), "BrickColor");
         ren::Vec3 MortarColor  (_shader->getProgram(), "MortarColor");
@@ -18,6 +19,7 @@ public:
         MortarColor.set(0.85f, 0.86f, 0.84f);
         BrickSize.set(1.0f, 0.5f);
         BrickPct.set(0.9f, 0.85f);
+        */
     }
 
     void onKeyPress(SDLKey key, bool down) {
@@ -46,9 +48,16 @@ public:
         _shader->bind();
 
         glBegin(GL_QUADS);
+        glColor3f(1, 1, 0);
         glVertex2f(-4, -4);
+
+        glColor3f(1, 0, 1);
         glVertex2f(-4,  4);
+
+        glColor3f(0, 1, 1);
         glVertex2f( 4,  4);
+
+        glColor3f(0, 1, 0);
         glVertex2f( 4, -4);
         glEnd();
 
