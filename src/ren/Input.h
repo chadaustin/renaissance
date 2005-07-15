@@ -26,6 +26,14 @@ namespace ren {
             return _program;
         }
 
+        ValuePtr getValue() const {
+            if (_uniform) {
+                return getProgram()->getUniformValue(_name);
+            } else {
+                return getProgram()->getConstantValue(_name);
+            }
+        }
+
         void setValue(ValuePtr v) {
             if (_uniform) {
                 getProgram()->setUniformValue(_name, v);
@@ -54,6 +62,10 @@ namespace ren {
     public:
         Bool(ProgramPtr program, const string& name)
         : InputVariable(program, name, BOOL) {
+        }
+
+        operator bool() const {
+            return getValue()->asBool();
         }
 
         Bool& operator=(bool value) {
@@ -85,6 +97,18 @@ namespace ren {
         void set(float x, float y, float z) {
             const float values[] = {x, y, z};
             setValue(Value::create(VEC3, values));
+        }
+    };
+
+    class Sampler2D : public InputVariable {
+    public:
+        Sampler2D(ProgramPtr program, const string& name)
+        : InputVariable(program, name, SAMPLER2D) {
+        }
+
+        Sampler2D& operator=(int value) {
+            setValue(Value::create(INT, &value));
+            return *this;
         }
     };
 

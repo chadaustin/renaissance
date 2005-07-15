@@ -131,6 +131,8 @@ namespace ren {
         const int*   asIntVec()   const { return _i; }
         const bool*  asBoolVec()  const { return _b; }
 
+        int asInt() const { return *asIntVec(); }
+
         string asString() const {
             Type elementType = getElementType(_type);
             int arity = getArity(_type);

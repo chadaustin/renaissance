@@ -101,6 +101,8 @@ public:
                 glUniform3fvARB(location, 1, uniformValue->asFloatVec());
             } else if (u.getType() == ren::VEC2) {
                 glUniform2fvARB(location, 1, uniformValue->asFloatVec());
+            } else if (u.getType() == ren::SAMPLER2D) {
+                glUniform1iARB(location, uniformValue->asInt());
             } else {
                 assert(!"Unknown uniform type");
             }
