@@ -13,8 +13,8 @@ uniform vec2 BrickPct
 
 # Constants.
 
-SpecularContribution = 0.3
-DiffuseContribution = 1.0 - SpecularContribution
+SpecularContribution = 1.0
+DiffuseContribution = 0.0 #1.0 - SpecularContribution
 
 
 # Transform.
@@ -32,7 +32,7 @@ reflectVec = reflect (-lightVec) tnorm
 viewVec    = normalize (-ecPosition)
 
 diffuse = max (dot lightVec viewVec) 0.0
-s = pow (max (dot reflectVec viewVec) 0.0) 16.0
+s = pow (max (dot reflectVec viewVec) 0.0) 3.0
 spec = if (diffuse > 0.0) then s else 0.0
 LightIntensity = DiffuseContribution * diffuse + SpecularContribution * spec
 
@@ -45,9 +45,8 @@ position = origposition + vec2 xoffset 0.0
 
 useBrick = step (fract position) BrickPct
 
-lightFactor = if EnableLighting then LightIntensity else 1.0
-amount = useBrick.x * useBrick.y * lightFactor
-color = mix MortarColor BrickColor amount
+lightFactor = if EnableLighting then (LightIntensity + 0.2) else 1.0
+amount = useBrick.x * useBrick.y
+color = (mix MortarColor BrickColor amount) * lightFactor
 
 gl_FragColor = color ++ 1.0
-#gl_FragColor = BrickPct ++ 0.0 ++ 1.0

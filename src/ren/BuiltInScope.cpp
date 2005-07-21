@@ -135,6 +135,10 @@ namespace ren {
             { "*", MAT3 * VEC3 >> VEC3,    CONSTANT, INFIX, PARTIALLY_LINEAR },
             { "*", FLOAT * FLOAT >> FLOAT, CONSTANT, INFIX, PARTIALLY_LINEAR },
             { "*", VEC4 * VEC4 >> VEC4,    CONSTANT, INFIX, PARTIALLY_LINEAR },
+            { "*", VEC4 * FLOAT >> VEC4,   CONSTANT, INFIX, PARTIALLY_LINEAR },
+            { "*", FLOAT * VEC4 >> VEC4,   CONSTANT, INFIX, PARTIALLY_LINEAR },
+            { "*", VEC3 * FLOAT >> VEC3,   CONSTANT, INFIX, PARTIALLY_LINEAR },
+            { "*", FLOAT * VEC3 >> VEC3,   CONSTANT, INFIX, PARTIALLY_LINEAR },
 
             { "+", INT * INT >> INT,       CONSTANT, INFIX, LINEAR },
             { "+", VEC2 * VEC2 >> VEC2,    CONSTANT, INFIX, LINEAR },
