@@ -1,3 +1,22 @@
+#On Fri, 2005-07-15 at 00:55 -0500, Chad Austin wrote:
+#
+#>> o_O  ouch.  do you know what you changed last?
+#
+#
+#I've played with it, and I think this line is the culprit:
+#
+#
+#>>> > lightFactor = if EnableLighting then 1.0 - LightIntensity else 1.0
+#
+#
+#replacing it with 
+#
+#lightFactor = if EnableLighting then (1.0 - LightIntensity) else 1.0
+#
+#makes the crash go away.
+	
+
+
 # One more: the attached shader crashes the compiler.  ;) 
 #
 #    Dirk
