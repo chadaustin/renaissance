@@ -1,5 +1,5 @@
-\documentclass{acmsiggraph}               % final
-%\documentclass[review]{acmsiggraph}      % review
+%\documentclass{acmsiggraph}               % final
+\documentclass[review]{acmsiggraph}      % review
 %\documentclass[widereview]{acmsiggraph}  % wide-spaced review
 %\documentclass[preprint]{acmsiggraph}    % preprint
 
@@ -23,7 +23,7 @@
 %% paper to the annual conference, you may safely leave it at ``0'' -- it 
 %% will not be included in the output.
 
-\onlineid{0}
+\onlineid{152}
 
 %% need to document this!
 
@@ -40,11 +40,11 @@
 %% Author and Affiliation (multiple authors).
 
 \author{Chad Austin\thanks{e-mail:aegisk@cs.iastate.edu}\\ Avatar Factory %
-\and Dirk Reiners\thanks{e-mail:dreiners@iastate.edu}\\ Iowa State University}
+\and Dirk Reiners\thanks{e-mail:dreiners@iastate.edu}\\ Virtual Reality Applications Center\\Iowa State University}
 
 %% Keywords that describe your work.
 
-\keywords{TODO later}
+\keywords{Shading Language, Functional Languages}
 
 %%%%%% START OF THE PAPER %%%%%%
 
@@ -52,20 +52,37 @@
 
 \maketitle
 
-\section{Abstract}
+\begin{abstract}
 
-Programmable graphics hardware is growing in capability and
-flexibility at a rapid pace.  Existing languages for programming this
-hardware make it difficult at best to build collections of custom
-graphics algorithms that can be combined as needed.  We present a pure
-functional shading language, Renaissance, that uses the concepts of
+Programmable graphics hardware is growing in capability and flexibility at a
+rapid pace.  Existing languages for programming this hardware force the user
+into awareness of hardware architecture (like the separation between vertex
+and fragment programs) and make it difficult at best to build collections of
+custom graphics algorithms that can be combined as needed.  We present a
+pure functional shading language, Renaissance, that uses the concepts of
 computational frequency and frequency inference to naturally allow
-composition of shader concepts without generating redundant or
-inefficient code.  We also provide most of the benefits of
-metaprogramming languages without the restriction of requiring a full
-host environment.
+composition of shader concepts without generating redundant or inefficient
+code.  We also provide most of the benefits of metaprogramming languages
+without the restriction of requiring a full host environment.
+
+\end{abstract}
+
+%% ACM Computing Review (CR) categories. 
+%% See <http://www.acm.org/class/1998/> for details.
+%% The ``\CRcat'' command takes four arguments.
+
+\begin{CRcatlist}
+ \CRcat{D.3.2}{Programming Languages}{Language Classifications}{Applicative (functional) languages};
+ \CRcat{I.3.7}{Computer Graphics}{Three-Dimensional Graphics and Realism}{Color, shading, shadowing, and texture};
+ \CRcat{I.3.6}{Computer Graphics}{Methodology and Techniques}{Languages};
+\end{CRcatlist}
+
+%% The ``\keywordlist'' command prints out the keywords.
+\keywordlist
 
 \section{Introduction}
+
+\copyrightspace
 
 The most important innovation in computer graphics hardware over the last 
 decade has been the introduction of programmability. Textures were a first
@@ -90,19 +107,21 @@ it had its limitations.  Shading algorithms in assembly were not easy
 to follow and it was hard to create building blocks of functionality
 on which the rest of the shader was built.  The next natural step was
 a high-level language built on top of the assembly.  These languages
-are similar to C, both in syntax and semantics.  There are also
-metaprogramming languages built on top of a host language.  These
-allow tight integration between the host language and the graphics
-processor as well as straightforward shader specialization by using
-host language functionality to control shader generation.
+are similar to C, both in syntax and semantics, or are integrated into
+a host language as metaprogramming systems.  These allow tight
+integration between the host language and the graphics processor as
+well as straightforward shader specialization by using host language
+functionality to control shader generation.
 
 Shading languages are beginning to grow features that facilitate
 shader composition.  With the advent of Cg's |interface| keyword and
 Sh's shader algebra, we're just now starting to see preliminary
-support for composable shaders.
+support for composable shaders. I couldn't find any info about this
+interface keyword. What does it do, and how does that relate to us? If it's
+important we should talk about it in 2.3.
 
 In this work we introduce a shading language built on modern
-functional languages and their pure semantics instead of the
+functional languages and their pure functional semantics instead of the
 procedural roots currently used. The functional approach significantly
 simplifies compilation and analysis of the program, opening up new
 avenues for more general optimizations and compositions.
@@ -116,14 +135,16 @@ rendering along with multi-texturing blend modes.  The Quake 3 engine
 for example provided a simple shader scripting language to control the
 number of passes, texture stages, and rendering states.  This isn't a
 complete solution for general shading, but it goes a long way towards
-allowing the implementation of several surface appearances.  Peercy,
+allowing the implementation of several surface appearances, and it allowed
+changing shading definitions using a simple text editor without the need to
+recompile the program.  Peercy,
 Olano et al. discovered that an OpenGL implementation, with some key
 extensions, can be treated as a general-purpose SIMD computer in their
 OpenGL Shader work \cite{peercy00interactive}.  OpenGL Shader can
 support arbitrary shading computation using multiple rendering
 passes.
 
-However, current processors are trending towards higher clock rates,
+However, current processor trends are leaning towards higher clock rates,
 while memory access is slower and higher latency, relatively.  This
 precludes large-scale multipass implementations of shading algorithms
 from being viable, due to the very high memory bandwidth requirements.
@@ -134,18 +155,17 @@ more efficiently than multipass approaches to programmability.
 
 \subsection{Assembly Languages (ARBfp, ARBvp, DirectX shader models)}
 
-The next generation of shading languages allowed full programmability
-at the vertex and pixel levels via assembly languages for a
-vector-based register machine architecture.  Although the instruction
-sets were limited at first, the languages allowed arbitrary
-computation per vertex and per fragment.  They are more efficient than
-the multi-pass approaches as described above, but they have obvious
-disadvantages.  One is that assembly languages are difficult for
-people to write and understand, let alone maintain, especially as
-programs get larger.  The percieved advantage of assembly languages is
+The next generation of shading languages allowed full programmability at the
+vertex and pixel levels via assembly languages for a vector-based register
+machine architecture.  Although the instruction sets were limited at first,
+the languages allowed arbitrary computation per vertex and per fragment. 
+They are more efficient than the multi-pass approaches described above, but
+they have obvious disadvantages.  One is that assembly languages are
+difficult for people to write and understand, let alone maintain, especially
+as programs get larger.  The percieved advantage of assembly languages is
 that they are directly executed by the underlying hardware; due to the
-variability of graphics hardware, between and even within vendors,
-this is rarely the case for shading languages.  Given these, they are
+variability of graphics hardware, between and even within vendors, this is
+rarely the case for shading languages.  Given these limitations, they are
 still useful as a compiler backend.
 
 
@@ -157,19 +177,19 @@ created by NVIDIA and Microsoft, respectively, as C-like, high-level
 shading languages.  HLSL compiles to the Microsoft-defined DirectX
 vertex and pixel shader models, which are loaded into the card at
 runtime.  Cg, on the other hand, compiles to a variety of back ends
-and is graphics API-neutral.  The most recent NVIDIA cards have
-support for Cg in the driver itself, requiring no manual compilation
+and is graphics API-neutral.  The most recent NVIDIA drivers have
+support for Cg built in, requiring no manual compilation
 step.
 
 When referring to the language originally used by both Cg and
-HLSL\footnote{Note that they have since diverged.}, I will call it
-simply Cg.  For the sake of compatibility with other shading systems,
-and transparent access to the underlying hardware, Cg does very little
-work for the user. She is required to specify how data is transferred
-into the shaders and which attribute channels map to what. By design,
-Cg also does not virtualize any resources, if a feature is not
-available.  One of Cg's primary goals is to be as close to the
-hardware as possible while maintaining a higher level of abstraction.
+HLSL\footnote{Note that they have since diverged.}, it will simply be called
+Cg.  For the sake of compatibility with other shading systems, and
+transparent access to the underlying hardware, Cg does very little work for
+the user. She is required to specify how data is transferred into the
+shaders and which attribute channels map to what. By design, Cg also does
+not virtualize any resources, if a feature is not available.  One of Cg's
+primary goals is to be as close to the hardware as possible while
+maintaining a higher level of abstraction.
 
 Cg and HLSL, while some of the most compelling shading systems for a
 variety of reasons, do little to facilitate specialization and
@@ -218,7 +238,7 @@ stages.  They allowed explicit specification of where computation is
 to be done; for example, to easily compare two lighting algorithms,
 one per vertex and the other per fragment.
 
-Development of RTSL has halted.  During its development it relied much
+Development of RTSL has halted.  During its development it relied strongly
 on multipass rendering, as arbitrary shading calculations were not yet
 available in hardware.  Additionally, it is another C-like language
 and we are trying to show that a functional language has both
@@ -285,18 +305,21 @@ as the fixed-function pipeline.
 % deceptively similar to interfaces in Java, even though the problem it tries to solve 
 % is better addressed by partial evaluation of functional programs and staged computation.
 
-In this paper we introduce a programming language for real-time
-graphics hardware that we believe addresses the points necessary for
-programmable shading to provide the configurability as the
-fixed-function pipeline does.  This language draws from research in
-modern, pure functional languages, such as Miranda, Haskell, and
-Clean.  We base our design on functional languages for a variety of
-reasons.  First, functional languages are a very natural fit to the
-programming model exposed by graphics hardware.  Second, functional
-languages are traditionally easier to efficiently compile than
-imperative languages with side effects, such as C.  Third, our
-language is designed to have a minimum of extraneous syntax, making it
-much easier to learn and read.
+In this paper we introduce a programming language for real-time graphics
+hardware that we believe addresses the points necessary for programmable
+shading to provide the configurability as the fixed-function pipeline does. 
+This language draws from research in modern, pure functional languages, such
+as Miranda, Haskell, and Clean.  We base our design on functional languages
+for a variety of reasons.  First, functional languages are a very natural
+fit to the programming model exposed by graphics hardware.  In the end, all
+shaders have to calculate at most three values: a transformed vertex
+position, a fragment color and a fragment depth. Everything in the middle is
+complication. Using a functional language makes the expressions leading to
+these values much more explicit, allowing much cleaner optimizations.
+Second, functional languages are traditionally easier to efficiently compile
+than imperative languages with side effects, such as C.  Third, our language
+is designed to have a minimum of extraneous syntax, making it much easier to
+learn and read.
 
 This paper's primary contributions are the following:
 
@@ -346,12 +369,12 @@ type |float|.  This type inference is discussed in detail later.
 
 There are no loops or variable assignments in this language.  Every
 object, once created, cannot be changed.  This is called referential
-transparency, which refers to the fact that if the same function twice
+transparency, which refers to the fact that if the same function
 is called twice with the same arguments, the same result will be
 returned.
 
 Modern GPUs have a stream programming model: there is a stream of data
-elements (vertices or fragments) and a function is applied across all
+elements (vertices or fragments) and a function is applied to all
 of them.  This function, in stream programming terminology, is called
 a kernel.  Since all of the stream elements are independent, the
 function can be run in parallel without any sort of synchronization or
@@ -359,8 +382,8 @@ data dependency analysis.  This is largely the reason why graphics
 processors these days are so efficient: performance increases linearly
 with the number of processors available.  Previous shading languages
 have semantic models similar to C; that is, variables that can be
-modified and read from.  Further, the order statements are executed is
-critical.  Consider the C-like code in figure \ref{CExample}.
+modified and read from.  Furthermore the order in which statements are
+executed is critical.  Consider the C-like code in figure \ref{CExample}.
 
 \begin{figure}[htb]
 \begin{MyVerb}
@@ -446,7 +469,8 @@ the |normalize| function actually represents several functions, each
 of different type.  Given that division by a scalar and the length
 function can operate on multiple types of vectors, normalize will work
 with any vector.  This is similar in practice to C++ template
-functions.  Not that we explicitly are not using Hindley-Millner
+functions.  Note that we explicitly are not using Hindley-Milner
+\cite{milner78,damas82} 
 inference.  An ad-hoc overloading approach fits better with the
 underlying GLSL and vector operations.
 
@@ -455,7 +479,7 @@ frequency, a concept introduced by Stanford's RTSL.  There are four
 frequencies: constant (per compile), uniform (per primitive group),
 vertex (per vertex), and fragment (per fragment).  Built-in shader
 inputs each have a specified frequency.  For example, |gl_Vertex| has
-the frequency |vertex|.  |gl_FragCoord| has the frequency |fragment|.
+the frequency |vertex|, while  |gl_FragCoord| has the frequency |fragment|.
 If an operation on two expressions that have different frequencies is
 performed, the resulting expression usually has the higher of the two.
 One exception is the |if| construct: if the condition has constant
@@ -686,8 +710,9 @@ length of the array must be specified at |constant| frequency.  In
 order to access the i-th element of an array, an array access is
 treated as a function and called with parameter |i|.
 
-In Renaissance, there are no implicit type conversions.  |2 + 2.0| is
-a type error, requiring a constructor conversion: |float 2 + 2.0|
+In Renaissance, just like in GLSL, there are no implicit type conversions. 
+|2 + 2.0| is a type error, requiring a constructor conversion: 
+|float 2 + 2.0|.
 
 
 \subsection{Built-In Functions, Operators, and State}
@@ -862,6 +887,7 @@ viewVec    = normalize (-ecPosition)
 
 s = pow (max (dot reflectVec viewVec) 0.0) 3.0
 spec = if (diffuse > 0.0) then s else 0.0
+
 LightIntensity = SpecularContribution * spec
 
 # Brick.
@@ -880,7 +906,8 @@ color = mixed * lightFactor
 
 gl_FragColor = color ++ 1.0
 \end{MyVerb}
-\caption{Brick shader with a lighting toggle}
+\caption{Modified brick shader with a lighting toggle 
+}
 \label{BrickShader}
 \end{figure}
 
