@@ -7,8 +7,16 @@
 
 namespace ren {
 
+    class ExpressionWalker {
+    public:
+        virtual void pushAttribute(const ID& id) = 0;
+        virtual void pushUniform(const ID& id) = 0;
+        virtual void multiply() = 0;
+    };
+
     class Expression {
     public:
+        virtual void walk(ExpressionWalker& w) = 0;
     };
     REN_PTR(Expression);
 
@@ -18,8 +26,15 @@ namespace ren {
             : left(left)
             , right(right)
         {}
+
         ExpressionPtr left;
         ExpressionPtr right;
+
+        void walk(ExpressionWalker& w) {
+            left->walk(w);
+            right->walk(w);
+            w.multiply();
+        }
 
     private:
         Multiply() = delete;
@@ -32,6 +47,10 @@ namespace ren {
         {}
 
         const ID id;
+
+        void walk(ExpressionWalker& w) {
+            w.pushAttribute(id);
+        }
     };
 
     class UniformExpression : public Expression {
@@ -39,7 +58,12 @@ namespace ren {
         UniformExpression(const ID& id)
             : id(id)
         {}
+
         const ID id;
+
+        void walk(ExpressionWalker& w) {
+            w.pushUniform(id);
+        }
     };
 
     class ExpressionHandle {
