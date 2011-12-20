@@ -1,9 +1,11 @@
 #pragma once
 
+#include <stdio.h>
 #include <map>
 #include <sstream>
 #include <string>
 #include <stack>
+#include <vector>
 #include <ren/Types.h>
 
 namespace ren {
@@ -32,10 +34,60 @@ namespace ren {
             stack.push(uniforms[id].second);
         }
 
+        void pushInt(int i) {
+            char p[80];
+            sprintf(p, "%d", i);
+            stack.push(p);
+        }
+
+        void pushFloat(float f) {
+            char p[80];
+            sprintf(p, "%f", f);
+            stack.push(p);
+        }
+
         void multiply() {
             std::string right(popTop());
             std::string left(popTop());
             stack.push("(" + left + " * " + right + ")");
+        }
+
+        void add() {
+            std::string right(popTop());
+            std::string left(popTop());
+            stack.push("(" + left + " + " + right + ")");
+        }
+
+        void swizzle(const char* swizzle) {
+            std::string base(popTop());
+            stack.push(base + "." + swizzle);
+        }
+
+        void index() {
+            std::string index(popTop());
+            std::string base(popTop());
+            stack.push(base + "[" + index + "]");
+        }
+
+        void call(const char* name, unsigned argCount) {
+            std::vector<std::string> args;
+            while (argCount--) {
+                args.push_back(popTop());
+            }
+            std::string n(name);
+            n += "(";
+            bool first = true;
+            while (!args.empty()) {
+                if (!first) {
+                    n += ", ";
+                }
+                first = false;
+                n += args.back();
+                args.pop_back();
+            }
+
+            n += ")";
+            stack.push(n);
         }
 
         std::string popTop() {
@@ -48,8 +100,12 @@ namespace ren {
         std::string nameOf(Type type) {
             switch (type) {
                 case VEC4: return "vec4";
+                case IVEC4: return "ivec4";
+                case INT: return "int";
                 case MAT4: return "mat4";
+                case ARRAY: return "array"; // wrong
             }
+            return "???";
         }
 
         std::string allocateAttributeName() {
