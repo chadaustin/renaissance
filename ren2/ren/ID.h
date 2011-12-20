@@ -29,22 +29,22 @@ namespace ren {
             return *this;
         }
 
-        bool operator==(ID& rhs) const {
+        bool operator==(const ID& rhs) const {
             return px == rhs.px;
         }
-        bool operator!=(ID& rhs) const {
+        bool operator!=(const ID& rhs) const {
             return px != rhs.px;
         }
-        bool operator<(ID& rhs) const {
+        bool operator<(const ID& rhs) const {
             return px < rhs.px;
         }
-        bool operator<=(ID& rhs) const {
+        bool operator<=(const ID& rhs) const {
             return px <= rhs.px;
         }
-        bool operator>(ID& rhs) const {
+        bool operator>(const ID& rhs) const {
             return px > rhs.px;
         }
-        bool operator>=(ID& rhs) const {
+        bool operator>=(const ID& rhs) const {
             return px >= rhs.px;
         }
 

@@ -7,10 +7,15 @@
 
 namespace ren {
 
+    enum Type {
+        VEC4,
+        MAT4,
+    };
+
     class ExpressionWalker {
     public:
-        virtual void pushAttribute(const ID& id) = 0;
-        virtual void pushUniform(const ID& id) = 0;
+        virtual void pushAttribute(const ID& id, Type type) = 0;
+        virtual void pushUniform(const ID& id, Type type) = 0;
         virtual void multiply() = 0;
     };
 
@@ -42,27 +47,31 @@ namespace ren {
 
     class AttributeExpression : public Expression {
     public:
-        AttributeExpression(const ID& id)
+        AttributeExpression(const ID& id, Type type)
             : id(id)
+            , type(type)
         {}
 
         const ID id;
+        const Type type;
 
         void walk(ExpressionWalker& w) {
-            w.pushAttribute(id);
+            w.pushAttribute(id, type);
         }
     };
 
     class UniformExpression : public Expression {
     public:
-        UniformExpression(const ID& id)
+        UniformExpression(const ID& id, Type type)
             : id(id)
+            , type(type)
         {}
 
         const ID id;
+        const Type type;
 
         void walk(ExpressionWalker& w) {
-            w.pushUniform(id);
+            w.pushUniform(id, type);
         }
     };
 
@@ -80,6 +89,8 @@ namespace ren {
 
     class mat4 : public ExpressionHandle {
     public:
+        static Type type() { return MAT4; }
+
         explicit mat4(const ExpressionPtr& source)
             : ExpressionHandle(source)
         {}
@@ -91,6 +102,8 @@ namespace ren {
 
     class vec4 : public ExpressionHandle {
     public:
+        static Type type() { return VEC4; }
+
         vec4() {
         }
 
@@ -107,7 +120,7 @@ namespace ren {
     class attribute {
     public:
         operator T() const {
-            return T(std::make_shared<AttributeExpression>(id));
+            return T(std::make_shared<AttributeExpression>(id, T::type()));
         }
 
     private:
@@ -121,7 +134,7 @@ namespace ren {
 
     private:
         operator T() const {
-            return T(std::make_shared<UniformExpression>(id));
+            return T(std::make_shared<UniformExpression>(id, T::type()));
         }
     };
 };

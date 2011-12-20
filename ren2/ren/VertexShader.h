@@ -3,30 +3,70 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <stack>
 #include <ren/Types.h>
 
 namespace ren {
 
-    struct Uniform {
-        std::string type;
-    };
+    class GLSLGenerator : public ExpressionWalker {
+    public:
+        std::map<ID, std::pair<std::string, std::string>> attributes;
+        std::map<ID, std::pair<std::string, std::string>> uniforms;
 
-    struct UniformSet {
-        UniformSet()
-            : current(0)
+        GLSLGenerator()
+            : attributeCount(0)
+            , uniformCount(0)
         {}
 
-        unsigned current;
-        std::map<std::string, Uniform> uniforms;
-    };
+        void pushAttribute(const ID& id, Type type) {
+            if (!attributes.count(id)) {
+                attributes[id] = std::make_pair(nameOf(type), allocateAttributeName());
+            }
+            stack.push(attributes[id].second);
+        }
 
-    struct AttributeSet {
-        AttributeSet()
-            : current(0)
-        {}
+        void pushUniform(const ID& id, Type type) {
+            if (!uniforms.count(id)) {
+                uniforms[id] = std::make_pair(nameOf(type), allocateUniformName());
+            }
+            stack.push(uniforms[id].second);
+        }
 
-        unsigned current;
-        std::map<std::string, std::string> attributes;
+        void multiply() {
+            std::string left(popTop());
+            std::string right(popTop());
+            stack.push("(" + left + ") * (" + right + ")");
+        }
+
+        std::string popTop() {
+            std::string rv(stack.top());
+            stack.pop();
+            return rv;
+        };
+
+    private:
+        std::string nameOf(Type type) {
+            switch (type) {
+                case VEC4: return "vec4";
+                case MAT4: return "mat4";
+            }
+        }
+
+        std::string allocateAttributeName() {
+            char p[80];
+            sprintf(p, "a%u", attributeCount++);
+            return p;
+        }
+
+        std::string allocateUniformName() {
+            char p[80];
+            sprintf(p, "u%u", uniformCount++);
+            return p;
+        }
+
+        std::stack<std::string> stack;
+        unsigned attributeCount;
+        unsigned uniformCount;
     };
     
     class VertexShader2 {
@@ -38,30 +78,26 @@ namespace ren {
         Outputs output;
 
         std::string generateGLSL() const {
+            GLSLGenerator g;
+
             std::ostringstream os;
-            UniformSet uniforms;
-            AttributeSet attributes;
+            
+            output.position.expression->walk(g);
 
-            for (auto i = uniforms.uniforms.begin(); i != uniforms.uniforms.end(); ++i) {
-                os << "uniform " << i->second.type << " " << i->first << ";\n";
+            for (auto i = g.uniforms.begin(); i != g.uniforms.end(); ++i) {
+                os << "uniform " << i->second.first << " " << i->second.second << ";\n";
             }
 
-            for (auto i = attributes.attributes.begin(); i != attributes.attributes.end(); ++i) {
-                os << "attribute " << i->second << " " << i->first << ";\n";
+            for (auto i = g.attributes.begin(); i != g.attributes.end(); ++i) {
+                os << "attribute " << i->second.first << " " << i->second.second << ";\n";
             }
-
-            scan(uniforms, attributes, output.position);
 
             os
                << "void main() {\n"
-               << "gl_Position = a0;\n"
+               << "gl_Position = " << g.popTop() << ";\n"
                << "}\n";
             return os.str();
         };
-
-        void scan(UniformSet& uniforms, AttributeSet& attributes, const vec4& output) const {
-            
-        }
     };
 
 }
