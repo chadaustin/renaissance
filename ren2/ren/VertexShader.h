@@ -33,9 +33,9 @@ namespace ren {
         }
 
         void multiply() {
-            std::string left(popTop());
             std::string right(popTop());
-            stack.push("(" + left + ") * (" + right + ")");
+            std::string left(popTop());
+            stack.push("(" + left + " * " + right + ")");
         }
 
         std::string popTop() {
@@ -94,7 +94,7 @@ namespace ren {
 
             os
                << "void main() {\n"
-               << "gl_Position = " << g.popTop() << ";\n"
+               << "    gl_Position = " << g.popTop() << ";\n"
                << "}\n";
             return os.str();
         };

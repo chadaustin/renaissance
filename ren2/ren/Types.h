@@ -130,11 +130,11 @@ namespace ren {
     template<typename T>
     class uniform {
     public:
-        ID id;
-
-    private:
         operator T() const {
             return T(std::make_shared<UniformExpression>(id, T::type()));
         }
+
+    private:
+        ID id;
     };
 };
