@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string.h>
 #include <vector>
 #include <memory>
 #include <ren/ID.h>
@@ -41,6 +42,13 @@ namespace ren {
             return v;
         }
 
+        Type withoutArray() const {
+            Type rv = *this;
+            rv.is_array = 0;
+            rv.array_length = 0;
+            return rv;
+        }
+
         ElementType element_type : 4;
         unsigned columns : 2; // implied + 1
         unsigned rows : 2; // implied + 1
@@ -48,7 +56,9 @@ namespace ren {
         unsigned array_length : 15;
     };
 
+    const Type INT(Type::scalar(Type::INT));
     const Type IVEC4(Type::vector(Type::INT, 4));
+    const Type FLOAT(Type::scalar(Type::FLOAT));
     const Type VEC4(Type::vector(Type::FLOAT, 4));
     const Type MAT4(Type::matrix(Type::FLOAT, 4, 4));
 
@@ -67,14 +77,21 @@ namespace ren {
 
     class Expression {
     public:
+        Expression(Type type)
+            : type(type)
+        {}
+
+        const Type type;
+
         virtual void walk(ExpressionWalker& w) = 0;
     };
     REN_PTR(Expression);
 
     class Multiply : public Expression {
     public:
-        Multiply(const ExpressionPtr& left, const ExpressionPtr& right)
-            : left(left)
+        Multiply(Type type, const ExpressionPtr& left, const ExpressionPtr& right)
+            : Expression(type)
+            , left(left)
             , right(right)
         {}
 
@@ -93,8 +110,9 @@ namespace ren {
 
     class Add : public Expression {
     public:
-        Add(const ExpressionPtr& left, const ExpressionPtr& right)
-            : left(left)
+        Add(Type type, const ExpressionPtr& left, const ExpressionPtr& right)
+            : Expression(type)
+            , left(left)
             , right(right)
         {}
 
@@ -114,12 +132,11 @@ namespace ren {
     class AttributeExpression : public Expression {
     public:
         AttributeExpression(const ID& id, Type type)
-            : id(id)
-            , type(type)
+            : Expression(type)
+            , id(id)
         {}
 
         const ID id;
-        const Type type;
 
         void walk(ExpressionWalker& w) {
             w.pushAttribute(id, type);
@@ -129,12 +146,11 @@ namespace ren {
     class UniformExpression : public Expression {
     public:
         UniformExpression(const ID& id, Type type)
-            : id(id)
-            , type(type)
+            : Expression(type)
+            , id(id)
         {}
 
         const ID id;
-        const Type type;
 
         void walk(ExpressionWalker& w) {
             w.pushUniform(id, type);
@@ -144,7 +160,8 @@ namespace ren {
     class IntLiteral : public Expression {
     public:
         explicit IntLiteral(int i)
-        : i(i)
+            : Expression(Type::scalar(Type::INT))
+            , i(i)
         {}
 
         void walk(ExpressionWalker& w) {
@@ -158,7 +175,8 @@ namespace ren {
     class FloatLiteral : public Expression {
     public:
         explicit FloatLiteral(float f)
-        : f(f)
+            : Expression(Type::scalar(Type::FLOAT))
+            , f(f)
         {}
 
         void walk(ExpressionWalker& w) {
@@ -172,7 +190,8 @@ namespace ren {
     class Swizzle : public Expression {
     public:
         Swizzle(const ExpressionPtr& base, const char* swizzle)
-            : base(base)
+            : Expression(Type::vector(base->type.element_type, strlen(swizzle)))
+            , base(base)
             , swizzle(swizzle)
         {}
 
@@ -188,7 +207,8 @@ namespace ren {
     class Index : public Expression {
     public:
         Index(const ExpressionPtr& base, const ExpressionPtr& index)
-            : base(base)
+            : Expression(base->type.withoutArray())
+            , base(base)
             , index(index)
         {}
 
@@ -204,15 +224,17 @@ namespace ren {
 
     class Function : public Expression {
     public:
-        Function(const char* name, const ExpressionPtr& a0, const ExpressionPtr& a1)
-            : name(name)
+        Function(Type type, const char* name, const ExpressionPtr& a0, const ExpressionPtr& a1)
+            : Expression(type)
+            , name(name)
         {
             args.push_back(a0);
             args.push_back(a1);
         }
 
-        Function(const char* name, const ExpressionPtr& a0, const ExpressionPtr& a1, const ExpressionPtr& a2, const ExpressionPtr& a3)
-            : name(name)
+        Function(Type type, const char* name, const ExpressionPtr& a0, const ExpressionPtr& a1, const ExpressionPtr& a2, const ExpressionPtr& a3)
+            : Expression(type)
+            , name(name)
         {
             args.push_back(a0);
             args.push_back(a1);
@@ -303,7 +325,7 @@ namespace ren {
         }
 
         vec4(float_ x, float_ y, float_ z, float_ w)
-            : ExpressionHandle(std::make_shared<Function>("vec4", x.expression, y.expression, z.expression, w.expression))
+            : ExpressionHandle(std::make_shared<Function>(VEC4, "vec4", x.expression, y.expression, z.expression, w.expression))
         {}
 
         explicit vec4(const ExpressionPtr& source)
@@ -327,7 +349,7 @@ namespace ren {
         }
 
         vec4& operator+=(const vec4& right) {
-            expression = std::make_shared<Add>(expression, right.expression);
+            expression = std::make_shared<Add>(VEC4, expression, right.expression);
             return *this;
         }
     };
@@ -342,31 +364,31 @@ namespace ren {
     };
 
     vec4 operator*(const vec4& left, const float_& right) {
-        return vec4(std::make_shared<Multiply>(left.expression, right.expression));
+        return vec4(std::make_shared<Multiply>(VEC4, left.expression, right.expression));
     }
 
     mat4 operator*(const mat4& left, const mat4& right) {
-        return mat4(std::make_shared<Multiply>(left.expression, right.expression));
+        return mat4(std::make_shared<Multiply>(MAT4, left.expression, right.expression));
     }
 
     vec4 operator*(const mat4& m, const vec4& v) {
-        return vec4(std::make_shared<Multiply>(m.expression, v.expression));
+        return vec4(std::make_shared<Multiply>(VEC4, m.expression, v.expression));
     }
 
     ivec4 operator*(int i, const ivec4& v) {
-        return ivec4(std::make_shared<Multiply>(std::make_shared<IntLiteral>(i), v.expression));
+        return ivec4(std::make_shared<Multiply>(IVEC4, std::make_shared<IntLiteral>(i), v.expression));
     }
 
     int_ operator+(const int_& left, int right) {
-        return int_(std::make_shared<Add>(left.expression, std::make_shared<IntLiteral>(right)));
+        return int_(std::make_shared<Add>(INT, left.expression, std::make_shared<IntLiteral>(right)));
     }
 
     vec4 operator+(const vec4& left, const vec4& right) {
-        return vec4(std::make_shared<Add>(left.expression, right.expression));
+        return vec4(std::make_shared<Add>(VEC4, left.expression, right.expression));
     }
 
     float_ dot(const vec4& left, const vec4& right) {
-        return float_(std::make_shared<Function>("dot", left.expression, right.expression));
+        return float_(std::make_shared<Function>(FLOAT, "dot", left.expression, right.expression));
     }
 
     template<typename T, size_t Length>
