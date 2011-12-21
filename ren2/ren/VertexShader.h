@@ -12,8 +12,8 @@ namespace ren {
 
     class GLSLGenerator : public ExpressionWalker {
     public:
-        std::map<ID, std::pair<std::string, std::string>> attributes;
-        std::map<ID, std::pair<std::string, std::string>> uniforms;
+        std::map<ID, std::pair<Type, std::string>> attributes;
+        std::map<ID, std::pair<Type, std::string>> uniforms;
 
         GLSLGenerator()
             : attributeCount(0)
@@ -22,14 +22,14 @@ namespace ren {
 
         void pushAttribute(const ID& id, Type type) {
             if (!attributes.count(id)) {
-                attributes[id] = std::make_pair(nameOf(type), allocateAttributeName());
+                attributes[id] = std::make_pair(type, allocateAttributeName());
             }
             stack.push(attributes[id].second);
         }
 
         void pushUniform(const ID& id, Type type) {
             if (!uniforms.count(id)) {
-                uniforms[id] = std::make_pair(nameOf(type), allocateUniformName());
+                uniforms[id] = std::make_pair(type, allocateUniformName());
             }
             stack.push(uniforms[id].second);
         }
@@ -96,16 +96,41 @@ namespace ren {
             return rv;
         };
 
+        std::string decl(Type type, const std::string& name) {
+            char array_suffix[80] = {0};
+            if (type.is_array) {
+                sprintf(array_suffix, "[%u]", type.array_length);
+            }
+            return nameOf(type) + " " + name + array_suffix;
+        }
+
     private:
         std::string nameOf(Type type) {
-            switch (type) {
-                case VEC4: return "vec4";
-                case IVEC4: return "ivec4";
-                case INT: return "int";
-                case MAT4: return "mat4";
-                case ARRAY: return "array"; // wrong
+            if (type.columns) {
+                // matrix
+                // TODO: verify(Type::FLOAT == type.element_type);
+                char c[2] = { char('1' + type.columns) };
+                char r[2] = { char('1' + type.rows) };
+                return std::string("mat") + c + "x" + r;
+            } else if (type.rows) {
+                // vector
+                std::string prefix;
+                if (type.element_type == Type::BOOL) {
+                    prefix = "b";
+                } else if (type.element_type == Type::INT) {
+                    prefix = "i";
+                }
+                char d[2] = { char('1' + type.rows) };
+                return prefix + "vec" + d;
+            } else {
+                // scalar
+                switch (type.element_type) {
+                    case Type::BOOL: return "bool";
+                    case Type::INT: return "int";
+                    case Type::FLOAT: return "float";
+                    default: return "???";
+                }
             }
-            return "???";
         }
 
         std::string allocateAttributeName() {
@@ -141,11 +166,11 @@ namespace ren {
             output.position.expression->walk(g);
 
             for (auto i = g.uniforms.begin(); i != g.uniforms.end(); ++i) {
-                os << "uniform " << i->second.first << " " << i->second.second << ";\n";
+                os << "uniform " << g.decl(i->second.first, i->second.second) << ";\n";
             }
 
             for (auto i = g.attributes.begin(); i != g.attributes.end(); ++i) {
-                os << "attribute " << i->second.first << " " << i->second.second << ";\n";
+                os << "attribute " << g.decl(i->second.first, i->second.second) << ";\n";
             }
 
             os
