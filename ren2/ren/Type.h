@@ -1,3 +1,5 @@
+#pragma once
+
 namespace ren {
     struct Type {
         enum ElementType {

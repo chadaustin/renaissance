@@ -1,6 +1,9 @@
 #pragma once
 
+#include <string.h>
 #include <ren/Global.h>
+#include <ren/ID.h>
+#include <ren/Type.h>
 
 namespace ren {
 
