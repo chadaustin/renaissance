@@ -20,32 +20,30 @@ namespace ren {
         virtual void call(const char* name, unsigned argCount) = 0;
     };
 
+    REN_PTR(Expression);
+
     class Expression {
     public:
-        Expression(Type type)
+        Expression(Type type, const std::vector<ExpressionPtr>& operands = std::vector<ExpressionPtr>())
             : type(type)
+            , operands(operands)
         {}
 
         const Type type;
+        const std::vector<ExpressionPtr> operands;
 
         virtual void walk(ExpressionWalker& w) = 0;
     };
-    REN_PTR(Expression);
 
     class Multiply : public Expression {
     public:
         Multiply(Type type, const ExpressionPtr& left, const ExpressionPtr& right)
-            : Expression(type)
-            , left(left)
-            , right(right)
+            : Expression(type, {left, right})
         {}
 
-        ExpressionPtr left;
-        ExpressionPtr right;
-
         void walk(ExpressionWalker& w) {
-            left->walk(w);
-            right->walk(w);
+            operands[0]->walk(w);
+            operands[1]->walk(w);
             w.multiply();
         }
 
@@ -56,17 +54,12 @@ namespace ren {
     class Add : public Expression {
     public:
         Add(Type type, const ExpressionPtr& left, const ExpressionPtr& right)
-            : Expression(type)
-            , left(left)
-            , right(right)
+            : Expression(type, {left, right})
         {}
 
-        ExpressionPtr left;
-        ExpressionPtr right;
-
         void walk(ExpressionWalker& w) {
-            left->walk(w);
-            right->walk(w);
+            operands[0]->walk(w);
+            operands[1]->walk(w);
             w.add();
         }
 
@@ -135,67 +128,53 @@ namespace ren {
     class Swizzle : public Expression {
     public:
         Swizzle(const ExpressionPtr& base, const char* swizzle)
-            : Expression(Type::vector(base->type.element_type, strlen(swizzle)))
-            , base(base)
+            : Expression(Type::vector(base->type.element_type, strlen(swizzle)), {base})
             , swizzle(swizzle)
         {}
 
         void walk(ExpressionWalker& w) {
-            base->walk(w);
+            operands[0]->walk(w);
             w.swizzle(swizzle);
         }
 
-        const ExpressionPtr base;
         const char* const swizzle;
     };
 
     class Index : public Expression {
     public:
         Index(const ExpressionPtr& base, const ExpressionPtr& index)
-            : Expression(base->type.withoutArray())
-            , base(base)
-            , index(index)
+            : Expression(base->type.withoutArray(), {base, index})
         {}
 
         void walk(ExpressionWalker& w) {
-            base->walk(w);
-            index->walk(w);
+            operands[0]->walk(w);
+            operands[1]->walk(w);
             w.index();
         }
-
-        const ExpressionPtr base;
-        const ExpressionPtr index;
     };
 
     class Function : public Expression {
     public:
         Function(Type type, const char* name, const ExpressionPtr& a0, const ExpressionPtr& a1)
-            : Expression(type)
+            : Expression(type, {a0, a1})
             , name(name)
         {
-            args.push_back(a0);
-            args.push_back(a1);
         }
 
         Function(Type type, const char* name, const ExpressionPtr& a0, const ExpressionPtr& a1, const ExpressionPtr& a2, const ExpressionPtr& a3)
-            : Expression(type)
+            : Expression(type, {a0, a1, a2, a3})
             , name(name)
         {
-            args.push_back(a0);
-            args.push_back(a1);
-            args.push_back(a2);
-            args.push_back(a3);
         }
 
         void walk(ExpressionWalker& w) {
-            for (auto i = args.begin(); i != args.end(); ++i) {
-                (*i)->walk(w);
+            for (const auto& i: operands) {
+                i->walk(w);
             }
-            w.call(name, args.size());
+            w.call(name, operands.size());
         }
 
         const char* const name;
-        std::vector<ExpressionPtr> args;
     };
 
 }

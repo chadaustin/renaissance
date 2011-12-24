@@ -1,11 +1,12 @@
 #!/bin/bash
 
+# can't use clang yet.  no libcxx automatically installed by macports
 if [ -x /opt/local/bin/g++-mp-4.6 ]; then
-    GXX=/opt/local/bin/g++-mp-4.6
+    CXX=/opt/local/bin/g++-mp-4.6
 else
-    GXX=g++
+    CXX=g++
 fi
-CC="$GXX -std=c++0x -Wall -Werror -I."
+CC="$CXX -std=c++0x -Wall -Werror -I."
 
 set -e
 mkdir -p bin

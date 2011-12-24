@@ -162,12 +162,12 @@ namespace ren {
             
         vertexShader.position.expression->walk(g);
 
-        for (auto i = g.uniforms.begin(); i != g.uniforms.end(); ++i) {
-            os << "uniform " << g.decl(i->second.first, i->second.second) << ";\n";
+        for (const auto& i: g.uniforms) {
+            os << "uniform " << g.decl(i.second.first, i.second.second) << ";\n";
         }
 
-        for (auto i = g.attributes.begin(); i != g.attributes.end(); ++i) {
-            os << "attribute " << g.decl(i->second.first, i->second.second) << ";\n";
+        for (const auto& i: g.attributes) {
+            os << "attribute " << g.decl(i.second.first, i.second.second) << ";\n";
         }
 
         os
