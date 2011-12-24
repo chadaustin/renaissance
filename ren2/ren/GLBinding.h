@@ -181,7 +181,7 @@ namespace ren {
         for (int i = 0; i < 8; ++i) {
             char n[] = "gl_TexCoord[_]";
             n[12] = '0' + i;
-            g.addOutput(n, vertexShader.texCoords[i]);
+            g.addOutput(n, vertexShader.texCoord[i]);
         }
 
         for (const auto& i: g.uniforms) {

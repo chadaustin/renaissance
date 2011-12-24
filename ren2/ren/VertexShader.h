@@ -9,7 +9,7 @@ namespace ren {
         vec4 position;
         vec4 color;
         vec4 secondaryColor;
-        vec4 texCoords[8];
+        vec4 texCoord[8];
     };
 
 }
