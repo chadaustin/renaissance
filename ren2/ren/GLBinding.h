@@ -15,17 +15,18 @@ namespace ren {
     public:
         std::map<ID, std::pair<Type, std::string>> attributes;
         std::map<ID, std::pair<Type, std::string>> uniforms;
+        std::map<std::string, std::string> outputs;
 
         GLSLGenerator()
             : attributeCount(0)
             , uniformCount(0)
         {}
 
-        void walk(const ExpressionPtr& p) {
-            for (const auto& o : p->operands) {
-                walk(o);
+        void addOutput(const std::string& name, const ExpressionHandle& output) {
+            if (output.expression) {
+                walk(output.expression);
+                outputs[name] = popTop();
             }
-            p->walk(*this);
         }
 
         void pushAttribute(const ID& id, Type type) {
@@ -98,12 +99,6 @@ namespace ren {
             stack.push(n);
         }
 
-        std::string popTop() {
-            std::string rv(stack.top());
-            stack.pop();
-            return rv;
-        };
-
         std::string decl(Type type, const std::string& name) {
             char array_suffix[80] = {0};
             if (type.is_array) {
@@ -113,6 +108,19 @@ namespace ren {
         }
 
     private:
+        std::string popTop() {
+            std::string rv(stack.top());
+            stack.pop();
+            return rv;
+        };
+
+        void walk(const ExpressionPtr& p) {
+            for (const auto& o : p->operands) {
+                walk(o);
+            }
+            p->walk(*this);
+        }
+
         std::string nameOf(Type type) {
             if (type.columns) {
                 // matrix
@@ -167,7 +175,14 @@ namespace ren {
 
         std::ostringstream os;
 
-        g.walk(vertexShader.position.expression);
+        g.addOutput("gl_Position", vertexShader.position);
+        g.addOutput("gl_FrontColor", vertexShader.color);
+        g.addOutput("gl_FrontSecondaryColor", vertexShader.secondaryColor);
+        for (int i = 0; i < 8; ++i) {
+            char n[] = "gl_TexCoord[_]";
+            n[12] = '0' + i;
+            g.addOutput(n, vertexShader.texCoords[i]);
+        }
 
         for (const auto& i: g.uniforms) {
             os << "uniform " << g.decl(i.second.first, i.second.second) << ";\n";
@@ -177,10 +192,11 @@ namespace ren {
             os << "attribute " << g.decl(i.second.first, i.second.second) << ";\n";
         }
 
-        os
-            << "void main() {\n"
-            << "    gl_Position = " << g.popTop() << ";\n"
-            << "}\n";
+        os << "void main() {\n";
+        for (const auto& i: g.outputs) {
+            os << "    " << i.first << " = " << i.second << ";\n";
+        }
+        os << "}\n";
         return os.str();
     }
 
