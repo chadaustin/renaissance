@@ -45,17 +45,7 @@ int main() {
         1.0f);
     
     VertexShader2 vs;
-    vs.output.position = projectionMatrix * viewMatrix * modelMatrix * P;
+    vs.position = projectionMatrix * viewMatrix * modelMatrix * P;
 
-    printf("%s\n", vs.generateGLSL().c_str());
+    printf("%s\n", generateGLSL(vs).c_str());
 }
-
-#if 0
-void	boneTransform( inout vec4 position, inout vec3 normal ) {
-    vec3 p;
-    p.x = dot( row0, position );
-    p.y = dot( row1, position );
-    p.z = dot( row2, position );
-    position.xyz = p;
-}
-#endif

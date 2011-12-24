@@ -10,6 +10,14 @@
 
 namespace ren {
 
+    class VertexShader2 {
+    public:
+        vec4 position;
+        vec4 color;
+        vec4 secondaryColor;
+        vec4 texCoords[8];
+    };
+
     class GLSLGenerator : public ExpressionWalker {
     public:
         std::map<ID, std::pair<Type, std::string>> attributes;
@@ -150,35 +158,26 @@ namespace ren {
         unsigned uniformCount;
     };
     
-    class VertexShader2 {
-    public:
-        struct Outputs {
-            vec4 position;
-        };
+    inline std::string generateGLSL(const VertexShader2& vertexShader) {
+        GLSLGenerator g;
 
-        Outputs output;
-
-        std::string generateGLSL() const {
-            GLSLGenerator g;
-
-            std::ostringstream os;
+        std::ostringstream os;
             
-            output.position.expression->walk(g);
+        vertexShader.position.expression->walk(g);
 
-            for (auto i = g.uniforms.begin(); i != g.uniforms.end(); ++i) {
-                os << "uniform " << g.decl(i->second.first, i->second.second) << ";\n";
-            }
+        for (auto i = g.uniforms.begin(); i != g.uniforms.end(); ++i) {
+            os << "uniform " << g.decl(i->second.first, i->second.second) << ";\n";
+        }
 
-            for (auto i = g.attributes.begin(); i != g.attributes.end(); ++i) {
-                os << "attribute " << g.decl(i->second.first, i->second.second) << ";\n";
-            }
+        for (auto i = g.attributes.begin(); i != g.attributes.end(); ++i) {
+            os << "attribute " << g.decl(i->second.first, i->second.second) << ";\n";
+        }
 
-            os
-               << "void main() {\n"
-               << "    gl_Position = " << g.popTop() << ";\n"
-               << "}\n";
-            return os.str();
-        };
-    };
+        os
+            << "void main() {\n"
+            << "    gl_Position = " << g.popTop() << ";\n"
+            << "}\n";
+        return os.str();
+    }
 
 }

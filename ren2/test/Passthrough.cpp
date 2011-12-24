@@ -6,7 +6,7 @@ int main() {
     attribute<vec4> position;
 
     ren::VertexShader2 vs;
-    vs.output.position = position;
+    vs.position = position;
 
-    printf("%s\n", vs.generateGLSL().c_str());
+    printf("%s\n", generateGLSL(vs).c_str());
 }
