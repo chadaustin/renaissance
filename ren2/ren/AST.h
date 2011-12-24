@@ -42,8 +42,6 @@ namespace ren {
         {}
 
         void walk(ExpressionWalker& w) {
-            operands[0]->walk(w);
-            operands[1]->walk(w);
             w.multiply();
         }
 
@@ -58,8 +56,6 @@ namespace ren {
         {}
 
         void walk(ExpressionWalker& w) {
-            operands[0]->walk(w);
-            operands[1]->walk(w);
             w.add();
         }
 
@@ -133,7 +129,6 @@ namespace ren {
         {}
 
         void walk(ExpressionWalker& w) {
-            operands[0]->walk(w);
             w.swizzle(swizzle);
         }
 
@@ -147,8 +142,6 @@ namespace ren {
         {}
 
         void walk(ExpressionWalker& w) {
-            operands[0]->walk(w);
-            operands[1]->walk(w);
             w.index();
         }
     };
@@ -168,9 +161,6 @@ namespace ren {
         }
 
         void walk(ExpressionWalker& w) {
-            for (const auto& i: operands) {
-                i->walk(w);
-            }
             w.call(name, operands.size());
         }
 

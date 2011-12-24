@@ -21,6 +21,13 @@ namespace ren {
             , uniformCount(0)
         {}
 
+        void walk(const ExpressionPtr& p) {
+            for (const auto& o : p->operands) {
+                walk(o);
+            }
+            p->walk(*this);
+        }
+
         void pushAttribute(const ID& id, Type type) {
             if (!attributes.count(id)) {
                 attributes[id] = std::make_pair(type, allocateAttributeName());
@@ -159,8 +166,8 @@ namespace ren {
         GLSLGenerator g;
 
         std::ostringstream os;
-            
-        vertexShader.position.expression->walk(g);
+
+        g.walk(vertexShader.position.expression);
 
         for (const auto& i: g.uniforms) {
             os << "uniform " << g.decl(i.second.first, i.second.second) << ";\n";
