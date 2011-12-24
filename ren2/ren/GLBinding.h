@@ -13,13 +13,16 @@ namespace ren {
 
     class GLSLGenerator : public ExpressionWalker {
     public:
-        std::map<ID, std::pair<Type, std::string>> attributes;
-        std::map<ID, std::pair<Type, std::string>> uniforms;
+        typedef std::pair<Type, std::string> Decl;
+        std::map<ID, Decl> uniforms;
+        std::map<ID, Decl> attributes;
+        std::map<Decl, std::string> locals;
         std::map<std::string, std::string> outputs;
 
         GLSLGenerator()
-            : attributeCount(0)
-            , uniformCount(0)
+            : uniformCount(0)
+            , attributeCount(0)
+            , localCount(0)
         {}
 
         void addOutput(const std::string& name, const ExpressionHandle& output) {
@@ -29,18 +32,30 @@ namespace ren {
             }
         }
 
-        void pushAttribute(const ID& id, Type type) {
-            if (!attributes.count(id)) {
-                attributes[id] = std::make_pair(type, allocateAttributeName());
+        std::string decl(const Decl& d) {
+            const auto& type = d.first;
+            const auto& name = d.second;
+            char array_suffix[80] = {0};
+            if (type.is_array) {
+                sprintf(array_suffix, "[%u]", type.array_length);
             }
-            stack.push(attributes[id].second);
+            return nameOf(type) + " " + name + array_suffix;
         }
+
+        // ExpressionWalker implementation:
 
         void pushUniform(const ID& id, Type type) {
             if (!uniforms.count(id)) {
                 uniforms[id] = std::make_pair(type, allocateUniformName());
             }
             stack.push(uniforms[id].second);
+        }
+
+        void pushAttribute(const ID& id, Type type) {
+            if (!attributes.count(id)) {
+                attributes[id] = std::make_pair(type, allocateAttributeName());
+            }
+            stack.push(attributes[id].second);
         }
 
         void pushInt(int i) {
@@ -97,14 +112,6 @@ namespace ren {
 
             n += ")";
             stack.push(n);
-        }
-
-        std::string decl(Type type, const std::string& name) {
-            char array_suffix[80] = {0};
-            if (type.is_array) {
-                sprintf(array_suffix, "[%u]", type.array_length);
-            }
-            return nameOf(type) + " " + name + array_suffix;
         }
 
     private:
@@ -166,8 +173,9 @@ namespace ren {
         }
 
         std::stack<std::string> stack;
-        unsigned attributeCount;
         unsigned uniformCount;
+        unsigned attributeCount;
+        unsigned localCount;
     };
     
     inline std::string generateGLSL(const VertexShader2& vertexShader) {
@@ -185,14 +193,17 @@ namespace ren {
         }
 
         for (const auto& i: g.uniforms) {
-            os << "uniform " << g.decl(i.second.first, i.second.second) << ";\n";
+            os << "uniform " << g.decl(i.second) << ";\n";
         }
 
         for (const auto& i: g.attributes) {
-            os << "attribute " << g.decl(i.second.first, i.second.second) << ";\n";
+            os << "attribute " << g.decl(i.second) << ";\n";
         }
 
         os << "void main() {\n";
+        for (const auto& i: g.locals) {
+            os << "    " << g.decl(i.first) << " = " << i.second << ";\n";
+        }
         for (const auto& i: g.outputs) {
             os << "    " << i.first << " = " << i.second << ";\n";
         }
