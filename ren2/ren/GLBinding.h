@@ -16,7 +16,7 @@ namespace ren {
         typedef std::pair<Type, std::string> Decl;
         std::map<ID, Decl> uniforms;
         std::map<ID, Decl> attributes;
-        std::map<Decl, std::string> locals;
+        std::vector<std::pair<Decl, std::string>> locals;
         std::map<std::string, std::string> outputs;
 
         GLSLGenerator()
