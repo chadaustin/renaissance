@@ -17,7 +17,9 @@ namespace ren {
         std::map<ID, Decl> uniforms;
         std::map<ID, Decl> attributes;
         std::vector<std::pair<Decl, std::string>> locals;
+        std::map<std::string, ExpressionPtr> outputExpressions;
         std::map<std::string, std::string> outputs;
+        std::map<ExpressionPtr, std::string> expressionNames;
 
         GLSLGenerator()
             : uniformCount(0)
@@ -27,11 +29,42 @@ namespace ren {
 
         void addOutput(const std::string& name, const ExpressionHandle& output) {
             if (output.expression) {
-                walk(output.expression);
-                outputs[name] = popTop();
+                outputExpressions[name] = output.expression;
             }
         }
 
+        void compile() {
+            for (const auto& i: outputExpressions) {
+                generateOutput(i.first, i.second);
+            }
+        }
+
+    private:
+        void generateOutput(const std::string& outputName, const ExpressionPtr& expression) {
+            walk(expression);
+            outputs[outputName] = popTop();
+        }
+
+        void walk(const ExpressionPtr& p) {
+            if (expressionNames.count(p)) {
+                stack.push(expressionNames[p]);
+            } else if (p->operands.empty()) {
+                p->walk(*this);
+                expressionNames[p] = getTop();
+            } else {
+                for (const auto& o : p->operands) {
+                    walk(o);
+                }
+                p->walk(*this);
+                std::string result = popTop();
+                std::string name = allocateLocalName();
+                locals.push_back(std::make_pair(Decl(p->type, name), result));
+                expressionNames[p] = name;
+                stack.push(name);
+            }
+        }
+
+    public:
         std::string decl(const Decl& d) {
             const auto& type = d.first;
             const auto& name = d.second;
@@ -115,18 +148,14 @@ namespace ren {
         }
 
     private:
+        std::string getTop() {
+            return stack.top();
+        }
         std::string popTop() {
             std::string rv(stack.top());
             stack.pop();
             return rv;
         };
-
-        void walk(const ExpressionPtr& p) {
-            for (const auto& o : p->operands) {
-                walk(o);
-            }
-            p->walk(*this);
-        }
 
         std::string nameOf(Type type) {
             if (type.columns) {
@@ -160,15 +189,21 @@ namespace ren {
             }
         }
 
+        std::string allocateUniformName() {
+            char p[80];
+            sprintf(p, "u%u", uniformCount++);
+            return p;
+        }
+
         std::string allocateAttributeName() {
             char p[80];
             sprintf(p, "a%u", attributeCount++);
             return p;
         }
 
-        std::string allocateUniformName() {
+        std::string allocateLocalName() {
             char p[80];
-            sprintf(p, "u%u", uniformCount++);
+            sprintf(p, "t%u", localCount++);
             return p;
         }
 
@@ -191,6 +226,8 @@ namespace ren {
             n[12] = '0' + i;
             g.addOutput(n, vertexShader.texCoord[i]);
         }
+
+        g.compile();
 
         for (const auto& i: g.uniforms) {
             os << "uniform " << g.decl(i.second) << ";\n";

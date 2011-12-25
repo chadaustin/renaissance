@@ -107,6 +107,11 @@ namespace ren {
             expression = std::make_shared<Add>(VEC4, expression, right.expression);
             return *this;
         }
+
+        vec4& operator*=(const vec4& right) {
+            expression = std::make_shared<Multiply>(VEC4, expression, right.expression);
+            return *this;
+        }
     };
 
     class mat4 : public ExpressionHandle {
