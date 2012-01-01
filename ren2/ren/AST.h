@@ -4,6 +4,7 @@
 #include <ren/Global.h>
 #include <ren/ID.h>
 #include <ren/Type.h>
+#include <ren/Function.h>
 
 namespace ren {
 
