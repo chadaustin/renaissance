@@ -66,6 +66,18 @@ namespace ren {
         }
     };
 
+    template<typename T, typename A, typename B, typename C>
+    struct SignatureType<T(A,B,C)> {
+        static Signature build() {
+            Signature rv;
+            rv.result = getType<T>();
+            rv.arguments.push_back(getType<A>());
+            rv.arguments.push_back(getType<B>());
+            rv.arguments.push_back(getType<C>());
+            return rv;
+        }
+    };
+
     struct FunctionBase {
         FunctionBase(const char* name, const Signature& signature)
             : name(name)
@@ -84,6 +96,9 @@ namespace ren {
     };
 
     namespace functions {
-        Def<float(vec2,vec2)> dot("dot");
+        Def<float(vec2,vec2)> dot2("dot");
+        Def<float(vec3,vec3)> dot3("dot");
+        Def<float(vec4,vec4)> dot4("dot");
+        Def<vec4(bool,vec4,vec4)> if_("if");
     }
 }
