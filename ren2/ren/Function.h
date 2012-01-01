@@ -78,27 +78,38 @@ namespace ren {
         }
     };
 
+    template<typename T, typename A, typename B, typename C, typename D>
+    struct SignatureType<T(A,B,C,D)> {
+        static Signature build() {
+            Signature rv;
+            rv.result = getType<T>();
+            rv.arguments.push_back(getType<A>());
+            rv.arguments.push_back(getType<B>());
+            rv.arguments.push_back(getType<C>());
+            rv.arguments.push_back(getType<D>());
+            return rv;
+        }
+    };
+
     struct FunctionBase {
-        FunctionBase(const char* name, const Signature& signature)
-            : name(name)
+        FunctionBase(const char* glsl_name, const Signature& signature)
+            : glsl_name(glsl_name)
             , signature(signature)
         {}
 
-        const char* name;
+        const char* glsl_name;
         Signature signature;
     };
 
     template<typename SignatureT>
-    struct Def : FunctionBase {
-        Def(const char* name)
+    struct Function : FunctionBase {
+        Function(const char* name)
             : FunctionBase(name, SignatureType<SignatureT>::build())
         {}
     };
 
-    namespace functions {
-        Def<float(vec2,vec2)> dot2("dot");
-        Def<float(vec3,vec3)> dot3("dot");
-        Def<float(vec4,vec4)> dot4("dot");
-        Def<vec4(bool,vec4,vec4)> if_("if");
-    }
+    Function<float(vec3,vec3)> dot3("dot");
+    Function<float(vec4,vec4)> dot4("dot");
+    Function<vec4(bool,vec4,vec4)> if4_("if");
+    Function<vec4(float,float,float,float)> vec4_("vec4");
 }

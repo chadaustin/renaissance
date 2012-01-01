@@ -17,7 +17,7 @@ namespace ren {
         virtual void add() = 0;
         virtual void swizzle(const char* swizzle) = 0;
         virtual void index() = 0;
-        virtual void call(const char* name, unsigned argCount) = 0;
+        virtual void apply(const FunctionBase* function, unsigned argCount) = 0;
     };
 
     REN_PTR(Expression);
@@ -160,25 +160,25 @@ namespace ren {
         }
     };
 
-    class Function : public Expression {
+    class FunctionCall : public Expression {
     public:
-        Function(Type type, const char* name, const ExpressionPtr& a0, const ExpressionPtr& a1)
+        FunctionCall(Type type, const FunctionBase* fn, const ExpressionPtr& a0, const ExpressionPtr& a1)
             : Expression(type, {a0, a1})
-            , name(name)
+            , function(fn)
         {
         }
 
-        Function(Type type, const char* name, const ExpressionPtr& a0, const ExpressionPtr& a1, const ExpressionPtr& a2, const ExpressionPtr& a3)
+        FunctionCall(Type type, const FunctionBase* fn, const ExpressionPtr& a0, const ExpressionPtr& a1, const ExpressionPtr& a2, const ExpressionPtr& a3)
             : Expression(type, {a0, a1, a2, a3})
-            , name(name)
+            , function(fn)
         {
         }
 
         void walk(ExpressionWalker& w) {
-            w.call(name, operands.size());
+            w.apply(function, operands.size());
         }
 
-        const char* const name;
+        const FunctionBase* const function;
     };
 
 }

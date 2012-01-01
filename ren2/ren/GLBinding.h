@@ -127,12 +127,12 @@ namespace ren {
             stack.push(base + "[" + index + "]");
         }
 
-        void call(const char* name, unsigned argCount) {
+        void apply(const FunctionBase* function, unsigned argCount) {
             std::vector<std::string> args;
             while (argCount--) {
                 args.push_back(popTop());
             }
-            std::string n(name);
+            std::string n(function->glsl_name);
             n += "(";
             bool first = true;
             while (!args.empty()) {
