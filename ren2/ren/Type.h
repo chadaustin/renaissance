@@ -1,6 +1,13 @@
 #pragma once
 
 namespace ren {
+    enum Frequency {
+        CONSTANT,  // aka batch
+        UNIFORM,   // aka batch
+        ATTRIBUTE, // aka vertex
+        //FRAGMENT,  // aka pixel
+    };
+
     struct Type {
         enum ElementType {
             BOOL,

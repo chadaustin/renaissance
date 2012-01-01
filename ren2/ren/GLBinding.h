@@ -79,25 +79,17 @@ namespace ren {
 
         // ExpressionWalker implementation:
 
-        void pushConstant(const ID& id, Type type) {
-            if (!constants.count(id)) {
-                constants[id] = std::make_pair(type, allocateConstantName());
+        void pushInput(const ID& id, Frequency frequency, Type type) {
+            std::map<ID, Decl>* p;
+            switch (frequency) {
+                case CONSTANT: p = &constants; break;
+                case UNIFORM: p = &uniforms; break;
+                case ATTRIBUTE: p = &attributes; break;
             }
-            stack.push(constants[id].second);
-        }
-
-        void pushUniform(const ID& id, Type type) {
-            if (!uniforms.count(id)) {
-                uniforms[id] = std::make_pair(type, allocateUniformName());
+            if (!p->count(id)) {
+                (*p)[id] = std::make_pair(type, allocateConstantName());
             }
-            stack.push(uniforms[id].second);
-        }
-
-        void pushAttribute(const ID& id, Type type) {
-            if (!attributes.count(id)) {
-                attributes[id] = std::make_pair(type, allocateAttributeName());
-            }
-            stack.push(attributes[id].second);
+            stack.push((*p)[id].second);
         }
 
         void pushInt(int i) {

@@ -9,9 +9,7 @@ namespace ren {
 
     class ExpressionWalker {
     public:
-        virtual void pushConstant(const ID& id, Type type) = 0;
-        virtual void pushUniform(const ID& id, Type type) = 0;
-        virtual void pushAttribute(const ID& id, Type type) = 0;
+        virtual void pushInput(const ID& id, Frequency frequency, Type type) = 0;
         virtual void pushInt(int i) = 0;
         virtual void pushFloat(float f) = 0;
         virtual void multiply() = 0;
@@ -74,7 +72,7 @@ namespace ren {
         const ID id;
 
         void walk(ExpressionWalker& w) {
-            w.pushConstant(id, type);
+            w.pushInput(id, CONSTANT, type);
         }
     };
 
@@ -88,7 +86,7 @@ namespace ren {
         const ID id;
 
         void walk(ExpressionWalker& w) {
-            w.pushUniform(id, type);
+            w.pushInput(id, UNIFORM, type);
         }
     };
 
@@ -102,7 +100,7 @@ namespace ren {
         const ID id;
 
         void walk(ExpressionWalker& w) {
-            w.pushAttribute(id, type);
+            w.pushInput(id, ATTRIBUTE, type);
         }
     };
 
