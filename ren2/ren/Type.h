@@ -99,13 +99,13 @@ namespace ren {
         typedef T type;
     };
     template<> struct NativeToRen<bool> {
-        typedef bool_ type;
+        typedef class bool_ type;
     };
     template<> struct NativeToRen<int> {
-        typedef int_ type;
+        typedef class int_ type;
     };
     template<> struct NativeToRen<float> {
-        typedef float_ type;
+        typedef class float_ type;
     };
 
 }

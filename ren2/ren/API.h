@@ -204,19 +204,6 @@ namespace ren {
         ID id;
     };
 
-    template<typename T> struct NativeToRen {
-        typedef T type;
-    };
-    template<> struct NativeToRen<bool> {
-        typedef bool_ type;
-    };
-    template<> struct NativeToRen<int> {
-        typedef int_ type;
-    };
-    template<> struct NativeToRen<float> {
-        typedef float_ type;
-    };
-
     template<typename T>
     class constant : public Input<typename NativeToRen<T>::type, CONSTANT> {
     public:
