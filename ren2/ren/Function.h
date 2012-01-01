@@ -11,8 +11,8 @@ namespace ren {
             , signature(signature)
         {}
 
-        const char* glsl_name;
-        Signature signature;
+        const char* const glsl_name;
+        const Signature signature;
     };
 
     template<typename SignatureT>

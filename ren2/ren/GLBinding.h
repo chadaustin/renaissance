@@ -81,13 +81,14 @@ namespace ren {
 
         void pushInput(const ID& id, Frequency frequency, Type type) {
             std::map<ID, Decl>* p;
+            auto a = &GLSLGenerator::allocateConstantName;
             switch (frequency) {
-                case CONSTANT: p = &constants; break;
-                case UNIFORM: p = &uniforms; break;
-                case ATTRIBUTE: p = &attributes; break;
+                case CONSTANT: p = &constants; a = &GLSLGenerator::allocateConstantName; break;
+                case UNIFORM: p = &uniforms; a = &GLSLGenerator::allocateUniformName; break;
+                case ATTRIBUTE: p = &attributes; a = &GLSLGenerator::allocateAttributeName; break;
             }
             if (!p->count(id)) {
-                (*p)[id] = std::make_pair(type, allocateConstantName());
+                (*p)[id] = std::make_pair(type, (this->*a)());
             }
             stack.push((*p)[id].second);
         }

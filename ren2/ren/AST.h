@@ -162,14 +162,20 @@ namespace ren {
 
     class FunctionCall : public Expression {
     public:
-        FunctionCall(Type type, const FunctionBase* fn, const ExpressionPtr& a0, const ExpressionPtr& a1)
-            : Expression(type, {a0, a1})
+        FunctionCall(const FunctionBase* fn, const ExpressionPtr& a0, const ExpressionPtr& a1)
+            : Expression(fn->signature.result, {a0, a1})
             , function(fn)
         {
         }
 
-        FunctionCall(Type type, const FunctionBase* fn, const ExpressionPtr& a0, const ExpressionPtr& a1, const ExpressionPtr& a2, const ExpressionPtr& a3)
-            : Expression(type, {a0, a1, a2, a3})
+        FunctionCall(const FunctionBase* fn, const ExpressionPtr& a0, const ExpressionPtr& a1, const ExpressionPtr& a2)
+            : Expression(fn->signature.result, {a0, a1, a2})
+            , function(fn)
+        {
+        }
+
+        FunctionCall(const FunctionBase* fn, const ExpressionPtr& a0, const ExpressionPtr& a1, const ExpressionPtr& a2, const ExpressionPtr& a3)
+            : Expression(fn->signature.result, {a0, a1, a2, a3})
             , function(fn)
         {
         }

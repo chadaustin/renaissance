@@ -96,7 +96,7 @@ namespace ren {
         }
 
         vec4(float_ x, float_ y, float_ z, float_ w)
-            : ExpressionHandle(std::make_shared<FunctionCall>(VEC4, &vec4_, x.expression, y.expression, z.expression, w.expression))
+            : ExpressionHandle(std::make_shared<FunctionCall>(&vec4_, x.expression, y.expression, z.expression, w.expression))
         {}
 
         explicit vec4(const ExpressionPtr& source)
@@ -164,11 +164,11 @@ namespace ren {
     }
 
     float_ dot(const vec4& left, const vec4& right) {
-        return float_(std::make_shared<FunctionCall>(FLOAT, &dot4, left.expression, right.expression));
+        return float_(std::make_shared<FunctionCall>(&dot4, left.expression, right.expression));
     }
 
     vec4 if_(const bool_& condition, const vec4& left, const vec4& right) {
-        return vec4(std::make_shared<FunctionCall>(VEC4, &if4_, left.expression, right.expression));
+        return vec4(std::make_shared<FunctionCall>(&if4_, condition.expression, left.expression, right.expression));
     }
 
     template<typename T, size_t Length>
