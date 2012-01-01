@@ -34,8 +34,8 @@ namespace ren {
         }
 
         void compile() {
-            for (const auto& i: outputExpressions) {
-                generateOutput(i.first, i.second);
+            for (auto i = outputExpressions.begin(); i != outputExpressions.end(); ++i) {
+                generateOutput(i->first, i->second);
             }
         }
 
@@ -52,8 +52,8 @@ namespace ren {
                 p->walk(*this);
                 expressionNames[p] = getTop();
             } else {
-                for (const auto& o : p->operands) {
-                    walk(o);
+                for (auto o = p->operands.begin(); o != p->operands.end(); ++o) {
+                    walk(*o);
                 }
                 p->walk(*this);
                 std::string result = popTop();
@@ -229,20 +229,20 @@ namespace ren {
 
         g.compile();
 
-        for (const auto& i: g.uniforms) {
-            os << "uniform " << g.decl(i.second) << ";\n";
+        for (auto i = g.uniforms.begin(); i != g.uniforms.end(); ++i) {
+            os << "uniform " << g.decl(i->second) << ";\n";
         }
 
-        for (const auto& i: g.attributes) {
-            os << "attribute " << g.decl(i.second) << ";\n";
+        for (auto i = g.attributes.begin(); i != g.attributes.end(); ++i) {
+            os << "attribute " << g.decl(i->second) << ";\n";
         }
 
         os << "void main() {\n";
-        for (const auto& i: g.locals) {
-            os << "    " << g.decl(i.first) << " = " << i.second << ";\n";
+        for (auto i = g.locals.begin(); i != g.locals.end(); ++i) {
+            os << "    " << g.decl(i->first) << " = " << i->second << ";\n";
         }
-        for (const auto& i: g.outputs) {
-            os << "    " << i.first << " = " << i.second << ";\n";
+        for (auto i = g.outputs.begin(); i != g.outputs.end(); ++i) {
+            os << "    " << i->first << " = " << i->second << ";\n";
         }
         os << "}\n";
         return os.str();
