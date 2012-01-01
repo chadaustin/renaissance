@@ -188,7 +188,7 @@ namespace ren {
         }
     };
 
-    template<typename T, typename NodeType>
+    template<typename T, Frequency frequency>
     class Input {
     public:
         template<typename Proxy=T>
@@ -197,7 +197,7 @@ namespace ren {
         }
 
         operator T() const {
-            return T(std::make_shared<NodeType>(id, T::type()));
+            return T(std::make_shared<InputExpression>(id, T::type(), frequency));
         }
 
     private:
@@ -218,7 +218,7 @@ namespace ren {
     };
 
     template<typename T>
-    class constant : public Input<typename NativeToRen<T>::type, ConstantExpression> {
+    class constant : public Input<typename NativeToRen<T>::type, CONSTANT> {
     public:
         constant()
             : value()
@@ -233,11 +233,11 @@ namespace ren {
     };
 
     template<typename T>
-    class uniform : public Input<typename NativeToRen<T>::type, UniformExpression> {
+    class uniform : public Input<typename NativeToRen<T>::type, UNIFORM> {
     };
 
     template<typename T>
-    class attribute : public Input<typename NativeToRen<T>::type, AttributeExpression> {
+    class attribute : public Input<typename NativeToRen<T>::type, ATTRIBUTE> {
     };
 
 };

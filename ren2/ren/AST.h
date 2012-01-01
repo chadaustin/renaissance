@@ -22,18 +22,36 @@ namespace ren {
 
     REN_PTR(Expression);
 
+    inline Frequency getMaximumFrequency(const std::vector<ExpressionPtr>& operands);
+
     class Expression {
     public:
-        Expression(Type type, const std::vector<ExpressionPtr>& operands = std::vector<ExpressionPtr>())
+        Expression(Type type, Frequency frequency)
             : type(type)
+            , frequency(frequency)
+        {}
+
+        Expression(Type type, const std::vector<ExpressionPtr>& operands)
+            : type(type)
+            , frequency(getMaximumFrequency(operands))
             , operands(operands)
         {}
 
         const Type type;
+        const Frequency frequency;
         const std::vector<ExpressionPtr> operands;
 
         virtual void walk(ExpressionWalker& w) = 0;
     };
+
+    inline Frequency getMaximumFrequency(const std::vector<ExpressionPtr>& operands) {
+        verify(!operands.empty());
+        Frequency result = operands[0]->frequency;
+        for (size_t i = 1; i < operands.size(); ++i) {
+            result = std::max(result, operands[i]->frequency);
+        }
+        return result;
+    }
 
     class Multiply : public Expression {
     public:
@@ -63,52 +81,24 @@ namespace ren {
         Add() = delete;
     };
 
-    class ConstantExpression : public Expression {
+    class InputExpression : public Expression {
     public:
-        ConstantExpression(const ID& id, Type type)
-            : Expression(type)
+        InputExpression(const ID& id, Type type, Frequency frequency)
+            : Expression(type, frequency)
             , id(id)
         {}
 
         const ID id;
 
         void walk(ExpressionWalker& w) {
-            w.pushInput(id, CONSTANT, type);
-        }
-    };
-
-    class UniformExpression : public Expression {
-    public:
-        UniformExpression(const ID& id, Type type)
-            : Expression(type)
-            , id(id)
-        {}
-
-        const ID id;
-
-        void walk(ExpressionWalker& w) {
-            w.pushInput(id, UNIFORM, type);
-        }
-    };
-
-    class AttributeExpression : public Expression {
-    public:
-        AttributeExpression(const ID& id, Type type)
-            : Expression(type)
-            , id(id)
-        {}
-
-        const ID id;
-
-        void walk(ExpressionWalker& w) {
-            w.pushInput(id, ATTRIBUTE, type);
+            w.pushInput(id, frequency, type);
         }
     };
 
     class IntLiteral : public Expression {
     public:
         explicit IntLiteral(int i)
-            : Expression(Type::scalar(Type::INT))
+            : Expression(Type::scalar(Type::INT), CONSTANT)
             , i(i)
         {}
 
@@ -123,7 +113,7 @@ namespace ren {
     class FloatLiteral : public Expression {
     public:
         explicit FloatLiteral(float f)
-            : Expression(Type::scalar(Type::FLOAT))
+            : Expression(Type::scalar(Type::FLOAT), CONSTANT)
             , f(f)
         {}
 
