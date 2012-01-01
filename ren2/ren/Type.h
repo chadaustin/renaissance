@@ -95,4 +95,17 @@ namespace ren {
         return TypeMap<T>::get();
     }
 
+    template<typename T> struct NativeToRen {
+        typedef T type;
+    };
+    template<> struct NativeToRen<bool> {
+        typedef bool_ type;
+    };
+    template<> struct NativeToRen<int> {
+        typedef int_ type;
+    };
+    template<> struct NativeToRen<float> {
+        typedef float_ type;
+    };
+
 }
