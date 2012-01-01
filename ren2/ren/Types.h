@@ -19,9 +19,35 @@ namespace ren {
 
         ExpressionPtr expression;
     };
+
+    class bool_ : public ExpressionHandle {
+    public:
+        static Type type() { return BOOL; }
+
+        bool_() {
+        }
+
+        bool_(const ExpressionPtr& expression)
+            : ExpressionHandle(expression)
+        {}
+    };
     
+    class int_ : public ExpressionHandle {
+    public:
+        static Type type() { return INT; }
+
+        int_() {
+        }
+
+        int_(const ExpressionPtr& expression)
+            : ExpressionHandle(expression)
+        {}
+    };
+
     class float_ : public ExpressionHandle {
     public:
+        static Type type() { return FLOAT; }
+
         float_() {
         }
 
@@ -30,16 +56,6 @@ namespace ren {
         {}
 
         float_(const ExpressionPtr& expression)
-            : ExpressionHandle(expression)
-        {}
-    };
-
-    class int_ : public ExpressionHandle {
-    public:
-        int_() {
-        }
-
-        int_(const ExpressionPtr& expression)
             : ExpressionHandle(expression)
         {}
     };
@@ -151,6 +167,10 @@ namespace ren {
         return float_(std::make_shared<Function>(FLOAT, "dot", left.expression, right.expression));
     }
 
+    vec4 if_(const bool_& condition, const vec4& left, const vec4& right) {
+        return vec4(std::make_shared<Function>(VEC4, "if", left.expression, right.expression));
+    }
+
     template<typename T, size_t Length>
     class array : public ExpressionHandle {
     public:
@@ -185,10 +205,25 @@ namespace ren {
     };
 
     template<typename T>
-    class attribute : public Input<T, AttributeExpression> {
+    struct NativeToGLSL {
+        typedef T type;
+    };
+
+    template<>
+    struct NativeToGLSL<bool> {
+        typedef bool_ type;
     };
 
     template<typename T>
-    class uniform : public Input<T, UniformExpression> {
+    class constant : public Input<typename NativeToGLSL<T>::type, ConstantExpression> {
     };
+
+    template<typename T>
+    class uniform : public Input<typename NativeToGLSL<T>::type, UniformExpression> {
+    };
+
+    template<typename T>
+    class attribute : public Input<typename NativeToGLSL<T>::type, AttributeExpression> {
+    };
+
 };

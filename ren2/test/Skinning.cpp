@@ -8,11 +8,9 @@ int main() {
     uniform<array<vec4, 180>> bones; // 60 4x3 row-major matrices
 
     attribute<vec4> position;
-    uniform<int> maxInfluenceCount;
     attribute<ivec4> influenceIndices;
     attribute<vec4> influenceWeights;
 
-    vec4 P = position;
     ivec4 i = 3 * influenceIndices; // map to matrices
 
     vec4 iw = influenceWeights;
@@ -38,14 +36,14 @@ int main() {
     row2 += bones[i.w() + 2] * iw.w();
 
     // matrix multiplication
-    P = vec4(
-        dot(row0, P),
-        dot(row1, P),
-        dot(row2, P),
+    vec4 skinnedVertex = vec4(
+        dot(row0, position),
+        dot(row1, position),
+        dot(row2, position),
         1.0f);
     
     VertexShader2 vs;
-    vs.position = projectionMatrix * viewMatrix * modelMatrix * P;
+    vs.position = projectionMatrix * viewMatrix * modelMatrix * skinnedVertex;
 
     printf("%s\n", generateGLSL(vs).c_str());
 }

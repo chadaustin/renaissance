@@ -9,8 +9,9 @@ namespace ren {
 
     class ExpressionWalker {
     public:
-        virtual void pushAttribute(const ID& id, Type type) = 0;
+        virtual void pushConstant(const ID& id, Type type) = 0;
         virtual void pushUniform(const ID& id, Type type) = 0;
+        virtual void pushAttribute(const ID& id, Type type) = 0;
         virtual void pushInt(int i) = 0;
         virtual void pushFloat(float f) = 0;
         virtual void multiply() = 0;
@@ -63,9 +64,9 @@ namespace ren {
         Add() = delete;
     };
 
-    class AttributeExpression : public Expression {
+    class ConstantExpression : public Expression {
     public:
-        AttributeExpression(const ID& id, Type type)
+        ConstantExpression(const ID& id, Type type)
             : Expression(type)
             , id(id)
         {}
@@ -73,7 +74,7 @@ namespace ren {
         const ID id;
 
         void walk(ExpressionWalker& w) {
-            w.pushAttribute(id, type);
+            w.pushConstant(id, type);
         }
     };
 
@@ -88,6 +89,20 @@ namespace ren {
 
         void walk(ExpressionWalker& w) {
             w.pushUniform(id, type);
+        }
+    };
+
+    class AttributeExpression : public Expression {
+    public:
+        AttributeExpression(const ID& id, Type type)
+            : Expression(type)
+            , id(id)
+        {}
+
+        const ID id;
+
+        void walk(ExpressionWalker& w) {
+            w.pushAttribute(id, type);
         }
     };
 

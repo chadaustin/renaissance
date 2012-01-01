@@ -14,6 +14,7 @@ namespace ren {
     class GLSLGenerator : public ExpressionWalker {
     public:
         typedef std::pair<Type, std::string> Decl;
+        std::map<ID, Decl> constants;
         std::map<ID, Decl> uniforms;
         std::map<ID, Decl> attributes;
         std::vector<std::pair<Decl, std::string>> locals;
@@ -22,7 +23,8 @@ namespace ren {
         std::map<ExpressionPtr, std::string> expressionNames;
 
         GLSLGenerator()
-            : uniformCount(0)
+            : constantCount(0)
+            , uniformCount(0)
             , attributeCount(0)
             , localCount(0)
         {}
@@ -76,6 +78,13 @@ namespace ren {
         }
 
         // ExpressionWalker implementation:
+
+        void pushConstant(const ID& id, Type type) {
+            if (!constants.count(id)) {
+                constants[id] = std::make_pair(type, allocateConstantName());
+            }
+            stack.push(constants[id].second);
+        }
 
         void pushUniform(const ID& id, Type type) {
             if (!uniforms.count(id)) {
@@ -189,6 +198,12 @@ namespace ren {
             }
         }
 
+        std::string allocateConstantName() {
+            char p[80];
+            sprintf(p, "c%u", constantCount++);
+            return p;
+        }
+
         std::string allocateUniformName() {
             char p[80];
             sprintf(p, "u%u", uniformCount++);
@@ -208,6 +223,7 @@ namespace ren {
         }
 
         std::stack<std::string> stack;
+        unsigned constantCount;
         unsigned uniformCount;
         unsigned attributeCount;
         unsigned localCount;
