@@ -204,14 +204,17 @@ namespace ren {
         ID id;
     };
 
-    template<typename T>
-    struct NativeToGLSL {
+    template<typename T> struct NativeToGLSL {
         typedef T type;
     };
-
-    template<>
-    struct NativeToGLSL<bool> {
+    template<> struct NativeToGLSL<bool> {
         typedef bool_ type;
+    };
+    template<> struct NativeToGLSL<int> {
+        typedef int_ type;
+    };
+    template<> struct NativeToGLSL<float> {
+        typedef float_ type;
     };
 
     template<typename T>
