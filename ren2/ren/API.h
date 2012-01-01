@@ -204,29 +204,40 @@ namespace ren {
         ID id;
     };
 
-    template<typename T> struct NativeToGLSL {
+    template<typename T> struct NativeToRen {
         typedef T type;
     };
-    template<> struct NativeToGLSL<bool> {
+    template<> struct NativeToRen<bool> {
         typedef bool_ type;
     };
-    template<> struct NativeToGLSL<int> {
+    template<> struct NativeToRen<int> {
         typedef int_ type;
     };
-    template<> struct NativeToGLSL<float> {
+    template<> struct NativeToRen<float> {
         typedef float_ type;
     };
 
     template<typename T>
-    class constant : public Input<typename NativeToGLSL<T>::type, ConstantExpression> {
+    class constant : public Input<typename NativeToRen<T>::type, ConstantExpression> {
+    public:
+        constant()
+            : value()
+        {}
+
+        constant& operator=(const T& v) {
+            value = v;
+            return *this;
+        }
+
+        T value;
     };
 
     template<typename T>
-    class uniform : public Input<typename NativeToGLSL<T>::type, UniformExpression> {
+    class uniform : public Input<typename NativeToRen<T>::type, UniformExpression> {
     };
 
     template<typename T>
-    class attribute : public Input<typename NativeToGLSL<T>::type, AttributeExpression> {
+    class attribute : public Input<typename NativeToRen<T>::type, AttributeExpression> {
     };
 
 };

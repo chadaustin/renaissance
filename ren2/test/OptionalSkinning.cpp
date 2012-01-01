@@ -45,6 +45,11 @@ int main() {
     
     VertexShader2 vs;
     vs.position = projectionMatrix * viewMatrix * modelMatrix * if_(skinningEnabled, skinnedVertex, position);
-
+    
+    printf("// Skinning disabled\n");
+    skinningEnabled = false;
+    printf("%s\n", generateGLSL(vs).c_str());
+    skinningEnabled = true;
+    printf("// Skinning enabled\n");
     printf("%s\n", generateGLSL(vs).c_str());
 }
