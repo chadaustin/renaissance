@@ -71,4 +71,28 @@ namespace ren {
     const Type MAT3(Type::matrix(Type::FLOAT, 3, 3));
     const Type MAT4(Type::matrix(Type::FLOAT, 4, 4));
 
+    template<typename T> struct TypeMap;
+#define REN_TYPEMAP(c, g) template<> struct TypeMap<c> { static Type get() { return g; } };
+    REN_TYPEMAP(bool, BOOL);
+    REN_TYPEMAP(class bvec2, BVEC2);
+    REN_TYPEMAP(class bvec3, BVEC3);
+    REN_TYPEMAP(class bvec4, BVEC4);
+    REN_TYPEMAP(int, INT);
+    REN_TYPEMAP(class ivec2, IVEC2);
+    REN_TYPEMAP(class ivec3, IVEC3);
+    REN_TYPEMAP(class ivec4, IVEC4);
+    REN_TYPEMAP(float, FLOAT);
+    REN_TYPEMAP(class vec2, VEC2);
+    REN_TYPEMAP(class vec3, VEC3);
+    REN_TYPEMAP(class vec4, VEC4);
+    REN_TYPEMAP(class mat2, MAT2);
+    REN_TYPEMAP(class mat3, MAT3);
+    REN_TYPEMAP(class mat4, MAT4);
+#undef REN_TYPEMAP
+
+    template<typename T>
+    Type getType() {
+        return TypeMap<T>::get();
+    }
+
 }
