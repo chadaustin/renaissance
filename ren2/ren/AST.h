@@ -5,6 +5,7 @@
 #include <ren/ID.h>
 #include <ren/Type.h>
 #include <ren/Function.h>
+#include <ren/Value.h>
 
 namespace ren {
 
@@ -26,9 +27,10 @@ namespace ren {
 
     class Expression {
     public:
-        Expression(Type type, Frequency frequency)
+        Expression(Type type, Frequency frequency, const AbstractValuePtr& value)
             : type(type)
             , frequency(frequency)
+            , value(value)
         {}
 
         Expression(Type type, const std::vector<ExpressionPtr>& operands)
@@ -39,6 +41,7 @@ namespace ren {
 
         const Type type;
         const Frequency frequency;
+        const AbstractValuePtr value;
         const std::vector<ExpressionPtr> operands;
 
         virtual void walk(ExpressionWalker& w) = 0;
@@ -83,8 +86,8 @@ namespace ren {
 
     class InputExpression : public Expression {
     public:
-        InputExpression(const ID& id, Type type, Frequency frequency)
-            : Expression(type, frequency)
+        InputExpression(const ID& id, Type type, Frequency frequency, const AbstractValuePtr& value)
+            : Expression(type, frequency, value)
             , id(id)
         {}
 
@@ -98,7 +101,7 @@ namespace ren {
     class IntLiteral : public Expression {
     public:
         explicit IntLiteral(int i)
-            : Expression(Type::scalar(Type::INT), CONSTANT)
+            : Expression(Type::scalar(Type::INT), CONSTANT, std::make_shared<DataValue<int>>(i))
             , i(i)
         {}
 
@@ -113,7 +116,7 @@ namespace ren {
     class FloatLiteral : public Expression {
     public:
         explicit FloatLiteral(float f)
-            : Expression(Type::scalar(Type::FLOAT), CONSTANT)
+            : Expression(Type::scalar(Type::FLOAT), CONSTANT, std::make_shared<DataValue<float>>(f))
             , f(f)
         {}
 

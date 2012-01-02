@@ -199,11 +199,11 @@ namespace ren {
         }
 
         operator ren_type() const {
-            return ren_type(std::make_shared<InputExpression>(id, ren_type::type(), frequency));
+            return ren_type(std::make_shared<InputExpression>(id, ren_type::type(), frequency, value));
         }
 
     protected:
-        std::shared_ptr<T> value;
+        std::shared_ptr<DataValue<T>> value;
 
     private:
         ID id;
@@ -217,11 +217,11 @@ namespace ren {
         constant()
             : Input<T, CONSTANT>()
         {
-            value.reset(new T());
+            value.reset(new DataValue<T>());
         }
 
         constant& operator=(const T& v) {
-            *value = v;
+            value->value = v;
             return *this;
         }
     };
