@@ -39,6 +39,15 @@ namespace ren {
             , operands(operands)
         {}
 
+        template<typename T>
+        T evaluate() const {
+            verify(type == getType<T>());
+            verify(frequency == CONSTANT);
+            auto p = checked_cast<DataValue<T>*>(value.get());
+            verify(p);
+            return p->value;
+        }
+
         const Type type;
         const Frequency frequency;
         const AbstractValuePtr value;
@@ -174,6 +183,19 @@ namespace ren {
         }
 
         void walk(ExpressionWalker& w) {
+#if 0
+            // HACK: apply conditionals here
+            if (function == &if4_) {
+                verify(3 == operands.size());
+                if (operands[0]->frequency == CONSTANT) {
+                    if (operands[0]->evaluate<bool>()) {
+                        return operands[1]->walk(w);
+                    } else {
+                        return operands[2]->walk(w);
+                    }
+                }
+            }
+#endif
             w.apply(function, operands.size());
         }
 

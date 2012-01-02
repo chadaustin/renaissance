@@ -48,6 +48,14 @@ namespace ren {
             return rv;
         }
 
+        bool operator==(const Type& right) const {
+            return element_type == right.element_type
+                && columns == right.columns
+                && rows == right.rows
+                && is_array == right.is_array
+                && array_length == right.array_length;
+        }
+
         ElementType element_type : 4;
         unsigned columns : 2; // implied + 1
         unsigned rows : 2; // implied + 1
