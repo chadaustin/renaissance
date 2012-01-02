@@ -193,10 +193,6 @@ namespace ren {
     public:
         typedef typename NativeToRen<T>::type ren_type;
 
-        Input(T* p = 0)
-            : pvalue(p)
-        {}
-
         template<typename Proxy=ren_type>
         auto operator[](const int_& i) const -> decltype(std::declval<Proxy>()[i]) {
             return Proxy(*this)[i];
@@ -206,25 +202,28 @@ namespace ren {
             return ren_type(std::make_shared<InputExpression>(id, ren_type::type(), frequency));
         }
 
+    protected:
+        std::shared_ptr<T> value;
+
     private:
         ID id;
-        T* pvalue;
     };
 
     template<typename T>
     class constant : public Input<T, CONSTANT> {
     public:
-        constant()
-            : Input<T, CONSTANT>(&value)
-            , value()
-        {}
+        using Input<T, CONSTANT>::value;
 
-        constant& operator=(const T& v) {
-            value = v;
-            return *this;
+        constant()
+            : Input<T, CONSTANT>()
+        {
+            value.reset(new T());
         }
 
-        T value;
+        constant& operator=(const T& v) {
+            *value = v;
+            return *this;
+        }
     };
 
     template<typename T>
