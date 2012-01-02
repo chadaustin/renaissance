@@ -193,6 +193,10 @@ namespace ren {
     public:
         typedef typename NativeToRen<T>::type ren_type;
 
+        Input(T* p = 0)
+            : pvalue(p)
+        {}
+
         template<typename Proxy=ren_type>
         auto operator[](const int_& i) const -> decltype(std::declval<Proxy>()[i]) {
             return Proxy(*this)[i];
@@ -204,13 +208,15 @@ namespace ren {
 
     private:
         ID id;
+        T* pvalue;
     };
 
     template<typename T>
     class constant : public Input<T, CONSTANT> {
     public:
         constant()
-            : value()
+            : Input<T, CONSTANT>(&value)
+            , value()
         {}
 
         constant& operator=(const T& v) {
