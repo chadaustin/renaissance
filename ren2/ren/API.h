@@ -120,7 +120,7 @@ namespace ren {
         }
 
         vec4& operator+=(const vec4& right) {
-            expression = std::make_shared<Add>(VEC4, expression, right.expression);
+            expression = std::make_shared<FunctionCall>(&vec4_plus, expression, right.expression);
             return *this;
         }
 
@@ -156,11 +156,11 @@ namespace ren {
     }
 
     int_ operator+(const int_& left, int right) {
-        return int_(std::make_shared<Add>(INT, left.expression, std::make_shared<IntLiteral>(right)));
+        return int_(std::make_shared<FunctionCall>(&int_plus, left.expression, std::make_shared<IntLiteral>(right)));
     }
 
     vec4 operator+(const vec4& left, const vec4& right) {
-        return vec4(std::make_shared<Add>(VEC4, left.expression, right.expression));
+        return vec4(std::make_shared<FunctionCall>(&vec4_plus, left.expression, right.expression));
     }
 
     float_ dot(const vec4& left, const vec4& right) {

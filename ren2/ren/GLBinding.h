@@ -133,20 +133,26 @@ namespace ren {
             while (argCount--) {
                 args.push_back(popTop());
             }
-            std::string n(function->glsl_name);
-            n += "(";
-            bool first = true;
-            while (!args.empty()) {
-                if (!first) {
-                    n += ", ";
+            if (function->is_operator) {
+                verify(2 == function->signature.arguments.size());
+                verify(2 == args.size());
+                stack.push(std::string("(") + args[1] + " " + function->glsl_name + " " + args[0] + ")");
+            } else {
+                std::string n(function->glsl_name);
+                n += "(";
+                bool first = true;
+                while (!args.empty()) {
+                    if (!first) {
+                        n += ", ";
+                    }
+                    first = false;
+                    n += args.back();
+                    args.pop_back();
                 }
-                first = false;
-                n += args.back();
-                args.pop_back();
+                
+                n += ")";
+                stack.push(n);
             }
-
-            n += ")";
-            stack.push(n);
         }
 
     private:

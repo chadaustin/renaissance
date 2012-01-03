@@ -15,7 +15,6 @@ namespace ren {
         virtual void pushInt(int i) = 0;
         virtual void pushFloat(float f) = 0;
         virtual void multiply() = 0;
-        virtual void add() = 0;
         virtual void swizzle(const char* swizzle) = 0;
         virtual void index() = 0;
         virtual void apply(const FunctionBase* function, unsigned argCount) = 0;
@@ -77,20 +76,6 @@ namespace ren {
 
     private:
         Multiply() = delete;
-    };
-
-    class Add : public Expression {
-    public:
-        Add(Type type, const ExpressionPtr& left, const ExpressionPtr& right)
-            : Expression(type, {left, right})
-        {}
-
-        void walk(ExpressionWalker& w) {
-            w.add();
-        }
-
-    private:
-        Add() = delete;
     };
 
     class InputExpression : public Expression {

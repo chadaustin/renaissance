@@ -8,6 +8,8 @@
 namespace ren {
     inline void verify(bool condition) {
         if (!condition) {
+            int* p = 0;
+            *p = 0;
             fprintf(stderr, "verify failed\n");
             throw std::runtime_error("verify failed");
         }
