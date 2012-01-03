@@ -105,18 +105,6 @@ namespace ren {
             stack.push(p);
         }
 
-        void multiply() {
-            std::string right(popTop());
-            std::string left(popTop());
-            stack.push("(" + left + " * " + right + ")");
-        }
-
-        void add() {
-            std::string right(popTop());
-            std::string left(popTop());
-            stack.push("(" + left + " + " + right + ")");
-        }
-
         void swizzle(const char* swizzle) {
             std::string base(popTop());
             stack.push(base + "." + swizzle);

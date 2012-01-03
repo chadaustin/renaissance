@@ -125,7 +125,7 @@ namespace ren {
         }
 
         vec4& operator*=(const vec4& right) {
-            expression = std::make_shared<Multiply>(VEC4, expression, right.expression);
+            expression = std::make_shared<FunctionCall>(&vec4_times_vec4, expression, right.expression);
             return *this;
         }
     };
@@ -140,19 +140,19 @@ namespace ren {
     };
 
     vec4 operator*(const vec4& left, const float_& right) {
-        return vec4(std::make_shared<Multiply>(VEC4, left.expression, right.expression));
+        return vec4(std::make_shared<FunctionCall>(&vec4_times_float, left.expression, right.expression));
     }
 
     mat4 operator*(const mat4& left, const mat4& right) {
-        return mat4(std::make_shared<Multiply>(MAT4, left.expression, right.expression));
+        return mat4(std::make_shared<FunctionCall>(&mat4_times_mat4, left.expression, right.expression));
     }
 
     vec4 operator*(const mat4& m, const vec4& v) {
-        return vec4(std::make_shared<Multiply>(VEC4, m.expression, v.expression));
+        return vec4(std::make_shared<FunctionCall>(&mat4_times_vec4, m.expression, v.expression));
     }
 
     ivec4 operator*(int i, const ivec4& v) {
-        return ivec4(std::make_shared<Multiply>(IVEC4, std::make_shared<IntLiteral>(i), v.expression));
+        return ivec4(std::make_shared<FunctionCall>(&int_times_ivec4, std::make_shared<IntLiteral>(i), v.expression));
     }
 
     int_ operator+(const int_& left, int right) {

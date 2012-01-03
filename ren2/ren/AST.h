@@ -14,7 +14,6 @@ namespace ren {
         virtual void pushInput(const ID& id, Frequency frequency, Type type) = 0;
         virtual void pushInt(int i) = 0;
         virtual void pushFloat(float f) = 0;
-        virtual void multiply() = 0;
         virtual void swizzle(const char* swizzle) = 0;
         virtual void index() = 0;
         virtual void apply(const FunctionBase* function, unsigned argCount) = 0;
@@ -63,20 +62,6 @@ namespace ren {
         }
         return result;
     }
-
-    class Multiply : public Expression {
-    public:
-        Multiply(Type type, const ExpressionPtr& left, const ExpressionPtr& right)
-            : Expression(type, {left, right})
-        {}
-
-        void walk(ExpressionWalker& w) {
-            w.multiply();
-        }
-
-    private:
-        Multiply() = delete;
-    };
 
     class InputExpression : public Expression {
     public:

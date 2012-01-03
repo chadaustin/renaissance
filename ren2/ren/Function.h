@@ -37,4 +37,9 @@ namespace ren {
     Function<vec4(float,float,float,float)> vec4_("vec4");
     Operator<int(int,int)> int_plus("+");
     Operator<vec4(vec4,vec4)> vec4_plus("+");
+    Operator<vec4(vec4,vec4)> vec4_times_vec4("*");
+    Operator<vec4(vec4,float)> vec4_times_float("*");
+    Operator<mat4(mat4,mat4)> mat4_times_mat4("*");
+    Operator<vec4(mat4,vec4)> mat4_times_vec4("*");
+    Operator<ivec4(int,ivec4)> int_times_ivec4("*");
 }
