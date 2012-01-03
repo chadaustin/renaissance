@@ -14,9 +14,9 @@ namespace ren {
     class GLSLGenerator : public ExpressionWalker {
     public:
         typedef std::pair<Type, std::string> Decl;
-        std::map<ID, Decl> constants;
-        std::map<ID, Decl> uniforms;
-        std::map<ID, Decl> attributes;
+        std::map<ID, std::pair<Decl, AbstractValuePtr>> constants;
+        std::map<ID, std::pair<Decl, AbstractValuePtr>> uniforms;
+        std::map<ID, std::pair<Decl, AbstractValuePtr>> attributes;
         std::vector<std::pair<Decl, std::string>> locals;
         std::map<std::string, ExpressionPtr> outputExpressions;
         std::map<std::string, std::string> outputs;
@@ -79,8 +79,8 @@ namespace ren {
 
         // ExpressionWalker implementation:
 
-        void pushInput(const ID& id, Frequency frequency, Type type) {
-            std::map<ID, Decl>* p;
+        void pushInput(const ID& id, Frequency frequency, Type type, AbstractValuePtr value) {
+            std::map<ID, std::pair<Decl, AbstractValuePtr>>* p;
             auto a = &GLSLGenerator::allocateConstantName;
             switch (frequency) {
                 case CONSTANT: p = &constants; a = &GLSLGenerator::allocateConstantName; break;
@@ -88,9 +88,9 @@ namespace ren {
                 case ATTRIBUTE: p = &attributes; a = &GLSLGenerator::allocateAttributeName; break;
             }
             if (!p->count(id)) {
-                (*p)[id] = std::make_pair(type, (this->*a)());
+                (*p)[id] = std::make_pair(Decl(type, (this->*a)()), value);
             }
-            stack.push((*p)[id].second);
+            stack.push((*p)[id].first.second);
         }
 
         void pushInt(int i) {
@@ -232,12 +232,16 @@ namespace ren {
 
         g.compile();
 
+        for (auto i = g.constants.begin(); i != g.constants.end(); ++i) {
+            os << "const " << g.decl(i->second.first) << " = " << i->second.second->asString() << ";\n";
+        }
+
         for (auto i = g.uniforms.begin(); i != g.uniforms.end(); ++i) {
-            os << "uniform " << g.decl(i->second) << ";\n";
+            os << "uniform " << g.decl(i->second.first) << ";\n";
         }
 
         for (auto i = g.attributes.begin(); i != g.attributes.end(); ++i) {
-            os << "attribute " << g.decl(i->second) << ";\n";
+            os << "attribute " << g.decl(i->second.first) << ";\n";
         }
 
         os << "void main() {\n";

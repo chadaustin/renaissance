@@ -11,7 +11,7 @@ namespace ren {
 
     class ExpressionWalker {
     public:
-        virtual void pushInput(const ID& id, Frequency frequency, Type type) = 0;
+        virtual void pushInput(const ID& id, Frequency frequency, Type type, AbstractValuePtr value) = 0;
         virtual void pushInt(int i) = 0;
         virtual void pushFloat(float f) = 0;
         virtual void swizzle(const char* swizzle) = 0;
@@ -73,7 +73,7 @@ namespace ren {
         const ID id;
 
         void walk(ExpressionWalker& w) {
-            w.pushInput(id, frequency, type);
+            w.pushInput(id, frequency, type, value);
         }
     };
 

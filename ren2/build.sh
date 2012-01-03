@@ -10,6 +10,7 @@ CC="$CXX -g -std=c++0x -Wall -Werror -I."
 
 set -e
 mkdir -p bin
+$CC -o bin/ConstantOutput.exe test/ConstantOutput.cpp
 $CC -o bin/ConditionalSelection.exe test/ConditionalSelection.cpp
 $CC -o bin/OptionalSkinning.exe test/OptionalSkinning.cpp
 $CC -o bin/Skinning.exe test/Skinning.cpp
