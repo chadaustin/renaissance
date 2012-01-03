@@ -12,8 +12,6 @@ namespace ren {
     class ExpressionWalker {
     public:
         virtual void pushInput(const ID& id, Frequency frequency, Type type, AbstractValuePtr value) = 0;
-        virtual void pushInt(int i) = 0;
-        virtual void pushFloat(float f) = 0;
         virtual void swizzle(const char* swizzle) = 0;
         virtual void index() = 0;
         virtual void apply(const FunctionBase* function, unsigned argCount) = 0;
@@ -75,36 +73,6 @@ namespace ren {
         void walk(ExpressionWalker& w) {
             w.pushInput(id, frequency, type, value);
         }
-    };
-
-    class IntLiteral : public Expression {
-    public:
-        explicit IntLiteral(int i)
-            : Expression(Type::scalar(Type::INT), CONSTANT, std::make_shared<DataValue<int>>(i))
-            , i(i)
-        {}
-
-        void walk(ExpressionWalker& w) {
-            w.pushInt(i);
-        }
-
-    private:
-        int i;
-    };
-
-    class FloatLiteral : public Expression {
-    public:
-        explicit FloatLiteral(float f)
-            : Expression(Type::scalar(Type::FLOAT), CONSTANT, std::make_shared<DataValue<float>>(f))
-            , f(f)
-        {}
-
-        void walk(ExpressionWalker& w) {
-            w.pushFloat(f);
-        }
-
-    private:
-        float f;
     };
 
     class Swizzle : public Expression {

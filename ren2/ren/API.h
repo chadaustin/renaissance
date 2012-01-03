@@ -39,6 +39,10 @@ namespace ren {
         int_() {
         }
 
+        int_(int i)
+            : ExpressionHandle(std::make_shared<InputExpression>(ID(), type(), CONSTANT, std::make_shared<DataValue<int>>(i)))
+        {}
+
         int_(const ExpressionPtr& expression)
             : ExpressionHandle(expression)
         {}
@@ -52,7 +56,7 @@ namespace ren {
         }
 
         float_(float f)
-        : ExpressionHandle(std::make_shared<FloatLiteral>(f))
+            : ExpressionHandle(std::make_shared<InputExpression>(ID(), type(), CONSTANT, std::make_shared<DataValue<float>>(f)))
         {}
 
         float_(const ExpressionPtr& expression)
@@ -152,11 +156,11 @@ namespace ren {
     }
 
     ivec4 operator*(int i, const ivec4& v) {
-        return ivec4(std::make_shared<FunctionCall>(&int_times_ivec4, std::make_shared<IntLiteral>(i), v.expression));
+        return ivec4(std::make_shared<FunctionCall>(&int_times_ivec4, int_(i).expression, v.expression));
     }
 
     int_ operator+(const int_& left, int right) {
-        return int_(std::make_shared<FunctionCall>(&int_plus, left.expression, std::make_shared<IntLiteral>(right)));
+        return int_(std::make_shared<FunctionCall>(&int_plus, left.expression, int_(right).expression));
     }
 
     vec4 operator+(const vec4& left, const vec4& right) {
