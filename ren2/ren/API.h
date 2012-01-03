@@ -188,7 +188,7 @@ namespace ren {
         {}
 
         T operator[](const int_& index) const {
-            return T(std::make_shared<Index>(expression, index.expression));
+            return T(std::make_shared<FunctionCall>(&vec4_index, expression, index.expression));
         }
     };
 

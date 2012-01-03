@@ -13,7 +13,6 @@ namespace ren {
     public:
         virtual void pushInput(const ID& id, Frequency frequency, Type type, AbstractValuePtr value) = 0;
         virtual void swizzle(const char* swizzle) = 0;
-        virtual void index() = 0;
         virtual void apply(const FunctionBase* function, unsigned argCount) = 0;
     };
 
@@ -87,17 +86,6 @@ namespace ren {
         }
 
         const char* const swizzle;
-    };
-
-    class Index : public Expression {
-    public:
-        Index(const ExpressionPtr& base, const ExpressionPtr& index)
-            : Expression(base->type.withoutArray(), {base, index})
-        {}
-
-        void walk(ExpressionWalker& w) {
-            w.index();
-        }
     };
 
     class FunctionCall : public Expression {

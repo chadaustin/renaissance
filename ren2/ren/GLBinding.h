@@ -93,27 +93,9 @@ namespace ren {
             stack.push((*p)[id].first.second);
         }
 
-        void pushInt(int i) {
-            char p[80];
-            sprintf(p, "%d", i);
-            stack.push(p);
-        }
-
-        void pushFloat(float f) {
-            char p[80];
-            sprintf(p, "%f", f);
-            stack.push(p);
-        }
-
         void swizzle(const char* swizzle) {
             std::string base(popTop());
             stack.push(base + "." + swizzle);
-        }
-
-        void index() {
-            std::string index(popTop());
-            std::string base(popTop());
-            stack.push(base + "[" + index + "]");
         }
 
         void apply(const FunctionBase* function, unsigned argCount) {
@@ -121,10 +103,16 @@ namespace ren {
             while (argCount--) {
                 args.push_back(popTop());
             }
-            if (function->is_operator) {
+            if (OPERATOR == function->function_type) {
                 verify(2 == function->signature.arguments.size());
                 verify(2 == args.size());
                 stack.push(std::string("(") + args[1] + " " + function->glsl_name + " " + args[0] + ")");
+            } else if (INDEX == function->function_type) {
+                verify(2 == function->signature.arguments.size());
+                verify(2 == args.size());
+                std::string index = args[0];
+                std::string array = args[1];
+                stack.push(array + "[" + index + "]");
             } else {
                 std::string n(function->glsl_name);
                 n += "(";

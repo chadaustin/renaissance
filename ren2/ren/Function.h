@@ -5,14 +5,20 @@
 
 namespace ren {
 
+    enum FunctionType {
+        FUNCTION,
+        OPERATOR,
+        INDEX,
+    };
+
     struct FunctionBase {
-        FunctionBase(bool is_operator, const char* glsl_name, const Signature& signature)
-            : is_operator(is_operator)
+        FunctionBase(FunctionType function_type, const char* glsl_name, const Signature& signature)
+            : function_type(function_type)
             , glsl_name(glsl_name)
             , signature(signature)
         {}
 
-        const bool is_operator;
+        const FunctionType function_type;
         const char* const glsl_name;
         const Signature signature;
     };
@@ -20,14 +26,21 @@ namespace ren {
     template<typename SignatureT>
     struct Function : FunctionBase {
         Function(const char* name)
-            : FunctionBase(false, name, getSignature<SignatureT>())
+            : FunctionBase(FUNCTION, name, getSignature<SignatureT>())
         {}
     };
 
     template<typename SignatureT>
     struct Operator : FunctionBase {
         Operator(const char* name)
-            : FunctionBase(true, name, getSignature<SignatureT>())
+            : FunctionBase(OPERATOR, name, getSignature<SignatureT>())
+        {}
+    };
+
+    template<typename SignatureT>
+    struct Index : FunctionBase {
+        Index()
+            : FunctionBase(INDEX, "???", getSignature<SignatureT>())
         {}
     };
 
@@ -42,4 +55,5 @@ namespace ren {
     Operator<mat4(mat4,mat4)> mat4_times_mat4("*");
     Operator<vec4(mat4,vec4)> mat4_times_vec4("*");
     Operator<ivec4(int,ivec4)> int_times_ivec4("*");
+    Index<vec4(vec4[],int)> vec4_index;
 }
