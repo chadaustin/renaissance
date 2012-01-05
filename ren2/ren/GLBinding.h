@@ -51,12 +51,10 @@ namespace ren {
             if (expressionNames.count(p)) {
                 stack.push(expressionNames[p]);
             } else if (p->operands.empty()) {
+                // input
                 p->walk(*this);
                 expressionNames[p] = getTop();
             } else {
-                for (auto o = p->operands.begin(); o != p->operands.end(); ++o) {
-                    walk(*o);
-                }
                 p->walk(*this);
                 std::string result = popTop();
                 std::string name = allocateLocalName();

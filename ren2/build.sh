@@ -13,9 +13,9 @@ mkdir -p bin
 $CC -o bin/ConstantOutput.exe test/ConstantOutput.cpp
 $CC -o bin/ConditionalSelection.exe test/ConditionalSelection.cpp
 $CC -o bin/OptionalSkinning.exe test/OptionalSkinning.cpp
-$CC -o bin/Skinning.exe test/Skinning.cpp
-$CC -o bin/Passthrough.exe test/Passthrough.cpp
-$CC -o bin/Transform.exe test/Transform.cpp
-$CC -o bin/ColorOutput.exe test/ColorOutput.cpp
-$CC -o bin/TexCoordOutput.exe test/TexCoordOutput.cpp
-$CC -o bin/Redundant.exe test/Redundant.cpp
+#$CC -o bin/Skinning.exe test/Skinning.cpp
+#$CC -o bin/Passthrough.exe test/Passthrough.cpp
+#$CC -o bin/Transform.exe test/Transform.cpp
+#$CC -o bin/ColorOutput.exe test/ColorOutput.cpp
+#$CC -o bin/TexCoordOutput.exe test/TexCoordOutput.cpp
+#$CC -o bin/Redundant.exe test/Redundant.cpp

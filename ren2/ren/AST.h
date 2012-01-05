@@ -9,14 +9,15 @@
 
 namespace ren {
 
+    REN_PTR(Expression);
+
     class ExpressionWalker {
     public:
+        virtual void walk(const ExpressionPtr& p) = 0;
         virtual void pushInput(const ID& id, Frequency frequency, Type type, AbstractValuePtr value) = 0;
         virtual void swizzle(const char* swizzle) = 0;
         virtual void apply(const FunctionBase* function, unsigned argCount) = 0;
     };
-
-    REN_PTR(Expression);
 
     inline Frequency getMaximumFrequency(const std::vector<ExpressionPtr>& operands);
 
@@ -70,6 +71,7 @@ namespace ren {
         const ID id;
 
         void walk(ExpressionWalker& w) {
+            verify(operands.empty());
             w.pushInput(id, frequency, type, value);
         }
     };
@@ -82,6 +84,9 @@ namespace ren {
         {}
 
         void walk(ExpressionWalker& w) {
+            for (auto o = operands.begin(); o != operands.end(); ++o) {
+                w.walk(*o);
+            }
             w.swizzle(swizzle);
         }
 
@@ -109,6 +114,9 @@ namespace ren {
         }
 
         void walk(ExpressionWalker& w) {
+            for (auto o = operands.begin(); o != operands.end(); ++o) {
+                w.walk(*o);
+            }
 #if 0
             // HACK: apply conditionals here
             if (function == &if4_) {
