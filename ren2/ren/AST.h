@@ -114,23 +114,22 @@ namespace ren {
         }
 
         void walk(ExpressionWalker& w) {
-            for (auto o = operands.begin(); o != operands.end(); ++o) {
-                w.walk(*o);
-            }
-#if 0
             // HACK: apply conditionals here
             if (function == &if4_) {
                 verify(3 == operands.size());
                 if (operands[0]->frequency == CONSTANT) {
                     if (operands[0]->evaluate<bool>()) {
-                        return operands[1]->walk(w);
+                        return w.walk(operands[1]);
                     } else {
-                        return operands[2]->walk(w);
+                        return w.walk(operands[2]);
                     }
                 }
+            } else {
+                for (auto o = operands.begin(); o != operands.end(); ++o) {
+                    w.walk(*o);
+                }
+                w.apply(function, operands.size());
             }
-#endif
-            w.apply(function, operands.size());
         }
 
         const FunctionBase* const function;
