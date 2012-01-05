@@ -6,17 +6,23 @@ if [ -x /opt/local/bin/g++-mp-4.6 ]; then
 else
     CXX=g++
 fi
-CC="$CXX -g -std=c++0x -Wall -Werror -I."
+CC="$CXX -g -std=c++0x -Wall -Werror"
 
 set -e
+set -x
 mkdir -p bin
-$CC -o bin/ConstantOutput.exe test/ConstantOutput.cpp
-$CC -o bin/ConditionalSelection.exe test/ConditionalSelection.cpp
-$CC -o bin/OptionalMorphing.exe test/OptionalMorphing.cpp
-$CC -o bin/OptionalSkinning.exe test/OptionalSkinning.cpp
-$CC -o bin/Skinning.exe test/Skinning.cpp
-$CC -o bin/Passthrough.exe test/Passthrough.cpp
-$CC -o bin/Transform.exe test/Transform.cpp
-$CC -o bin/ColorOutput.exe test/ColorOutput.cpp
-$CC -o bin/TexCoordOutput.exe test/TexCoordOutput.cpp
-$CC -o bin/Redundant.exe test/Redundant.cpp
+#$CC -I. -o ren/ren.h.gch ren/ren.h
+
+function test() {
+    $CC -I. -o bin/$1.exe test/$1.cpp
+}
+test ConstantOutput
+test ConditionalSelection
+test OptionalMorphing
+test OptionalSkinning
+test Skinning
+test Passthrough
+test Transform
+test ColorOutput
+test TexCoordOutput
+test Redundant
