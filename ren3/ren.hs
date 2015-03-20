@@ -120,11 +120,11 @@ data AttributeDesc = AttributeDesc Type String
                    | AttributeArrayDesc Type Int String
                    deriving (Eq, Ord)
 
-toUniformDesc :: GetRuntimeType t => Uniform t -> UniformDesc
-toUniformDesc (Uniform name) = UniformDesc (getRuntimeType (undefined :: Int)) name
+toUniformDesc :: forall t. GetRuntimeType t => Uniform t -> UniformDesc
+toUniformDesc (Uniform name) = UniformDesc (getRuntimeType (undefined :: t)) name
 
-toAttributeDesc :: GetRuntimeType t => Attribute t -> AttributeDesc
-toAttributeDesc (Attribute name) = AttributeDesc (getRuntimeType (undefined :: Int)) name
+toAttributeDesc :: forall t. GetRuntimeType t => Attribute t -> AttributeDesc
+toAttributeDesc (Attribute name) = AttributeDesc (getRuntimeType (undefined :: t)) name
 
 findUniforms :: VSOutput t -> Set.Set UniformDesc
 findUniforms (VSOutput _ expr) = find' expr
@@ -177,7 +177,7 @@ genUniform (UniformArrayDesc t size name) = "uniform " <> genType t <> " " <> na
 
 genAttribute :: AttributeDesc -> String
 genAttribute (AttributeDesc t name) = "attribute " <> genType t <> " " <> name <> ";\n"
-genAttribute (AttributeArrayDesc t size name) = "attribute " <> genType t <> " " <> name <> "[" <> show ";\n"
+genAttribute (AttributeArrayDesc t size name) = "attribute " <> genType t <> " " <> name <> "[" <> show size <> ";\n"
 
 genOutput :: VSOutput t -> String
 genOutput (VSOutput name e) = " " <> name <> "=" <> genCode e <> ";\n"
