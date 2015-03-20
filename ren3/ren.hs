@@ -47,11 +47,16 @@ type Vec4 = (Float, Float, Float, Float)
 data Mat2
 data Mat3
 data Mat4 = Mat4
+
+
+-- Proxy
+
+data Proxy a = Proxy
     
 -- getRuntimeType
 
 class GetRuntimeType a where
-    getRuntimeType :: a -> Type
+    getRuntimeType :: Proxy a -> Type
 
 instance GetRuntimeType Int where
     getRuntimeType _ = int
@@ -66,7 +71,7 @@ class RenderConstant a where
 instance RenderConstant Mat4 where
     renderConstant = const "Mat4"
 instance RenderConstant Vec4 where
-    renderConstant (x, y, z, w) = "vec4(" <> show x <> "," <> show y <> "," <> show z <> "," <> show z <> ")"
+    renderConstant (x, y, z, w) = "vec4(" <> show x <> "," <> show y <> "," <> show z <> "," <> show w <> ")"
 
 -- special fragment inputs: vec4 gl_FragCoord, bool gl_FrontFacing, vec2 gl_PointCoord
 
@@ -129,10 +134,10 @@ data AttributeDesc = AttributeDesc Type String
                    deriving (Eq, Ord)
 
 toUniformDesc :: forall t. GetRuntimeType t => Uniform t -> UniformDesc
-toUniformDesc (Uniform name) = UniformDesc (getRuntimeType (undefined :: t)) name
+toUniformDesc (Uniform name) = UniformDesc (getRuntimeType (Proxy :: Proxy t)) name
 
 toAttributeDesc :: forall t. GetRuntimeType t => Attribute t -> AttributeDesc
-toAttributeDesc (Attribute name) = AttributeDesc (getRuntimeType (undefined :: t)) name
+toAttributeDesc (Attribute name) = AttributeDesc (getRuntimeType (Proxy :: Proxy t)) name
 
 findUniforms :: VSOutput t -> Set.Set UniformDesc
 findUniforms (VSOutput _ expr) = find' expr
