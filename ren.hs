@@ -8,14 +8,16 @@ data ScalarType = SBool | SInt | SFloat
                 deriving (Show, Eq, Ord)
 data Arity = A2 | A3 | A4
            deriving (Show, Eq, Ord)
-data Type = TScalar ScalarType | TVec Arity ScalarType | Matrix Arity | Sampler2D | SamplerCube
+data Type = Scalar ScalarType | Vec Arity ScalarType | Matrix Arity | Sampler2D | SamplerCube
           deriving (Show, Eq, Ord)
 data Frequency = Constant | Batch | Vertex | Fragment
 data FT = FT Frequency Type
 
 data Uniform = Uniform Type String
+             | UniformArray Type Int String
              deriving (Show, Eq, Ord)
 data Attribute = Attribute Type String
+               | AttributeArray Type Int String
                deriving (Show, Eq, Ord)
 
 {-
@@ -25,18 +27,19 @@ data VertexShader = VertexShader
                     }
 -}
 
-float = TScalar SFloat
-bool = TScalar SBool
-int = TScalar SInt
-vec2 = TVec A2 SFloat
-vec3 = TVec A3 SFloat
-vec4 = TVec A4 SFloat
-bvec2 = TVec A2 SBool
-bvec3 = TVec A3 SBool
-bvec4 = TVec A4 SBool
-ivec2 = TVec A2 SInt
-ivec3 = TVec A3 SInt
-ivec4 = TVec A4 SInt
+float, bool, int, vec2, vec3, vec4, bvec2, bvec3, bvec4, ivec2, ivec3, ivec4, mat2, mat3, mat4 :: Type
+float = Scalar SFloat
+bool = Scalar SBool
+int = Scalar SInt
+vec2 = Vec A2 SFloat
+vec3 = Vec A3 SFloat
+vec4 = Vec A4 SFloat
+bvec2 = Vec A2 SBool
+bvec3 = Vec A3 SBool
+bvec4 = Vec A4 SBool
+ivec2 = Vec A2 SInt
+ivec3 = Vec A3 SInt
+ivec4 = Vec A4 SInt
 mat2 = Matrix A2
 mat3 = Matrix A3
 mat4 = Matrix A4
@@ -95,10 +98,10 @@ genArity A3 = "3"
 genArity A4 = "4"
 
 genType :: Type -> String
-genType (TScalar SBool) = "bool"
-genType (TScalar SInt) = "int"
-genType (TScalar SFloat) = "float"
-genType (TVec arity st) = vecPrefix st <> "vec" <> genArity arity
+genType (Scalar SBool) = "bool"
+genType (Scalar SInt) = "int"
+genType (Scalar SFloat) = "float"
+genType (Vec arity st) = vecPrefix st <> "vec" <> genArity arity
   where
     vecPrefix SBool = "b"
     vecPrefix SInt = "i"
@@ -109,9 +112,11 @@ genType SamplerCube = "samplerCube"
          
 genUniform :: Uniform -> String
 genUniform (Uniform t name) = "uniform " <> genType t <> " " <> name <> ";\n"
+genUniform (UniformArray t size name) = "uniform " <> genType t <> " " <> name <> "[" <> show size <> "];\n"
 
 genAttribute :: Attribute -> String
 genAttribute (Attribute t name) = "attribute " <> genType t <> " " <> name <> ";\n"
+genAttribute (AttributeArray t size name) = "attribute " <> genType t <> " " <> name <> "[" <> show ";\n"
 
 genOutput :: VSOutput -> String
 genOutput (VSOutput name _t e) = " " <> name <> "=" <> genCode e <> ";\n"
@@ -123,7 +128,31 @@ genShader outputs =
     "void main() {\n" <>
     foldMap genOutput outputs <>
     "}\n"
-    
+
+emitProgram :: Program -> IO String
+emitProgram Program{..} =
+    putStrLn "// vertex shader"
+    putStrLn $ genShader [VSOutput "gl_Position" vec4 gl_Position]
+
+    putStrLn "// fragment shader"
+    putStrLn $ genShader [FSOutput "gl_FragColor" vec4 gl_FragColor]
+
+data Program = Program
+               { gl_Position :: VSOutput -- vec4
+               , gl_PointSize :: Maybe VSOutput -- float
+
+               , gl_FragColor :: Maybe FSOutput -- vec4
+               , gl_FragData :: [FSOutput] -- vec4
+               }
+
+makeBasicProgram :: VSOutput -> FSOutput -> Program
+makeBasicProgram gl_Position gl_FragColor =
+    Program
+    { gl_Position = gl_Position
+    , gl_PointSize = Nothing
+    , gl_FragColor = Just gl_FragColor
+    , gl_FragData = []
+    }
 
 main  :: IO ()
 main = do
@@ -133,5 +162,8 @@ main = do
         position = Attribute vec4 "position"
 
     let gl_Position = projMatrix `mult` viewMatrix `mult` modelMatrix `mult` position
+    let gl_FragColor = ConstantVec4 1 1 1 1
+    let program = makeBasicProgram gl_Position gl_FragColor
+
+    emitProgram program
     
-    putStrLn $ genShader [VSOutput "gl_Position" vec4 gl_Position]
