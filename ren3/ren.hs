@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RecordWildCards, TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, TypeSynonymInstances, FlexibleInstances, ScopedTypeVariables #-}
 
 module Main where
 
@@ -12,17 +12,17 @@ data Arity = A2 | A3 | A4
            deriving (Show, Eq, Ord)
 data Type = Scalar ScalarType | Vec Arity ScalarType | Matrix Arity | Sampler2D | SamplerCube
           deriving (Show, Eq, Ord)
-data Frequency = Constant | Batch | Vertex | Fragment
+data Frequency = FConstant | FBatch | FVertex | FFragment
 data FT = FT Frequency Type
 
-data Uniform = Uniform Type String
-             | UniformArray Type Int String
-             deriving (Show, Eq, Ord)
-data Attribute = Attribute Type String
-               | AttributeArray Type Int String
+data Uniform t = Uniform String
+               | UniformArray Int String
                deriving (Show, Eq, Ord)
-data ConstantVec4 = ConstantVec4 Float Float Float Float
-                  deriving (Show, Eq, Ord)
+data Attribute t = Attribute String
+                 | AttributeArray Int String
+                 deriving (Show, Eq, Ord)
+data Constant t = Constant t
+                deriving (Show, Eq, Ord)
 
 float, bool, int, vec2, vec3, vec4, bvec2, bvec3, bvec4, ivec2, ivec3, ivec4, mat2, mat3, mat4 :: Type
 float = Scalar SFloat
@@ -41,14 +41,35 @@ mat2 = Matrix A2
 mat3 = Matrix A3
 mat4 = Matrix A4
 
-data Expression = Mult Expression Expression
-                | ReadUniform Uniform
-                | ReadAttribute Attribute
-                | ReadConstant ConstantVec4
-                deriving (Show, Eq, Ord)
+type Vec2 = (Float, Float)
+type Vec3 = (Float, Float, Float)
+type Vec4 = (Float, Float, Float, Float)
+data Mat2
+data Mat3
+data Mat4
 
+    
+-- getRuntimeType
+
+class GetRuntimeType a where
+    getRuntimeType :: a -> Type
+
+instance GetRuntimeType Int where
+    getRuntimeType _ = int
+instance GetRuntimeType Vec4 where
+    getRuntimeType _ = vec4
+instance GetRuntimeType Mat4 where
+    getRuntimeType _ = mat4
+
+-- special fragment inputs: vec4 gl_FragCoord, bool gl_FrontFacing, vec2 gl_PointCoord
+
+data Expression t = forall a b. (t ~ MultResult a b) => Mult (Expression a) (Expression b)
+                | GetRuntimeType t => ReadUniform (Uniform t)
+                | GetRuntimeType t => ReadAttribute (Attribute t)
+                | ReadConstant (Constant t)
+                         
 class AsExpr a where
-    asExpr :: a -> Expression
+    asExpr :: GetRuntimeType t => a t -> Expression t
 
 instance AsExpr Expression where
     asExpr = id
@@ -59,39 +80,77 @@ instance AsExpr Uniform where
 instance AsExpr Attribute where
     asExpr = ReadAttribute
 
-instance AsExpr ConstantVec4 where
+instance AsExpr Constant where
     asExpr = ReadConstant
 
-data VSOutput = VSOutput String Type Expression
-data FSOutput = FSOutput String Type Expression
+data VSOutput t = VSOutput String (Expression t)
+data FSOutput t = FSOutput String (Expression t)
 
-mult :: (AsExpr a, AsExpr b) => a -> b -> Expression
-mult lhs rhs = Mult (asExpr lhs) (asExpr rhs)
+
+-- mult
+
+-- multiplication
+-- float * vec a
+-- vec a * float
+-- float * mat a
+-- mat a * float
+-- int * ivec a
+-- ivec a * int
+-- mat a * vec a
+-- vec * vec
+-- mat * mat
+--type family MultResult 
+class CanMultiply a b where
+    type MultResult a b
+instance CanMultiply Mat4 Vec4 where
+    type MultResult Mat4 Vec4 = Vec4
+instance CanMultiply Mat4 Mat4 where
+    type MultResult Mat4 Mat4 = Mat4
+
+mult :: (CanMultiply a b) => Expression a -> Expression b -> Expression (MultResult a b)
+mult lhs rhs = Mult lhs rhs
+
+
 infixl 7 `mult`
 
-findUniforms :: VSOutput -> Set.Set Uniform
-findUniforms (VSOutput _ _ expr) = find' expr
+data UniformDesc = UniformDesc Type String
+                 | UniformArrayDesc Type Int String
+                 deriving (Eq, Ord)
+data AttributeDesc = AttributeDesc Type String
+                   | AttributeArrayDesc Type Int String
+                   deriving (Eq, Ord)
+
+toUniformDesc :: GetRuntimeType t => Uniform t -> UniformDesc
+toUniformDesc (Uniform name) = UniformDesc (getRuntimeType (undefined :: Int)) name
+
+toAttributeDesc :: GetRuntimeType t => Attribute t -> AttributeDesc
+toAttributeDesc (Attribute name) = AttributeDesc (getRuntimeType (undefined :: Int)) name
+
+findUniforms :: VSOutput t -> Set.Set UniformDesc
+findUniforms (VSOutput _ expr) = find' expr
   where
+    find' :: Expression a -> Set.Set UniformDesc
     find' (Mult lhs rhs) = Set.union (find' lhs) (find' rhs)
-    find' (ReadUniform u) = Set.singleton u
+    find' (ReadUniform u) = Set.singleton $ toUniformDesc u
     find' (ReadAttribute _) = Set.empty
 
-findAttributes :: VSOutput -> Set.Set Attribute
-findAttributes (VSOutput _ _ expr) = find' expr
+findAttributes :: VSOutput t -> Set.Set AttributeDesc
+findAttributes (VSOutput _ expr) = find' expr
   where
+    find' :: Expression a -> Set.Set AttributeDesc
     find' (Mult lhs rhs) = Set.union (find' lhs) (find' rhs)
     find' (ReadUniform _) = Set.empty
-    find' (ReadAttribute a) = Set.singleton a
+    find' (ReadAttribute a) = Set.singleton $ toAttributeDesc a
 
-findAllUniforms :: [VSOutput] -> Set.Set Uniform
+findAllUniforms :: [VSOutput t] -> Set.Set UniformDesc
 findAllUniforms outputs = Set.unions $ fmap findUniforms outputs
 
-findAllAttributes :: [VSOutput] -> Set.Set Attribute
+findAllAttributes :: [VSOutput t] -> Set.Set AttributeDesc
 findAllAttributes outputs = Set.unions $ fmap findAttributes outputs
 
-genCode :: Expression -> String
-genCode (ReadUniform (Uniform _ n)) = n
-genCode (ReadAttribute (Attribute _ n)) = n
+genCode :: Expression a -> String
+genCode (ReadUniform (Uniform n)) = n
+genCode (ReadAttribute (Attribute n)) = n
 genCode (Mult lhs rhs) = "(" <> genCode lhs <> "*" <> genCode rhs <> ")"
 
 genArity :: Arity -> String
@@ -112,18 +171,18 @@ genType (Matrix arity) = "mat" <> genArity arity
 genType Sampler2D = "sampler2D"
 genType SamplerCube = "samplerCube"
          
-genUniform :: Uniform -> String
-genUniform (Uniform t name) = "uniform " <> genType t <> " " <> name <> ";\n"
-genUniform (UniformArray t size name) = "uniform " <> genType t <> " " <> name <> "[" <> show size <> "];\n"
+genUniform :: UniformDesc -> String
+genUniform (UniformDesc t name) = "uniform " <> genType t <> " " <> name <> ";\n"
+genUniform (UniformArrayDesc t size name) = "uniform " <> genType t <> " " <> name <> "[" <> show size <> "];\n"
 
-genAttribute :: Attribute -> String
-genAttribute (Attribute t name) = "attribute " <> genType t <> " " <> name <> ";\n"
-genAttribute (AttributeArray t size name) = "attribute " <> genType t <> " " <> name <> "[" <> show ";\n"
+genAttribute :: AttributeDesc -> String
+genAttribute (AttributeDesc t name) = "attribute " <> genType t <> " " <> name <> ";\n"
+genAttribute (AttributeArrayDesc t size name) = "attribute " <> genType t <> " " <> name <> "[" <> show ";\n"
 
-genOutput :: VSOutput -> String
-genOutput (VSOutput name _t e) = " " <> name <> "=" <> genCode e <> ";\n"
+genOutput :: VSOutput t -> String
+genOutput (VSOutput name e) = " " <> name <> "=" <> genCode e <> ";\n"
 
-genShader :: [VSOutput] -> String
+genShader :: [VSOutput t] -> String
 genShader outputs =
     (foldMap genUniform $ Set.toList $ findAllUniforms outputs) <>
     (foldMap genAttribute $ Set.toList $ findAllAttributes outputs) <>
@@ -140,32 +199,34 @@ emitProgram Program{..} = do
     --putStrLn $ genShader [FSOutput "gl_FragColor" vec4 gl_FragColor]
 
 data Program = Program
-               { gl_Position :: VSOutput -- vec4
-               , gl_PointSize :: Maybe VSOutput -- float
+               { gl_Position :: VSOutput Vec4
+               , gl_PointSize :: Maybe (VSOutput Float)
 
-               , gl_FragColor :: Maybe FSOutput -- vec4
-               , gl_FragData :: [FSOutput] -- vec4
+               , gl_FragColor :: Maybe (FSOutput Vec4)
+               , gl_FragData :: [FSOutput Vec4]
+               , gl_Discard :: Maybe (FSOutput Bool)
                }
 
-makeBasicProgram :: (AsExpr a, AsExpr b) => a -> b -> Program
+makeBasicProgram :: Expression Vec4 -> Expression Vec4 -> Program
 makeBasicProgram gl_Position gl_FragColor =
     Program
-    { gl_Position = VSOutput "gl_Position" vec4 (asExpr gl_Position)
+    { gl_Position = VSOutput "gl_Position" gl_Position
     , gl_PointSize = Nothing
-    , gl_FragColor = Just $ FSOutput "gl_FragColor" vec4 (asExpr gl_FragColor)
+    , gl_FragColor = Just $ FSOutput "gl_FragColor" gl_FragColor
     , gl_FragData = []
+    , gl_Discard = Nothing
     }
 
 main  :: IO ()
 main = do
-    let modelMatrix = Uniform mat4 "modelMatrix"
-        viewMatrix = Uniform mat4 "viewMatrix"
-        projMatrix = Uniform mat4 "projMatrix"
-        position = Attribute vec4 "position"
+    let modelMatrix = Uniform "modelMatrix" :: Uniform Mat4
+        viewMatrix = Uniform "viewMatrix" :: Uniform Mat4
+        projMatrix = Uniform "projMatrix" :: Uniform Mat4
+        position = Attribute "position" :: Attribute Vec4
 
-    let gl_Position = projMatrix `mult` viewMatrix `mult` modelMatrix `mult` position
-    let gl_FragColor = ConstantVec4 1 1 1 1
-    let program = makeBasicProgram gl_Position gl_FragColor
+    let gl_Position = asExpr projMatrix `mult` asExpr viewMatrix `mult` asExpr modelMatrix `mult` asExpr position
+    let gl_FragColor = Constant (1, 1, 1, 1)
+    let program = makeBasicProgram (asExpr gl_Position) (asExpr gl_FragColor)
 
     emitProgram program
     
