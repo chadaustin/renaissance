@@ -46,8 +46,7 @@ type Vec3 = (Float, Float, Float)
 type Vec4 = (Float, Float, Float, Float)
 data Mat2
 data Mat3
-data Mat4
-
+data Mat4 = Mat4
     
 -- getRuntimeType
 
@@ -61,15 +60,23 @@ instance GetRuntimeType Vec4 where
 instance GetRuntimeType Mat4 where
     getRuntimeType _ = mat4
 
+class RenderConstant a where
+    renderConstant :: a -> String
+
+instance RenderConstant Mat4 where
+    renderConstant = const "Mat4"
+instance RenderConstant Vec4 where
+    renderConstant (x, y, z, w) = "vec4(" <> show x <> "," <> show y <> "," <> show z <> "," <> show z <> ")"
+
 -- special fragment inputs: vec4 gl_FragCoord, bool gl_FrontFacing, vec2 gl_PointCoord
 
 data Expression t = forall a b. (t ~ MultResult a b) => Mult (Expression a) (Expression b)
                 | GetRuntimeType t => ReadUniform (Uniform t)
                 | GetRuntimeType t => ReadAttribute (Attribute t)
-                | ReadConstant (Constant t)
+                | RenderConstant t => ReadConstant (Constant t)
                          
 class AsExpr a where
-    asExpr :: GetRuntimeType t => a t -> Expression t
+    asExpr :: (RenderConstant t, GetRuntimeType t) => a t -> Expression t
 
 instance AsExpr Expression where
     asExpr = id
@@ -84,7 +91,8 @@ instance AsExpr Constant where
     asExpr = ReadConstant
 
 data VSOutput t = VSOutput String (Expression t)
-data FSOutput t = FSOutput String (Expression t)
+type FSOutput = VSOutput
+--data FSOutput t = FSOutput String (Expression t)
 
 
 -- mult
@@ -133,6 +141,7 @@ findUniforms (VSOutput _ expr) = find' expr
     find' (Mult lhs rhs) = Set.union (find' lhs) (find' rhs)
     find' (ReadUniform u) = Set.singleton $ toUniformDesc u
     find' (ReadAttribute _) = Set.empty
+    find' (ReadConstant _) = Set.empty
 
 findAttributes :: VSOutput t -> Set.Set AttributeDesc
 findAttributes (VSOutput _ expr) = find' expr
@@ -141,7 +150,8 @@ findAttributes (VSOutput _ expr) = find' expr
     find' (Mult lhs rhs) = Set.union (find' lhs) (find' rhs)
     find' (ReadUniform _) = Set.empty
     find' (ReadAttribute a) = Set.singleton $ toAttributeDesc a
-
+    find' (ReadConstant _) = Set.empty
+    
 findAllUniforms :: [VSOutput t] -> Set.Set UniformDesc
 findAllUniforms outputs = Set.unions $ fmap findUniforms outputs
 
@@ -152,6 +162,7 @@ genCode :: Expression a -> String
 genCode (ReadUniform (Uniform n)) = n
 genCode (ReadAttribute (Attribute n)) = n
 genCode (Mult lhs rhs) = "(" <> genCode lhs <> "*" <> genCode rhs <> ")"
+genCode (ReadConstant (Constant k)) = renderConstant k
 
 genArity :: Arity -> String
 genArity A2 = "2"
@@ -196,13 +207,13 @@ emitProgram Program{..} = do
     putStrLn $ genShader [gl_Position]
 
     putStrLn "// fragment shader"
-    --putStrLn $ genShader [FSOutput "gl_FragColor" vec4 gl_FragColor]
+    putStrLn $ genShader [gl_FragColor]
 
 data Program = Program
                { gl_Position :: VSOutput Vec4
                , gl_PointSize :: Maybe (VSOutput Float)
 
-               , gl_FragColor :: Maybe (FSOutput Vec4)
+               , gl_FragColor :: FSOutput Vec4
                , gl_FragData :: [FSOutput Vec4]
                , gl_Discard :: Maybe (FSOutput Bool)
                }
@@ -212,7 +223,7 @@ makeBasicProgram gl_Position gl_FragColor =
     Program
     { gl_Position = VSOutput "gl_Position" gl_Position
     , gl_PointSize = Nothing
-    , gl_FragColor = Just $ FSOutput "gl_FragColor" gl_FragColor
+    , gl_FragColor = VSOutput "gl_FragColor" gl_FragColor
     , gl_FragData = []
     , gl_Discard = Nothing
     }
