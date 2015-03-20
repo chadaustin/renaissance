@@ -1,3 +1,5 @@
+{-# LANGUAGE RecordWildCards #-}
+
 module Main where
 
 import Data.Monoid
@@ -19,13 +21,8 @@ data Uniform = Uniform Type String
 data Attribute = Attribute Type String
                | AttributeArray Type Int String
                deriving (Show, Eq, Ord)
-
-{-
-data Output t f = Fragment 
-data VertexShader = VertexShader
-                    { gl_Position :: Output Vec4f
-                    }
--}
+data ConstantVec4 = ConstantVec4 Float Float Float Float
+                  deriving (Show, Eq, Ord)
 
 float, bool, int, vec2, vec3, vec4, bvec2, bvec3, bvec4, ivec2, ivec3, ivec4, mat2, mat3, mat4 :: Type
 float = Scalar SFloat
@@ -47,6 +44,7 @@ mat4 = Matrix A4
 data Expression = Mult Expression Expression
                 | ReadUniform Uniform
                 | ReadAttribute Attribute
+                | ReadConstant ConstantVec4
                 deriving (Show, Eq, Ord)
 
 class AsExpr a where
@@ -61,7 +59,11 @@ instance AsExpr Uniform where
 instance AsExpr Attribute where
     asExpr = ReadAttribute
 
+instance AsExpr ConstantVec4 where
+    asExpr = ReadConstant
+
 data VSOutput = VSOutput String Type Expression
+data FSOutput = FSOutput String Type Expression
 
 mult :: (AsExpr a, AsExpr b) => a -> b -> Expression
 mult lhs rhs = Mult (asExpr lhs) (asExpr rhs)
@@ -129,13 +131,13 @@ genShader outputs =
     foldMap genOutput outputs <>
     "}\n"
 
-emitProgram :: Program -> IO String
-emitProgram Program{..} =
+emitProgram :: Program -> IO ()
+emitProgram Program{..} = do
     putStrLn "// vertex shader"
-    putStrLn $ genShader [VSOutput "gl_Position" vec4 gl_Position]
+    putStrLn $ genShader [gl_Position]
 
     putStrLn "// fragment shader"
-    putStrLn $ genShader [FSOutput "gl_FragColor" vec4 gl_FragColor]
+    --putStrLn $ genShader [FSOutput "gl_FragColor" vec4 gl_FragColor]
 
 data Program = Program
                { gl_Position :: VSOutput -- vec4
@@ -145,12 +147,12 @@ data Program = Program
                , gl_FragData :: [FSOutput] -- vec4
                }
 
-makeBasicProgram :: VSOutput -> FSOutput -> Program
+makeBasicProgram :: (AsExpr a, AsExpr b) => a -> b -> Program
 makeBasicProgram gl_Position gl_FragColor =
     Program
-    { gl_Position = gl_Position
+    { gl_Position = VSOutput "gl_Position" vec4 (asExpr gl_Position)
     , gl_PointSize = Nothing
-    , gl_FragColor = Just gl_FragColor
+    , gl_FragColor = Just $ FSOutput "gl_FragColor" vec4 (asExpr gl_FragColor)
     , gl_FragData = []
     }
 
