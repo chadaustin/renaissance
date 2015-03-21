@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards, TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, TypeSynonymInstances, FlexibleInstances, ScopedTypeVariables #-}
+{-# LANGUAGE RecordWildCards, TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, TypeSynonymInstances, FlexibleInstances, ScopedTypeVariables, GADTs #-}
 
 module Main where
 
@@ -75,10 +75,11 @@ instance RenderConstant Vec4 where
 
 -- special fragment inputs: vec4 gl_FragCoord, bool gl_FrontFacing, vec2 gl_PointCoord
 
-data Expression t = forall a b. (t ~ MultResult a b) => Mult (Expression a) (Expression b)
-                | GetRuntimeType t => ReadUniform (Uniform t)
-                | GetRuntimeType t => ReadAttribute (Attribute t)
-                | RenderConstant t => ReadConstant (Constant t)
+data Expression t where
+    Mult :: Expression a -> Expression b -> Expression (MultResult a b)
+    ReadUniform :: GetRuntimeType t => Uniform t -> Expression t
+    ReadAttribute :: GetRuntimeType t => Attribute t -> Expression t
+    ReadConstant :: RenderConstant t => Constant t -> Expression t
                          
 class AsExpr a where
     asExpr :: (RenderConstant t, GetRuntimeType t) => a t -> Expression t
