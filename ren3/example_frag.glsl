@@ -1,25 +1,9 @@
-// --------------------
-//       defines
-// --------------------
- 
-#ifdef GL_ES
-precision highp float;
-#endif
- 
-#define DIRECT_LIGHT_COUNT 3
-#define POINT_LIGHT_COUNT 0
-#define SPOT_LIGHT_COUNT 0
- 
-// --------------------
-//       uniforms
-// --------------------
+const int DIRECT_LIGHT_COUNT = 3
+const int POINT_LIGHT_COUNT = 0
+const int SPOT_LIGHT_COUNT = 0
  
 uniform vec3 uDirectLightDirections[DIRECT_LIGHT_COUNT]; // x, y, z
 uniform vec4 uDirectLightColors[DIRECT_LIGHT_COUNT];     // r, g, b, 1/(r*r)--(w component not used)
- 
-// --------------------
-//       varyings
-// --------------------
  
 varying vec2 fTexCoord;
 varying vec3 fAmbient;
@@ -28,10 +12,6 @@ varying vec3 fWorldPos;
 varying vec3 fNormal;
 varying vec4 fTangent;
 varying vec4 fColor;
- 
-// --------------------
-//   type definitions
-// --------------------
  
 struct ShaderState {
     vec3 ambient;
@@ -47,12 +27,7 @@ struct ShaderState {
     vec4 albedo;
     vec4 final;
 };
-// TODO: @@@ until custom modules are revised
 #define FragmentState ShaderState
- 
-// --------------------
-//   color functions
-// --------------------
  
 vec3 clampColor(vec3 c) {
     // This transform desaturates color ahead of clamping
@@ -98,73 +73,13 @@ void directLight(inout ShaderState ss) {
 //   state functions
 // --------------------
  
-void initStateDiffuse(inout ShaderState ss) {
-    ss.diffuse = vec3(0.0);
-}
-void varyInStateTexture(inout ShaderState ss) {
-    ss.texCoord = fTexCoord;
-}
-void varyInStateAmbient(inout ShaderState ss) {
-    ss.ambient = fAmbient;
-}
-void varyInStateColor(inout ShaderState ss) {
-    ss.color = fColor;
-    ss.albedo = ss.color;
-}
-void varyInStateEye(inout ShaderState ss) {
-    ss.eye = fEye;
-}
-void varyInStateEyeNormalize(inout ShaderState ss) {
-    ss.eye = normalize(fEye);
-}
-void varyInStatePosition(inout ShaderState ss) {
-    ss.worldPosition = fWorldPos;
-}
-void varyInStateNormal(inout ShaderState ss) {
-    ss.normal = fNormal;
-}
-void varyInStateNormalNormalize(inout ShaderState ss) {
-    ss.normal = normalize(fNormal);
-}
-void varyInStateTangent(inout ShaderState ss) {
-    ss.tangent = fTangent;
-}
-void varyInStateTangentNormalize(inout ShaderState ss) {
-    ss.tangent = vec4(normalize(fTangent.xyz), fTangent.w);
-}
-void initStateFinal(inout ShaderState ss) {
-    ss.final = vec4(vec3(0.0), 1.0);
-}
-void outputStateFinal(inout ShaderState ss) {
-    gl_FragColor = ss.final;
-}
- 
-// --------------------
-//       modules
-// --------------------
- 
 void LightingDiffuse(inout ShaderState ss) {
     ss.final.rgb = linearTosRGB(ss.albedo.rgb * clampColor(ss.ambient + ss.diffuse));
     ss.final.a = ss.albedo.a;
 }
+
 uniform vec3 uGameObjectFadeParam;
-void GameObjectFadeByDiscarding(inout FragmentState s) {
-    if (uGameObjectFadeParam[0] == 0.) {
-        return; 
-    }
-    if (uGameObjectFadeParam[0] < 0.) {
-        discard; 
-    }
-    float coorModX = mod(gl_FragCoord.x, uGameObjectFadeParam[1]);
-    float coorModY = mod(gl_FragCoord.y, uGameObjectFadeParam[1]);
-    bool discardX = (coorModX < uGameObjectFadeParam[2]);
-    bool discardY = (coorModY < uGameObjectFadeParam[2]);
-    if ((uGameObjectFadeParam[0] < 1.5) && discardX && discardY) {
-        discard;
-    } else if ((uGameObjectFadeParam[0] > 1.5) && (discardX || discardY)) {
-        discard;
-    }
-}
+
 uniform sampler2D tDiffuseMap0;
  
 void AlbedoMap(inout ShaderState ss) {
@@ -185,62 +100,55 @@ uniform float uRimReachStart;
 uniform float uRimReachEnd;
 uniform vec4 uRimColor;
  
-void Rim(inout ShaderState s) {
-    float dot = dot(s.eye, s.normal);
-    float rimValue = 1.0 - dot;
-    vec3 tmpRimColor = mix(s.final.rgb, uRimColor.rgb, uRimFactor);
-    float rimReach = 1.0 - smoothstep(uRimReachStart, uRimReachEnd, dot);
-    s.final.rgb = mix(s.final.rgb, tmpRimColor.rgb, rimReach * s.final.a);
-}
 uniform vec4 uFogColor;
- 
+
 varying float fFogIntensity;
  
-void LinearFogFinal(inout ShaderState s) {
-    s.final.rgb = mix(s.final.rgb, uFogColor.rgb * s.final.a, fFogIntensity);
-}
- 
-// ====================
-//       M A I N
-// ====================
- 
 void main() {
-    //
-    // state initialization
-    //
     ShaderState ss;
-    varyInStateTexture(ss);
-    varyInStateAmbient(ss);
-    varyInStateColor(ss);
-    varyInStateEyeNormalize(ss);
-    varyInStatePosition(ss);
-    varyInStateNormalNormalize(ss);
-    varyInStateTangentNormalize(ss);
-    initStateDiffuse(ss);
-    initStateFinal(ss);
-    //
+    ss.texCoord = fTexCoord;
+    ss.ambient = fAmbient;
+    ss.color = fColor;
+    ss.albedo = ss.color;
+    ss.eye = normalize(fEye);
+    ss.worldPosition = fWorldPos;
+    ss.normal = normalize(fNormal);
+    ss.tangent = vec4(normalize(fTangent.xyz), fTangent.w);
+    ss.diffuse = vec3(0.0);
+    ss.final = vec4(vec3(0.0), 1.0);
+
     // call texturing modules
-    //
     AlbedoMap(ss);
-    //
+
     // call light functions
-    //
     directLight(ss);
-    //
+
     // call lighting modules
-    //
     LightingDiffuse(ss);
-    //
+
     // call post-lightings modules
-    //
-    GameObjectFadeByDiscarding(ss);
-    //
-    // call post-texturing modules
-    //
-    Rim(ss);
-    LinearFogFinal(ss);
-    //
-    // output fragment color
-    //
-    outputStateFinal(ss);
+
+    if (uGameObjectFadeParam[0] != 0.) {
+        if (uGameObjectFadeParam[0] < 0.) {
+            discard; 
+        }
+        float coorModX = mod(gl_FragCoord.x, uGameObjectFadeParam[1]);
+        float coorModY = mod(gl_FragCoord.y, uGameObjectFadeParam[1]);
+        bool discardX = (coorModX < uGameObjectFadeParam[2]);
+        bool discardY = (coorModY < uGameObjectFadeParam[2]);
+        if ((uGameObjectFadeParam[0] < 1.5) && discardX && discardY) {
+            discard;
+        } else if ((uGameObjectFadeParam[0] > 1.5) && (discardX || discardY)) {
+            discard;
+        }
+    }
+
+    float dot = dot(ss.eye, ss.normal);
+    float rimValue = 1.0 - dot;
+    vec3 tmpRimColor = mix(ss.final.rgb, uRimColor.rgb, uRimFactor);
+    float rimReach = 1.0 - smoothstep(uRimReachStart, uRimReachEnd, dot);
+    ss.final.rgb = mix(ss.final.rgb, tmpRimColor.rgb, rimReach * ss.final.a);
+
+    ss.final.rgb = mix(ss.final.rgb, uFogColor.rgb * ss.final.a, fFogIntensity);
+    gl_FragColor = ss.final;
 }

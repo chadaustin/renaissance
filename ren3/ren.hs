@@ -57,7 +57,8 @@ data Proxy a = Proxy
 
 class GetRuntimeType a where
     getRuntimeType :: Proxy a -> Type
-
+instance GetRuntimeType Bool where
+    getRuntimeType _ = bool
 instance GetRuntimeType Int where
     getRuntimeType _ = int
 instance GetRuntimeType Vec4 where
@@ -67,7 +68,8 @@ instance GetRuntimeType Mat4 where
 
 class RenderConstant a where
     renderConstant :: a -> String
-
+instance RenderConstant Bool where
+    renderConstant t = if t then "true" else "false"
 instance RenderConstant Mat4 where
     renderConstant = const "Mat4"
 instance RenderConstant Vec4 where
@@ -77,6 +79,7 @@ instance RenderConstant Vec4 where
 
 data Expression t where
     Mult :: Expression a -> Expression b -> Expression (MultResult a b)
+    IfThenElse :: Expression Bool -> Expression a -> Expression a -> Expression a
     ReadUniform :: GetRuntimeType t => Uniform t -> Expression t
     ReadAttribute :: GetRuntimeType t => Attribute t -> Expression t
     ReadConstant :: RenderConstant t => Constant t -> Expression t
@@ -118,11 +121,12 @@ type family MultResult a b
 type instance MultResult Mat4 Vec4 = Vec4
 type instance MultResult Mat4 Mat4 = Mat4
 
-mult :: Expression a -> Expression b -> Expression (MultResult a b)
-mult lhs rhs = Mult lhs rhs
-
-
+mult :: (AsExpr e, AsExpr f, GetRuntimeType a, RenderConstant a, GetRuntimeType b, RenderConstant b) => e a -> f b -> Expression (MultResult a b)
+mult lhs rhs = Mult (asExpr lhs) (asExpr rhs)
 infixl 7 `mult`
+
+ifThenElse :: Expression Bool -> Expression a -> Expression a -> Expression a
+ifThenElse = IfThenElse
 
 data UniformDesc = UniformDesc Type String
                  | UniformArrayDesc Type Int String
@@ -142,6 +146,7 @@ findUniforms (VSOutput _ expr) = find' expr
   where
     find' :: Expression a -> Set.Set UniformDesc
     find' (Mult lhs rhs) = Set.union (find' lhs) (find' rhs)
+    find' (IfThenElse pred ifTrue ifFalse) = Set.unions [find' pred, find' ifTrue, find' ifFalse]
     find' (ReadUniform u) = Set.singleton $ toUniformDesc u
     find' (ReadAttribute _) = Set.empty
     find' (ReadConstant _) = Set.empty
@@ -151,6 +156,7 @@ findAttributes (VSOutput _ expr) = find' expr
   where
     find' :: Expression a -> Set.Set AttributeDesc
     find' (Mult lhs rhs) = Set.union (find' lhs) (find' rhs)
+    find' (IfThenElse pred ifTrue ifFalse) = Set.unions [find' pred, find' ifTrue, find' ifFalse]
     find' (ReadUniform _) = Set.empty
     find' (ReadAttribute a) = Set.singleton $ toAttributeDesc a
     find' (ReadConstant _) = Set.empty
@@ -162,9 +168,10 @@ findAllAttributes :: [VSOutput t] -> Set.Set AttributeDesc
 findAllAttributes outputs = Set.unions $ fmap findAttributes outputs
 
 genCode :: Expression a -> String
+genCode (Mult lhs rhs) = "(" <> genCode lhs <> "*" <> genCode rhs <> ")"
+genCode (IfThenElse pred lhs rhs) = "(" <> genCode pred <> "?" <> genCode lhs <> ":" <> genCode rhs <> ")"
 genCode (ReadUniform (Uniform n)) = n
 genCode (ReadAttribute (Attribute n)) = n
-genCode (Mult lhs rhs) = "(" <> genCode lhs <> "*" <> genCode rhs <> ")"
 genCode (ReadConstant (Constant k)) = renderConstant k
 
 genArity :: Arity -> String
@@ -221,12 +228,12 @@ data Program = Program
                , gl_Discard :: Maybe (FSOutput Bool)
                }
 
-makeBasicProgram :: Expression Vec4 -> Expression Vec4 -> Program
+makeBasicProgram :: AsExpr a => a Vec4 -> a Vec4 -> Program
 makeBasicProgram gl_Position gl_FragColor =
     Program
-    { gl_Position = VSOutput "gl_Position" gl_Position
+    { gl_Position = VSOutput "gl_Position" (asExpr gl_Position)
     , gl_PointSize = Nothing
-    , gl_FragColor = VSOutput "gl_FragColor" gl_FragColor
+    , gl_FragColor = VSOutput "gl_FragColor" (asExpr gl_FragColor)
     , gl_FragData = []
     , gl_Discard = Nothing
     }
@@ -238,9 +245,10 @@ main = do
         projMatrix = Uniform "projMatrix" :: Uniform Mat4
         position = Attribute "position" :: Attribute Vec4
 
-    let gl_Position = asExpr projMatrix `mult` asExpr viewMatrix `mult` asExpr modelMatrix `mult` asExpr position
-    let gl_FragColor = Constant (1, 1, 1, 1)
-    let program = makeBasicProgram (asExpr gl_Position) (asExpr gl_FragColor)
+    let gl_Position = projMatrix `mult` viewMatrix `mult` modelMatrix `mult` position
+    let isWhite = Constant True
+    let gl_FragColor = ifThenElse (asExpr $ Constant True) (asExpr $ Constant (1, 1, 1, 1)) (asExpr $ Constant (0, 0, 0, 0))
+    let program = makeBasicProgram gl_Position gl_FragColor
 
     emitProgram program
     
