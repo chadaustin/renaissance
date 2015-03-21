@@ -113,15 +113,12 @@ type FSOutput = VSOutput
 -- mat a * vec a
 -- vec * vec
 -- mat * mat
---type family MultResult 
-class CanMultiply a b where
-    type MultResult a b
-instance CanMultiply Mat4 Vec4 where
-    type MultResult Mat4 Vec4 = Vec4
-instance CanMultiply Mat4 Mat4 where
-    type MultResult Mat4 Mat4 = Mat4
 
-mult :: (CanMultiply a b) => Expression a -> Expression b -> Expression (MultResult a b)
+type family MultResult a b
+type instance MultResult Mat4 Vec4 = Vec4
+type instance MultResult Mat4 Mat4 = Mat4
+
+mult :: Expression a -> Expression b -> Expression (MultResult a b)
 mult lhs rhs = Mult lhs rhs
 
 
