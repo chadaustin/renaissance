@@ -334,7 +334,7 @@ main = do
     let gl_Position = projMatrix `mult` viewMatrix `mult` modelMatrix `mult` position
     let isWhite = Constant True
     let rgb = xyz' diffuse
-    let whiteCase = makeVec4 (toExpr $ rgb, toExpr $ w' diffuse)
+    let whiteCase = makeVec4 (rgb, w' diffuse)
     let gl_FragColor = ifThenElse isWhite whiteCase (Constant (0, 0, 0, 0))
     let program = makeBasicProgram gl_Position gl_FragColor
 
