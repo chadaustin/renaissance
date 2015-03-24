@@ -291,12 +291,22 @@ instance HasTwoComponents Vec2
 instance HasTwoComponents Vec3
 instance HasTwoComponents Vec4
 
+class HasThreeComponents a
+instance HasThreeComponents Vec3
+instance HasThreeComponents Vec4
+
+type family Vec3Of a
+type instance Vec3Of Float = Vec3
+
 x' :: (AsExpr a, HasTwoComponents b, GetRuntimeType b, RenderConstant b) => a b -> Expression (VectorElement b)
 x' v = Swizzle "x" (asExpr v)
 y' :: (AsExpr a, HasTwoComponents b, GetRuntimeType b, RenderConstant b) => a b -> Expression (VectorElement b)
 y' v = Swizzle "y" (asExpr v)
 w' :: (AsExpr a, HasTwoComponents b, GetRuntimeType b, RenderConstant b) => a b -> Expression (VectorElement b)
 w' v = Swizzle "w" (asExpr v)
+
+xyz' :: (AsExpr a, HasThreeComponents b, GetRuntimeType b, RenderConstant b) => a b -> Expression (Vec3Of (VectorElement b))
+xyz' v = Swizzle "xyz" (asExpr v)
 
 main  :: IO ()
 main = do
@@ -311,7 +321,8 @@ main = do
 
     let gl_Position = projMatrix `mult` viewMatrix `mult` modelMatrix `mult` position
     let isWhite = Constant True
-    let whiteCase = makeVec4 (asExpr $ Constant (1 :: Float, 1 :: Float, 1 :: Float), asExpr $ w' diffuse)
+    let rgb = xyz' diffuse
+    let whiteCase = makeVec4 (asExpr $ rgb, asExpr $ w' diffuse)
     let gl_FragColor = ifThenElse isWhite whiteCase (Constant (0, 0, 0, 0))
     let program = makeBasicProgram gl_Position gl_FragColor
 
