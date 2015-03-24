@@ -97,6 +97,7 @@ data Expression t where
     Call :: String -> [SomeExpression] -> Expression t
     Mult :: Expression a -> Expression b -> Expression (MultResult a b)
     IfThenElse :: Expression Bool -> Expression a -> Expression a -> Expression a
+    Swizzle :: String -> Expression a -> Expression b
     ReadUniform :: GetRuntimeType t => Uniform t -> Expression t
     ReadAttribute :: GetRuntimeType t => Attribute t -> Expression t
     ReadConstant :: RenderConstant t => Constant t -> Expression t
@@ -182,6 +183,7 @@ findUniforms (VSOutput _ expr) = find' expr
     find' (Mult lhs rhs) = Set.union (find' lhs) (find' rhs)
     find' (Call _ args) = Set.unions $ fmap (\(SomeExpression e) -> find' e) args
     find' (IfThenElse pred' ifTrue ifFalse) = Set.unions [find' pred', find' ifTrue, find' ifFalse]
+    find' (Swizzle _ e) = find' e
     find' (ReadUniform u) = Set.singleton $ toUniformDesc u
     find' (ReadAttribute _) = Set.empty
     find' (ReadConstant _) = Set.empty
@@ -193,6 +195,7 @@ findAttributes (VSOutput _ expr) = find' expr
     find' (Mult lhs rhs) = Set.union (find' lhs) (find' rhs)
     find' (Call _ args) = Set.unions $ fmap (\(SomeExpression e) -> find' e) args
     find' (IfThenElse pred' ifTrue ifFalse) = Set.unions [find' pred', find' ifTrue, find' ifFalse]
+    find' (Swizzle _ e) = find' e
     find' (ReadUniform _) = Set.empty
     find' (ReadAttribute a) = Set.singleton $ toAttributeDesc a
     find' (ReadConstant _) = Set.empty
@@ -207,6 +210,7 @@ genCode :: Expression a -> String
 genCode (Call name args) = "(" <> name <> "(" <> intercalate "," (fmap (\(SomeExpression e) -> genCode e) args) <> "))"
 genCode (Mult lhs rhs) = "(" <> genCode lhs <> "*" <> genCode rhs <> ")"
 genCode (IfThenElse pred' lhs rhs) = "(" <> genCode pred' <> "?" <> genCode lhs <> ":" <> genCode rhs <> ")"
+genCode (Swizzle name e) = "(" <> genCode e <> "." <> name <> ")"
 genCode (ReadUniform (Uniform n)) = n
 genCode (ReadAttribute (Attribute n)) = n
 genCode (ReadConstant (Constant k)) = renderConstant k
@@ -275,6 +279,25 @@ makeBasicProgram gl_Position gl_FragColor =
     , gl_Discard = Nothing
     }
 
+-- swizzles
+
+type family VectorElement a
+type instance VectorElement Vec2 = Float
+type instance VectorElement Vec3 = Float
+type instance VectorElement Vec4 = Float
+
+class HasTwoComponents a
+instance HasTwoComponents Vec2
+instance HasTwoComponents Vec3
+instance HasTwoComponents Vec4
+
+x' :: (AsExpr a, HasTwoComponents b, GetRuntimeType b, RenderConstant b) => a b -> Expression (VectorElement b)
+x' v = Swizzle "x" (asExpr v)
+y' :: (AsExpr a, HasTwoComponents b, GetRuntimeType b, RenderConstant b) => a b -> Expression (VectorElement b)
+y' v = Swizzle "y" (asExpr v)
+w' :: (AsExpr a, HasTwoComponents b, GetRuntimeType b, RenderConstant b) => a b -> Expression (VectorElement b)
+w' v = Swizzle "w" (asExpr v)
+
 main  :: IO ()
 main = do
     let modelMatrix = Uniform "modelMatrix" :: Uniform Mat4
@@ -288,7 +311,7 @@ main = do
 
     let gl_Position = projMatrix `mult` viewMatrix `mult` modelMatrix `mult` position
     let isWhite = Constant True
-    let whiteCase = makeVec4 (asExpr $ Constant (1 :: Float, 1 :: Float, 1 :: Float), asExpr $ Constant (0 :: Float))
+    let whiteCase = makeVec4 (asExpr $ Constant (1 :: Float, 1 :: Float, 1 :: Float), asExpr $ w' diffuse)
     let gl_FragColor = ifThenElse isWhite whiteCase (Constant (0, 0, 0, 0))
     let program = makeBasicProgram gl_Position gl_FragColor
 
