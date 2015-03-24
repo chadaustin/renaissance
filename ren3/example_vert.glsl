@@ -37,12 +37,9 @@ varying float fFogIntensity;
 struct ShaderState {
     vec3 eye;
     vec2 texCoord;
-    vec3 worldPosition;
-    vec3 normal;
     vec4 tangent;
     vec4 color;
     vec4 positionModel;
-    vec3 normalModel;
     vec3 normalWorld;
     vec4 tangentModel;
     vec4 tangentWorld;
@@ -52,15 +49,8 @@ struct ShaderState {
  
 void main() {
     ShaderState ss;
-    vec3 ssAmbient = vec3(0.0);
 
-    // scaled/biased bytes are mapped to [0,254] instead of [0,255],
-    // so that there will be a middle value exactly corresponding to zero
-    // $$$ in case the shader compiler is too dumb to make a constant out of this
-    //float factor = (2.0 * (255.0/254.0));
-    float factor = 2.00787401574804; 
-    vec3 n = (vNormal * factor) - vec3(1.0);
-    ss.normalModel = ss.normalWorld = n;
+    ss.normalWorld = vNormal;
 
     // scaled/biased bytes are mapped to [0,254] instead of [0,255],
     // so that there will be a middle value exactly corresponding to zero
@@ -82,7 +72,6 @@ void main() {
         + uCollectedLights[6].xyz
     );
 
-    ss.normalWorld = normalize(uNormalMatrix * vec4(ss.normalModel,0.0)).xyz;
     vec4 ssPositionWorld = uModelMatrix * ss.positionModel;
     vec4 ssPositionView = uViewMatrix * ssPositionWorld;
     gl_Position = uProjMatrix * ssPositionView;
@@ -90,14 +79,10 @@ void main() {
     float fogCoord = -s.positionView.z;
     fFogIntensity = clamp(fogDensity * uFogMultiplier * (fogCoord-fogNear) * fogInvRange, 0.0, 1.0);
 
-    // finish state
-    ss.worldPosition = ssPositionWorld.xyz;
-    ss.normal = ss.normalWorld;
-
     // output varyings
-    fAmbient = ssAmbient;
-    fWorldPos = ss.worldPosition;
-    fNormal = ss.normal;
+    fAmbient = vec3(0.0);
+    fWorldPos = ssPositionWorld.xyz;
+    fNormal = normalize(uNormalMatrix * vec4(ss.normalWorld,0.0)).xyz;
     fTangent = ss.tangentWorld;
     fTexCoord = ss.texCoord;
     fColor = ss.color;

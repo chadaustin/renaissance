@@ -10,7 +10,6 @@ varying vec3 fAmbient;
 varying vec3 fEye;
 varying vec3 fWorldPos;
 varying vec3 fNormal;
-varying vec4 fTangent;
 varying vec4 fColor;
  
 struct ShaderState {
@@ -19,7 +18,6 @@ struct ShaderState {
     vec2 texCoord;
     vec3 worldPosition;
     vec3 normal;
-    vec4 tangent;
     vec4 color;
     vec3 diffuse;
     vec3 fresnel;
@@ -63,38 +61,15 @@ float diffuseRatio(vec3 N, vec3 L) {
     float incidence = dot(N, L);
     return clamp(incidence, 0.0, 1.0);
 }
-void directLight(inout ShaderState ss) {
-    for (int i = 0; i < DIRECT_LIGHT_COUNT; i++) {
-        ss.diffuse += diffuseRatio(ss.normal, uDirectLightDirections[i].rgb) * uDirectLightColors[i].rgb;
-    }
-}
  
 // --------------------
 //   state functions
 // --------------------
  
-void LightingDiffuse(inout ShaderState ss) {
-    ss.final.rgb = linearTosRGB(ss.albedo.rgb * clampColor(ss.ambient + ss.diffuse));
-    ss.final.a = ss.albedo.a;
-}
-
 uniform vec3 uGameObjectFadeParam;
 
 uniform sampler2D tDiffuseMap0;
  
-void AlbedoMap(inout ShaderState ss) {
-    // @@@ for debugging texture coordinates: X is green, Y is alpha
-    //vec4 texColor = vec4(0.0, ss.texCoord.x, 0.0, ss.texCoord.y);
-    vec4 texColor = texture2D(tDiffuseMap0, ss.texCoord);
- 
-    // @@@ for debugging to unmultiply the alpha from the rgb
-    //if (texColor.a > 0.0) {
-    //    texColor.rgb *= 1.0 / texColor.a;
-    //}
- 
-    ss.albedo.rgb = sRGBToLinear(ss.albedo.rgb * texColor.rgb);
-    ss.albedo.a = texColor.a;
-}
 uniform float uRimFactor;
 uniform float uRimReachStart;
 uniform float uRimReachEnd;
@@ -113,18 +88,22 @@ void main() {
     ss.eye = normalize(fEye);
     ss.worldPosition = fWorldPos;
     ss.normal = normalize(fNormal);
-    ss.tangent = vec4(normalize(fTangent.xyz), fTangent.w);
     ss.diffuse = vec3(0.0);
     ss.final = vec4(vec3(0.0), 1.0);
 
     // call texturing modules
-    AlbedoMap(ss);
+    vec4 texColor = texture2D(tDiffuseMap0, ss.texCoord);
+    ss.albedo.rgb = sRGBToLinear(ss.albedo.rgb * texColor.rgb);
+    ss.albedo.a = texColor.a;
 
     // call light functions
-    directLight(ss);
+    for (int i = 0; i < DIRECT_LIGHT_COUNT; i++) {
+        ss.diffuse += diffuseRatio(ss.normal, uDirectLightDirections[i].rgb) * uDirectLightColors[i].rgb;
+    }
 
     // call lighting modules
-    LightingDiffuse(ss);
+    ss.final.rgb = linearTosRGB(ss.albedo.rgb * clampColor(ss.ambient + ss.diffuse));
+    ss.final.a = ss.albedo.a;
 
     // call post-lightings modules
 

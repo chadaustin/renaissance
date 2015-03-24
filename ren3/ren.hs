@@ -2,6 +2,7 @@
 
 module Main where
 
+import Data.List
 import Data.Monoid
 import Data.Foldable
 import qualified Data.Set as Set
@@ -61,6 +62,10 @@ instance GetRuntimeType Bool where
     getRuntimeType _ = bool
 instance GetRuntimeType Int where
     getRuntimeType _ = int
+instance GetRuntimeType Float where
+    getRuntimeType _ = float
+instance GetRuntimeType Vec3 where
+    getRuntimeType _ = vec3
 instance GetRuntimeType Vec4 where
     getRuntimeType _ = vec4
 instance GetRuntimeType Mat4 where
@@ -70,20 +75,27 @@ class RenderConstant a where
     renderConstant :: a -> String
 instance RenderConstant Bool where
     renderConstant t = if t then "true" else "false"
+instance RenderConstant Float where
+    renderConstant = show
 instance RenderConstant Mat4 where
     renderConstant = const "Mat4"
+instance RenderConstant Vec3 where
+    renderConstant (x, y, z) = "vec3(" <> show x <> "," <> show y <> "," <> show z <> ")"
 instance RenderConstant Vec4 where
     renderConstant (x, y, z, w) = "vec4(" <> show x <> "," <> show y <> "," <> show z <> "," <> show w <> ")"
 
 -- special fragment inputs: vec4 gl_FragCoord, bool gl_FrontFacing, vec2 gl_PointCoord
 
 data Expression t where
+    Call :: String -> [SomeExpression] -> Expression t
     Mult :: Expression a -> Expression b -> Expression (MultResult a b)
     IfThenElse :: Expression Bool -> Expression a -> Expression a -> Expression a
     ReadUniform :: GetRuntimeType t => Uniform t -> Expression t
     ReadAttribute :: GetRuntimeType t => Attribute t -> Expression t
     ReadConstant :: RenderConstant t => Constant t -> Expression t
-                         
+
+data SomeExpression = forall a. SomeExpression (Expression a)
+
 class AsExpr a where
     asExpr :: (RenderConstant t, GetRuntimeType t) => a t -> Expression t
 
@@ -103,6 +115,17 @@ data VSOutput t = VSOutput String (Expression t)
 type FSOutput = VSOutput
 --data FSOutput t = FSOutput String (Expression t)
 
+class HasFourComponents a where
+    toExpressionList :: a -> [SomeExpression]
+instance HasFourComponents (Expression Float, Expression Float, Expression Float, Expression Float) where
+    toExpressionList (a, b, c, d) = [SomeExpression a, SomeExpression b, SomeExpression c, SomeExpression d]
+instance HasFourComponents (Expression Float, Expression Vec2, Expression Float) where
+    toExpressionList (a, b, c) = [SomeExpression a, SomeExpression b, SomeExpression c]
+instance HasFourComponents (Expression Vec3, Expression Float) where
+    toExpressionList (a, b) = [SomeExpression a, SomeExpression b]
+
+makeVec4 :: HasFourComponents a => a -> Expression Vec4
+makeVec4 a = Call "vec4" $ toExpressionList a
 
 -- mult
 
@@ -146,7 +169,8 @@ findUniforms (VSOutput _ expr) = find' expr
   where
     find' :: Expression a -> Set.Set UniformDesc
     find' (Mult lhs rhs) = Set.union (find' lhs) (find' rhs)
-    find' (IfThenElse pred ifTrue ifFalse) = Set.unions [find' pred, find' ifTrue, find' ifFalse]
+    find' (Call _ args) = Set.unions $ fmap (\(SomeExpression e) -> find' e) args
+    find' (IfThenElse pred' ifTrue ifFalse) = Set.unions [find' pred', find' ifTrue, find' ifFalse]
     find' (ReadUniform u) = Set.singleton $ toUniformDesc u
     find' (ReadAttribute _) = Set.empty
     find' (ReadConstant _) = Set.empty
@@ -156,7 +180,8 @@ findAttributes (VSOutput _ expr) = find' expr
   where
     find' :: Expression a -> Set.Set AttributeDesc
     find' (Mult lhs rhs) = Set.union (find' lhs) (find' rhs)
-    find' (IfThenElse pred ifTrue ifFalse) = Set.unions [find' pred, find' ifTrue, find' ifFalse]
+    find' (Call _ args) = Set.unions $ fmap (\(SomeExpression e) -> find' e) args
+    find' (IfThenElse pred' ifTrue ifFalse) = Set.unions [find' pred', find' ifTrue, find' ifFalse]
     find' (ReadUniform _) = Set.empty
     find' (ReadAttribute a) = Set.singleton $ toAttributeDesc a
     find' (ReadConstant _) = Set.empty
@@ -168,8 +193,9 @@ findAllAttributes :: [VSOutput t] -> Set.Set AttributeDesc
 findAllAttributes outputs = Set.unions $ fmap findAttributes outputs
 
 genCode :: Expression a -> String
+genCode (Call name args) = "(" <> name <> "(" <> intercalate "," (fmap (\(SomeExpression e) -> genCode e) args) <> "))"
 genCode (Mult lhs rhs) = "(" <> genCode lhs <> "*" <> genCode rhs <> ")"
-genCode (IfThenElse pred lhs rhs) = "(" <> genCode pred <> "?" <> genCode lhs <> ":" <> genCode rhs <> ")"
+genCode (IfThenElse pred' lhs rhs) = "(" <> genCode pred' <> "?" <> genCode lhs <> ":" <> genCode rhs <> ")"
 genCode (ReadUniform (Uniform n)) = n
 genCode (ReadAttribute (Attribute n)) = n
 genCode (ReadConstant (Constant k)) = renderConstant k
@@ -247,7 +273,8 @@ main = do
 
     let gl_Position = projMatrix `mult` viewMatrix `mult` modelMatrix `mult` position
     let isWhite = Constant True
-    let gl_FragColor = ifThenElse (asExpr $ Constant True) (asExpr $ Constant (1, 1, 1, 1)) (asExpr $ Constant (0, 0, 0, 0))
+    let whiteCase = makeVec4 (asExpr $ Constant (1 :: Float, 1 :: Float, 1 :: Float), asExpr $ Constant (0 :: Float))
+    let gl_FragColor = ifThenElse (asExpr isWhite) (whiteCase) (asExpr $ Constant (0, 0, 0, 0))
     let program = makeBasicProgram gl_Position gl_FragColor
 
     emitProgram program
