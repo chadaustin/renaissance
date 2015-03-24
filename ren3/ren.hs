@@ -1,4 +1,7 @@
-{-# LANGUAGE RecordWildCards, TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, TypeSynonymInstances, FlexibleInstances, ScopedTypeVariables, GADTs, ConstraintKinds, FunctionalDependencies #-}
+{-# LANGUAGE RecordWildCards, TypeFamilies, MultiParamTypeClasses,
+    ExistentialQuantification, TypeSynonymInstances, FlexibleInstances,
+    ScopedTypeVariables, GADTs, ConstraintKinds, FunctionalDependencies,
+    FlexibleContexts #-}
 
 module Main where
 
@@ -127,16 +130,21 @@ data VSOutput t = VSOutput String (Expression t)
 type FSOutput = VSOutput
 --data FSOutput t = FSOutput String (Expression t)
 
-class HasFourComponents a where
-    toExpressionList :: a -> [SomeExpression]
-instance HasFourComponents (Expression Float, Expression Float, Expression Float, Expression Float) where
-    toExpressionList (a, b, c, d) = [SomeExpression a, SomeExpression b, SomeExpression c, SomeExpression d]
-instance HasFourComponents (Expression Float, Expression Vec2, Expression Float) where
-    toExpressionList (a, b, c) = [SomeExpression a, SomeExpression b, SomeExpression c]
-instance HasFourComponents (Expression Vec3, Expression Float) where
-    toExpressionList (a, b) = [SomeExpression a, SomeExpression b]
+class HasFourComponents a
+instance HasFourComponents (Float, Float, Float, Float)
+instance HasFourComponents (Float, Vec2, Float)
+instance HasFourComponents (Vec3, Float)
 
-makeVec4 :: HasFourComponents a => a -> Expression Vec4
+class MakeVec4 a where
+    toExpressionList :: a -> [SomeExpression]
+instance HasFourComponents (a, b) => MakeVec4 (Expression a, Expression b) where
+    toExpressionList (a, b) = [SomeExpression a, SomeExpression b]
+instance HasFourComponents (a, b, c) => MakeVec4 (Expression a, Expression b, Expression c) where
+    toExpressionList (a, b, c) = [SomeExpression a, SomeExpression b, SomeExpression c]
+instance HasFourComponents (a, b, c, d) => MakeVec4 (Expression a, Expression b, Expression c, Expression d) where
+    toExpressionList (a, b, c, d) = [SomeExpression a, SomeExpression b, SomeExpression c, SomeExpression d]
+
+makeVec4 :: MakeVec4 a => a -> Expression Vec4
 makeVec4 a = Call "vec4" $ toExpressionList a
 
 -- texture2D
