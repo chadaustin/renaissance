@@ -48,7 +48,8 @@ type Vec4 = (Float, Float, Float, Float)
 data Mat2
 data Mat3
 data Mat4 = Mat4
-
+data Sampler2D
+data SamplerCube
 
 -- Proxy
 
@@ -64,12 +65,16 @@ instance GetRuntimeType Int where
     getRuntimeType _ = int
 instance GetRuntimeType Float where
     getRuntimeType _ = float
+instance GetRuntimeType Vec2 where
+    getRuntimeType _ = vec2
 instance GetRuntimeType Vec3 where
     getRuntimeType _ = vec3
 instance GetRuntimeType Vec4 where
     getRuntimeType _ = vec4
 instance GetRuntimeType Mat4 where
     getRuntimeType _ = mat4
+instance GetRuntimeType Sampler2D where
+    getRuntimeType _ = Sampler2D
 
 class RenderConstant a where
     renderConstant :: a -> String
@@ -79,6 +84,8 @@ instance RenderConstant Float where
     renderConstant = show
 instance RenderConstant Mat4 where
     renderConstant = const "Mat4"
+instance RenderConstant Vec2 where
+    renderConstant (x, y) = "vec2(" <> show x <> "," <> show y <> ")"
 instance RenderConstant Vec3 where
     renderConstant (x, y, z) = "vec3(" <> show x <> "," <> show y <> "," <> show z <> ")"
 instance RenderConstant Vec4 where
@@ -126,6 +133,10 @@ instance HasFourComponents (Expression Vec3, Expression Float) where
 
 makeVec4 :: HasFourComponents a => a -> Expression Vec4
 makeVec4 a = Call "vec4" $ toExpressionList a
+
+-- texture2D
+texture2D :: AsExpr a => Uniform Sampler2D -> a Vec2 -> Expression Vec4
+texture2D sampler coord = Call "texture2D" [SomeExpression $ ReadUniform sampler, SomeExpression $ asExpr coord]
 
 -- mult
 
@@ -270,6 +281,10 @@ main = do
         viewMatrix = Uniform "viewMatrix" :: Uniform Mat4
         projMatrix = Uniform "projMatrix" :: Uniform Mat4
         position = Attribute "position" :: Attribute Vec4
+        texCoord = Attribute "texCoord" :: Attribute Vec2
+        diffuseMap0 = Uniform "diffuseMap0" :: Uniform Sampler2D
+
+    let diffuse = texture2D diffuseMap0 texCoord
 
     let gl_Position = projMatrix `mult` viewMatrix `mult` modelMatrix `mult` position
     let isWhite = Constant True
