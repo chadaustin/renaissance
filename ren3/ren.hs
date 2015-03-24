@@ -148,8 +148,8 @@ mult :: (AsExpr e, AsExpr f, GetRuntimeType a, RenderConstant a, GetRuntimeType 
 mult lhs rhs = Mult (asExpr lhs) (asExpr rhs)
 infixl 7 `mult`
 
-ifThenElse :: Expression Bool -> Expression a -> Expression a -> Expression a
-ifThenElse = IfThenElse
+ifThenElse :: (AsExpr p, AsExpr t, AsExpr f, RenderConstant a, GetRuntimeType a) => p Bool -> t a -> f a -> Expression a
+ifThenElse p t f = IfThenElse (asExpr p) (asExpr t) (asExpr f)
 
 data UniformDesc = UniformDesc Type String
                  | UniformArrayDesc Type Int String
@@ -274,7 +274,7 @@ main = do
     let gl_Position = projMatrix `mult` viewMatrix `mult` modelMatrix `mult` position
     let isWhite = Constant True
     let whiteCase = makeVec4 (asExpr $ Constant (1 :: Float, 1 :: Float, 1 :: Float), asExpr $ Constant (0 :: Float))
-    let gl_FragColor = ifThenElse (asExpr isWhite) (whiteCase) (asExpr $ Constant (0, 0, 0, 0))
+    let gl_FragColor = ifThenElse isWhite whiteCase (Constant (0, 0, 0, 0))
     let program = makeBasicProgram gl_Position gl_FragColor
 
     emitProgram program
