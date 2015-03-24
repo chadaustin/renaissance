@@ -1,7 +1,8 @@
-{-# LANGUAGE RecordWildCards, TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, TypeSynonymInstances, FlexibleInstances, ScopedTypeVariables, GADTs #-}
+{-# LANGUAGE RecordWildCards, TypeFamilies, MultiParamTypeClasses, ExistentialQuantification, TypeSynonymInstances, FlexibleInstances, ScopedTypeVariables, GADTs, ConstraintKinds, FunctionalDependencies #-}
 
 module Main where
 
+import GHC.Prim (Constraint)
 import Data.List
 import Data.Monoid
 import Data.Foldable
@@ -104,20 +105,23 @@ data Expression t where
 
 data SomeExpression = forall a. SomeExpression (Expression a)
 
-class AsExpr a where
-    asExpr :: (RenderConstant t, GetRuntimeType t) => a t -> Expression t
+class ToExpr a (b :: * -> Constraint) | a -> b where
+    toExpr :: b t => a t -> Expression t
 
-instance AsExpr Expression where
-    asExpr = id
+class NoConstraint t
+instance NoConstraint t
 
-instance AsExpr Uniform where
-    asExpr = ReadUniform
+instance ToExpr Expression NoConstraint where
+    toExpr = id
 
-instance AsExpr Attribute where
-    asExpr = ReadAttribute
+instance ToExpr Uniform GetRuntimeType where
+    toExpr = ReadUniform
 
-instance AsExpr Constant where
-    asExpr = ReadConstant
+instance ToExpr Attribute GetRuntimeType where
+    toExpr = ReadAttribute
+
+instance ToExpr Constant RenderConstant where
+    toExpr = ReadConstant
 
 data VSOutput t = VSOutput String (Expression t)
 type FSOutput = VSOutput
@@ -136,8 +140,8 @@ makeVec4 :: HasFourComponents a => a -> Expression Vec4
 makeVec4 a = Call "vec4" $ toExpressionList a
 
 -- texture2D
-texture2D :: AsExpr a => Uniform Sampler2D -> a Vec2 -> Expression Vec4
-texture2D sampler coord = Call "texture2D" [SomeExpression $ ReadUniform sampler, SomeExpression $ asExpr coord]
+texture2D :: (ToExpr a c, c Vec2) => Uniform Sampler2D -> a Vec2 -> Expression Vec4
+texture2D sampler coord = Call "texture2D" [SomeExpression $ ReadUniform sampler, SomeExpression $ toExpr coord]
 
 -- mult
 
@@ -156,12 +160,12 @@ type family MultResult a b
 type instance MultResult Mat4 Vec4 = Vec4
 type instance MultResult Mat4 Mat4 = Mat4
 
-mult :: (AsExpr e, AsExpr f, GetRuntimeType a, RenderConstant a, GetRuntimeType b, RenderConstant b) => e a -> f b -> Expression (MultResult a b)
-mult lhs rhs = Mult (asExpr lhs) (asExpr rhs)
+mult :: (ToExpr e c1, ToExpr f c2, c1 a, c2 b) => e a -> f b -> Expression (MultResult a b)
+mult lhs rhs = Mult (toExpr lhs) (toExpr rhs)
 infixl 7 `mult`
 
-ifThenElse :: (AsExpr p, AsExpr t, AsExpr f, RenderConstant a, GetRuntimeType a) => p Bool -> t a -> f a -> Expression a
-ifThenElse p t f = IfThenElse (asExpr p) (asExpr t) (asExpr f)
+ifThenElse :: (ToExpr p c1, ToExpr t c2, ToExpr f c3, c1 Bool, c2 a, c3 a) => p Bool -> t a -> f a -> Expression a
+ifThenElse p t f = IfThenElse (toExpr p) (toExpr t) (toExpr f)
 
 data UniformDesc = UniformDesc Type String
                  | UniformArrayDesc Type Int String
@@ -269,12 +273,12 @@ data Program = Program
                , gl_Discard :: Maybe (FSOutput Bool)
                }
 
-makeBasicProgram :: AsExpr a => a Vec4 -> a Vec4 -> Program
+makeBasicProgram :: (ToExpr a c, c Vec4) => a Vec4 -> a Vec4 -> Program
 makeBasicProgram gl_Position gl_FragColor =
     Program
-    { gl_Position = VSOutput "gl_Position" (asExpr gl_Position)
+    { gl_Position = VSOutput "gl_Position" (toExpr gl_Position)
     , gl_PointSize = Nothing
-    , gl_FragColor = VSOutput "gl_FragColor" (asExpr gl_FragColor)
+    , gl_FragColor = VSOutput "gl_FragColor" (toExpr gl_FragColor)
     , gl_FragData = []
     , gl_Discard = Nothing
     }
@@ -298,15 +302,15 @@ instance HasThreeComponents Vec4
 type family Vec3Of a
 type instance Vec3Of Float = Vec3
 
-x' :: (AsExpr a, HasTwoComponents b, GetRuntimeType b, RenderConstant b) => a b -> Expression (VectorElement b)
-x' v = Swizzle "x" (asExpr v)
-y' :: (AsExpr a, HasTwoComponents b, GetRuntimeType b, RenderConstant b) => a b -> Expression (VectorElement b)
-y' v = Swizzle "y" (asExpr v)
-w' :: (AsExpr a, HasTwoComponents b, GetRuntimeType b, RenderConstant b) => a b -> Expression (VectorElement b)
-w' v = Swizzle "w" (asExpr v)
+x' :: (ToExpr a c, HasTwoComponents b, c b) => a b -> Expression (VectorElement b)
+x' v = Swizzle "x" (toExpr v)
+y' :: (ToExpr a c, HasTwoComponents b, c b) => a b -> Expression (VectorElement b)
+y' v = Swizzle "y" (toExpr v)
+w' :: (ToExpr a c, HasTwoComponents b, c b) => a b -> Expression (VectorElement b)
+w' v = Swizzle "w" (toExpr v)
 
-xyz' :: (AsExpr a, HasThreeComponents b, GetRuntimeType b, RenderConstant b) => a b -> Expression (Vec3Of (VectorElement b))
-xyz' v = Swizzle "xyz" (asExpr v)
+xyz' :: (ToExpr a c, HasThreeComponents b, c b) => a b -> Expression (Vec3Of (VectorElement b))
+xyz' v = Swizzle "xyz" (toExpr v)
 
 main  :: IO ()
 main = do
@@ -322,7 +326,7 @@ main = do
     let gl_Position = projMatrix `mult` viewMatrix `mult` modelMatrix `mult` position
     let isWhite = Constant True
     let rgb = xyz' diffuse
-    let whiteCase = makeVec4 (asExpr $ rgb, asExpr $ w' diffuse)
+    let whiteCase = makeVec4 (toExpr $ rgb, toExpr $ w' diffuse)
     let gl_FragColor = ifThenElse isWhite whiteCase (Constant (0, 0, 0, 0))
     let program = makeBasicProgram gl_Position gl_FragColor
 
