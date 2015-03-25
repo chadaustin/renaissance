@@ -1,7 +1,7 @@
 {-# LANGUAGE RecordWildCards, TypeFamilies, MultiParamTypeClasses,
     ExistentialQuantification, TypeSynonymInstances, FlexibleInstances,
     ScopedTypeVariables, GADTs, ConstraintKinds, FunctionalDependencies,
-    FlexibleContexts #-}
+    FlexibleContexts, Rank2Types #-}
 
 module Main where
 
@@ -106,6 +106,21 @@ data Expression t where
     ReadAttribute :: GetRuntimeType t => Attribute t -> Expression t
     ReadConstant :: RenderConstant t => Constant t -> Expression t
 
+traverse :: forall r m. Monoid m => (forall a. Expression a -> m) -> Expression r -> m
+traverse traversal root = traverse' root
+  where
+    traverse' :: Expression b -> m
+    traverse' expr = traversal expr <> recurse expr
+
+    recurse :: Expression b -> m
+    recurse (Call _ args) = foldMap (\(SomeExpression e) -> traverse' e) args
+    recurse (Mult lhs rhs) = traverse' lhs <> traverse' rhs
+    recurse (IfThenElse pred' ifTrue ifFalse) = traverse' pred' <> traverse' ifTrue <> traverse' ifFalse
+    recurse (Swizzle _ e) = traverse' e
+    recurse (ReadUniform _) = mempty
+    recurse (ReadAttribute _) = mempty
+    recurse (ReadConstant _) = mempty
+
 data SomeExpression = forall a. SomeExpression (Expression a)
 
 class ToExpr a (b :: * -> Constraint) | a -> b where
@@ -189,28 +204,18 @@ toAttributeDesc :: forall t. GetRuntimeType t => Attribute t -> AttributeDesc
 toAttributeDesc (Attribute name) = AttributeDesc (getRuntimeType (Proxy :: Proxy t)) name
 
 findUniforms :: VSOutput t -> Set.Set UniformDesc
-findUniforms (VSOutput _ expr) = find' expr
+findUniforms (VSOutput _ expr) = traverse find' expr
   where
     find' :: Expression a -> Set.Set UniformDesc
-    find' (Mult lhs rhs) = Set.union (find' lhs) (find' rhs)
-    find' (Call _ args) = Set.unions $ fmap (\(SomeExpression e) -> find' e) args
-    find' (IfThenElse pred' ifTrue ifFalse) = Set.unions [find' pred', find' ifTrue, find' ifFalse]
-    find' (Swizzle _ e) = find' e
     find' (ReadUniform u) = Set.singleton $ toUniformDesc u
-    find' (ReadAttribute _) = Set.empty
-    find' (ReadConstant _) = Set.empty
+    find' _ = Set.empty
 
 findAttributes :: VSOutput t -> Set.Set AttributeDesc
-findAttributes (VSOutput _ expr) = find' expr
+findAttributes (VSOutput _ expr) = traverse find' expr
   where
     find' :: Expression a -> Set.Set AttributeDesc
-    find' (Mult lhs rhs) = Set.union (find' lhs) (find' rhs)
-    find' (Call _ args) = Set.unions $ fmap (\(SomeExpression e) -> find' e) args
-    find' (IfThenElse pred' ifTrue ifFalse) = Set.unions [find' pred', find' ifTrue, find' ifFalse]
-    find' (Swizzle _ e) = find' e
-    find' (ReadUniform _) = Set.empty
     find' (ReadAttribute a) = Set.singleton $ toAttributeDesc a
-    find' (ReadConstant _) = Set.empty
+    find' _ = Set.empty
     
 findAllUniforms :: [VSOutput t] -> Set.Set UniformDesc
 findAllUniforms outputs = Set.unions $ fmap findUniforms outputs
