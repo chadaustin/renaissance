@@ -100,6 +100,8 @@ instance RenderConstant Vec4 where
 data Expression t where
     Call :: String -> [SomeExpression] -> Expression t
     Mult :: Expression a -> Expression b -> Expression (MultResult a b)
+    BinaryOp :: String -> Expression a -> Expression a -> Expression a
+    UnaryOp :: String -> Expression a -> Expression a
     IfThenElse :: Expression Bool -> Expression a -> Expression a -> Expression a
     Swizzle :: String -> Expression a -> Expression b
     ReadUniform :: GetRuntimeType t => Uniform t -> Expression t
@@ -115,6 +117,8 @@ traverse traversal root = traverse' root
     recurse :: Expression b -> m
     recurse (Call _ args) = foldMap (\(SomeExpression e) -> traverse' e) args
     recurse (Mult lhs rhs) = traverse' lhs <> traverse' rhs
+    recurse (BinaryOp _ lhs rhs) = traverse' lhs <> traverse' rhs
+    recurse (UnaryOp _ e) = traverse' e
     recurse (IfThenElse pred' ifTrue ifFalse) = traverse' pred' <> traverse' ifTrue <> traverse' ifFalse
     recurse (Swizzle _ e) = traverse' e
     recurse (ReadUniform _) = mempty
@@ -180,8 +184,10 @@ texture2D sampler coord = Call "texture2D" [SomeExpression $ ReadUniform sampler
 -- mat * mat
 
 type family MultResult a b
+type instance MultResult Float Float = Float
 type instance MultResult Mat4 Vec4 = Vec4
 type instance MultResult Mat4 Mat4 = Mat4
+type instance MultResult Vec3 Float = Vec3
 
 mult :: (ToExpr e c1, ToExpr f c2, c1 a, c2 b) => e a -> f b -> Expression (MultResult a b)
 mult lhs rhs = Mult (toExpr lhs) (toExpr rhs)
@@ -225,6 +231,8 @@ findAllAttributes outputs = Set.unions $ fmap findAttributes outputs
 
 genCode :: Expression a -> String
 genCode (Call name args) = "(" <> name <> "(" <> intercalate "," (fmap (\(SomeExpression e) -> genCode e) args) <> "))"
+genCode (BinaryOp name lhs rhs) = "(" <> genCode lhs <> name <> genCode rhs <> ")"
+genCode (UnaryOp name e) = "(" <> name <> genCode e <> ")"
 genCode (Mult lhs rhs) = "(" <> genCode lhs <> "*" <> genCode rhs <> ")"
 genCode (IfThenElse pred' lhs rhs) = "(" <> genCode pred' <> "?" <> genCode lhs <> ":" <> genCode rhs <> ")"
 genCode (Swizzle name e) = "(" <> genCode e <> "." <> name <> ")"
@@ -319,11 +327,28 @@ x' :: (ToExpr a c, HasTwoComponents b, c b) => a b -> Expression (VectorElement 
 x' v = Swizzle "x" (toExpr v)
 y' :: (ToExpr a c, HasTwoComponents b, c b) => a b -> Expression (VectorElement b)
 y' v = Swizzle "y" (toExpr v)
+z' :: (ToExpr a c, HasTwoComponents b, c b) => a b -> Expression (VectorElement b)
+z' v = Swizzle "z" (toExpr v)
 w' :: (ToExpr a c, HasTwoComponents b, c b) => a b -> Expression (VectorElement b)
 w' v = Swizzle "w" (toExpr v)
 
 xyz' :: (ToExpr a c, HasThreeComponents b, c b) => a b -> Expression (Vec3Of (VectorElement b))
 xyz' v = Swizzle "xyz" (toExpr v)
+
+neg :: (ToExpr a c, c b) => a b -> Expression b
+neg v = UnaryOp "-" (toExpr v)
+
+clamp :: (ToExpr a c1, c1 Float, ToExpr b c2, c2 Float, ToExpr c c3, c3 Float) => a Float -> b Float -> c Float -> Expression Float
+clamp x minV maxV = Call "clamp" [SomeExpression $ toExpr x, SomeExpression $ toExpr minV, SomeExpression $ toExpr maxV]
+
+mix :: (ToExpr a c1, c1 Vec3, ToExpr b c2, c2 Vec3, ToExpr c c3, c3 Float) => a Vec3 -> b Vec3 -> c Float -> Expression Vec3
+mix x y a = Call "mix" [SomeExpression $ toExpr x, SomeExpression $ toExpr y, SomeExpression $ toExpr a]
+
+minus :: (ToExpr a c1, c1 x, ToExpr b c2, c2 x) => a x -> b x -> Expression x
+minus lhs rhs = BinaryOp "-" (toExpr lhs) (toExpr rhs)
+
+dividedBy :: (ToExpr a c1, c1 Float, ToExpr b c2, c2 Float) => a Float -> b Float -> Expression Float
+dividedBy lhs rhs = BinaryOp "/" (toExpr lhs) (toExpr rhs)
 
 main  :: IO ()
 main = do
@@ -332,14 +357,31 @@ main = do
         projMatrix = Uniform "projMatrix" :: Uniform Mat4
         position = Attribute "position" :: Attribute Vec4
         texCoord = Attribute "texCoord" :: Attribute Vec2
+
+        positionWorld = modelMatrix `mult` position
+        positionView = viewMatrix `mult` positionWorld
+
+        uFogMultiplier = Uniform "fogMultiplier" :: Uniform Float
+        uFogColor = Uniform "fogColor" :: Uniform Vec4
+        uFogParams = Uniform "fogParams" :: Uniform Vec4
+
+        fogNear = x' uFogParams
+        fogFar = y' uFogParams
+        fogDensity = z' uFogParams
+        
         diffuseMap0 = Uniform "diffuseMap0" :: Uniform Sampler2D
+
+    let fogCoord = neg $ x' positionView
+    let fogInvRange = Constant 1.0 `dividedBy` (fogFar `minus` fogNear)
+    let fogIntensity = clamp (fogDensity `mult` uFogMultiplier `mult` (fogCoord `minus` fogNear) `mult` fogInvRange) (Constant 0.0) (Constant 1.0)
 
     let diffuse = texture2D diffuseMap0 texCoord
 
     let gl_Position = projMatrix `mult` viewMatrix `mult` modelMatrix `mult` position
     let isWhite = Constant True
-    let rgb = xyz' diffuse
-    let whiteCase = makeVec4 (rgb, w' diffuse)
+    let alpha = w' diffuse
+    let rgb = mix (xyz' diffuse) (xyz' uFogColor `mult` alpha) fogIntensity
+    let whiteCase = makeVec4 (rgb, alpha)
     let gl_FragColor = ifThenElse isWhite whiteCase (Constant (0, 0, 0, 0))
     let program = makeBasicProgram gl_Position gl_FragColor
 
